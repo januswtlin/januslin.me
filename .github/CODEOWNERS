@@ -1,0 +1,14 @@
+# The author reviews every change to what runs in CI and next to the deploy secrets,
+# and to the scripts the host `agent` account runs next to the App keys
+# (docs/security.md, "Workflow changes"; docs/agents/sandbox.md, "Layers"). Informational: GitHub requests the review;
+# the rulesets already make the author the only one who can merge.
+/.github/        @januswtlin
+/wrangler.jsonc  @januswtlin
+/worker/         @januswtlin
+/scripts/smoke*  @januswtlin
+/scripts/token-broker.sh       @januswtlin
+/scripts/agent-token.sh        @januswtlin
+/scripts/agent-gh              @januswtlin
+/scripts/agent-git-credential  @januswtlin
+/scripts/codex-launch*         @januswtlin
+/.githooks/                    @januswtlin

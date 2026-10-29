@@ -1,0 +1,53 @@
+# ADR-0013: Local AI runs only inside a Docker Sandbox
+- Status: accepted
+- Date: 2026-10-29
+- Deciders: Janus, coordinator session
+
+## Context
+ADR-0009 puts local agents in the standard macOS account `agent`, away from the author's credentials. But that account also holds the App private keys (`januslin-agent.pem`, `januslin-reviewer.pem`) and the Slack bot token. Any AI process in it can read a key, mint installation tokens without limit, act as the reviewer, or copy a key off the machine. One-hour tokens mean little while the key that mints them is readable. The account also has no egress control: an injected agent can send anything anywhere.
+
+Docker Sandboxes (`sbx`) run an agent in a microVM with its own kernel and Docker Engine. Outbound TCP goes through a host-side proxy that enforces a deny-by-default network policy, and that proxy can inject credentials into request headers so the VM sees only a placeholder. As documented on 2026-10-29:
+- Local use is free, including commercial use; it needs `sbx login` with a Docker account. macOS 14 or later on Apple silicon. Docker Desktop is not required. Install: `brew trust docker/tap` and `brew install docker/tap/sbx`. ([install](https://docs.docker.com/ai/sandboxes/install/), [FAQ](https://docs.docker.com/ai/sandboxes/faq/))
+- Isolation: a "separate kernel per sandbox"; everything on the host outside explicitly shared paths stays out of the agent's reach. Inside the VM the agent has full control, including `sudo`. ([security](https://docs.docker.com/ai/sandboxes/security/))
+- Credentials: "The real credential stays on the host when proxy management is active; the sandbox sees only a sentinel value." Resolved secrets are cached for 55 minutes unless set with `--refresh on-demand` ([authentication](https://docs.docker.com/ai/sandboxes/workflows/authentication/)). Built-in services include `anthropic`, `openai`, and `github`; `sbx secret set <service> --command '<cmd>'` runs a host command that prints the value; `sbx secret set-custom --host … --env …` (experimental) covers other hosts, headers only. Secrets can be scoped with `--sandbox <name>`; on macOS they are kept in the Keychain. ([credentials](https://docs.docker.com/ai/sandboxes/security/credentials/))
+- Network: presets `allow-all`, `balanced`, `deny-all`; rules with `sbx policy allow|deny network <host> [--sandbox <name>]`; blocked requests appear in `sbx policy approval ls`. ([local access controls](https://docs.docker.com/ai/sandboxes/governance/access-controls/local/))
+- Workspaces: `--clone` gives the agent a private clone inside the VM, with the host repository mounted read-only at `/run/sandbox/source`; extra paths can be mounted with `:ro`. ([usage](https://docs.docker.com/ai/sandboxes/usage/))
+- Agents: templates `docker/sandbox-templates:claude-code` and `docker/sandbox-templates:codex`. Claude Code starts with `--dangerously-skip-permissions`, signs in with `/login` (subscription), ignores host `~/.claude`, and needs `sbx settings set claude.remoteControl true` for `/remote-control`. Codex starts with `--dangerously-bypass-approvals-and-sandbox` and signs in with `sbx secret set openai --oauth`, an OAuth flow that runs on the host and keeps the tokens in the host keychain. ([Claude Code](https://docs.docker.com/ai/sandboxes/agents/claude-code/), [Codex](https://docs.docker.com/ai/sandboxes/agents/codex/))
+- Status: early access; flags and formats may change.
+
+## Decision
+- **The host `agent` account never runs AI.** It holds the App keys, the Slack bot token, and the `sbx` CLI; it runs the token broker and starts the sandbox. Claude Code and Codex are not installed there. `AGENTS.md` states this as a rule.
+- **All local AI runs in one sandbox,** `januslin`, created from the `agent` account in clone mode from the host clone (`sbx create --clone --name januslin claude ~/januslin.me`). The coordinator, its implementer and reviewer subagents (each in its own git worktree inside the VM), Codex sessions, `pnpm verify`, and Playwright all run there, on Linux. Clone mode is chosen over a mounted workspace so nothing the agent writes (git hooks, `package.json` scripts) lands in a host working tree.
+- **No key enters the sandbox.** The `.pem` directory is never mounted. A host token broker (`scripts/token-broker.sh`, T03) mints the `januslin-agent` and `januslin-reviewer` installation tokens every 50 minutes, and on demand: the implementer token into a directory that is never mounted (read only by the proxy's secret command), the reviewer token into a token-only directory mounted read-only.
+  - **Implementer identity through the proxy (preferred):** `sbx secret set github --sandbox januslin --refresh on-demand --command '<print the current januslin-agent token>'`. `git` and `gh` inside the VM reach GitHub as `januslin-agent[bot]` without ever seeing a token.
+  - **Reviewer token:** a read-only mount of the token-only directory, holding the current one-hour `januslin-reviewer` token. `scripts/agent-gh <app>` passes it to one `gh` process.
+  - **Fallback** if the proxy cannot be used this way (V17, V18): no `github` secret; all tokens come through the read-only mount. Agents can then read one-hour tokens, but never a key, so they still cannot mint more or keep access past an hour.
+- **Other credentials:** the Claude subscription login is made with `/login` inside the sandbox; the docs do not say where it is stored, so it may be readable in the VM (V24); the author accepts that if so (see Consequences). Through the proxy: the Codex ChatGPT login (`sbx secret set openai --oauth`), the Slack bot token (`sbx secret set-custom --host slack.com`), and, only while a zone task runs, the short-lived Cloudflare ops token (`--host api.cloudflare.com`). If a custom secret does not work for a client (headers only; experimental), that credential falls back to the read-only token directory.
+- **Egress deny by default:** `sbx policy init deny-all`, plus a short allowlist scoped to the sandbox, kept in `docs/agents/sandbox.md` with a reason per host. Only the author changes it, from the host shell, with a docs PR in the same change. This accepts a small allowlist to manage, which the author had earlier skipped for its cost.
+- **Permissions inside the VM: auto mode, not bypass** (the author, 2026-10-30). Anthropic's [permission modes](https://code.claude.com/docs/en/permission-modes) doc says bypass mode "offers no protection against prompt injection or unintended actions" and is for environments "without internet access". This VM has allowlisted internet, and the assets at risk are on GitHub, reachable through the proxy-injected token, which the VM boundary does not protect. Auto mode's classifier checks every action, subagents included, and by default blocks sending sensitive data out, force pushes, destructive git commands, and running downloaded code. After 3 consecutive or 20 total blocks it pauses and prompts (the interactive coordinator then waits; the author answers through Remote Control); in `-p` runs a blocked action is skipped. Codex runs with its workspace-write sandbox and automatic review (`--approve-for-me`, `approvals_reviewer = "auto_review"`), not full bypass. Because the agent is root in the VM, these are defaults, not controls against a determined agent; the classifier is the check against injected instructions. Details and verifications (V26 to V29): `docs/agents/sandbox.md`.
+- Remote Control is enabled per sandbox with `sbx settings set claude.remoteControl true`.
+
+## Alternatives considered
+- **AI directly in the `agent` macOS account (the first attempt):** keys readable, no egress control.
+- **A plain Docker container or Dev Container:** shares the host kernel and has no credential-injecting proxy; secrets would sit in the container's environment.
+- **A second macOS account for the keys plus a socket broker:** separates keys but still no egress control, and more moving parts than `sbx`.
+- **Bypass mode inside the sandbox** (the templates' default): rejected, see Decision.
+- **Manual approval prompts:** would stall the unattended coordinator on every action.
+- **A writable host mount instead of clone mode:** simpler branch handling, but agent-written hooks and scripts would land in a host tree.
+
+## Consequences
+- Key exfiltration and unlimited minting are closed once the keys have been rotated after AI left the host (T03-H4): a compromised agent holds at most one-hour tokens, and in the preferred design not even those for the implementer identity.
+- A pushed branch workflow runs networked code on GitHub's runners, outside the allowlist, without secrets (ADR-0009, risk 5).
+- Allowed hosts are still exfiltration channels for whatever the VM can read (the one-hour reviewer token, possibly the Claude login). The limits are the token lifetime, secret scanning with push protection, and each identity's Write ceiling.
+- If V24 finds the Claude `/login` credential readable inside the VM, the author accepts it (2026-10-30): connectors that hold personal data are removed (T05-H1), egress is allowlisted, and Remote Control needs the full login.
+- Codex runs in the same sandbox, dispatched by the coordinator with `codex exec` (T06, `docs/agents/sandbox.md`).
+- Only the author changes `sbx` secrets and policy, from the host shell; the agent in the VM cannot run `sbx`.
+- Snapshot baselines are recorded on Linux in the sandbox, the same platform as CI.
+- A new runtime to maintain (`sbx` upgrades, template or kit changes, the allowlist). It is early access; T03 records the version it verified, and upgrades are checked against the open verifications.
+- Loopback is no longer shared with the author's account; servers started by agents live in the VM.
+- `sbx` requires a Docker account login in the `agent` macOS account (a Docker identity, not a GitHub one).
+
+## Revisit when
+- `sbx` leaves early access or changes the credential or policy model.
+- A verification in T03 fails without a workable fallback.
+- Auto mode stalls the coordinator too often in long runs (V27).

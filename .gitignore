@@ -1,0 +1,30 @@
+# Local-only drafts: never committed (ADR-0004). Only the README is tracked.
+/drafts/*
+!/drafts/README.md
+
+# Dependencies
+node_modules/
+
+# Build output (anchored so tests/dist/ stays tracked)
+/dist/
+/.astro/
+/.wrangler/
+.logs/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment
+.env*
+!.env.example
+
+# Test output
+test-results/
+playwright-report/
+coverage/
+
+# OS / editor
+.DS_Store
+.obsidian/workspace*.json
