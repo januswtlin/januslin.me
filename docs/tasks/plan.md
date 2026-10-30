@@ -22,7 +22,8 @@ Protect `main` first, then give the machine account Write, then move local AI in
 
 ## Phase 1: Agent tooling
 Every login changes here, so later tasks run on the final setup. Claude before Codex.
-1. T05 Claude Code in the sandbox and in the cloud. You: T05-H1 to T05-H3 (connectors, Claude App scope, connection check). Agent: checks each. You: T05-H4 (allow Remote Control in the sandbox), T05-H5 (`/login` inside the sandbox), T05-H6 (cloud environment), T05-H7 (phone checks). Agent: records V6, V7, V20, V21, V24, opens the PR. You: merge.
+0. T21 Claude login in the sandbox (added 2026-10-30, after T05-H5 failed). You: T21-H1 (inspect the kit), T21-H2 (credential binding, `/login`, checks). Agent (a cloud session, because the sandbox could not log in): records the finding, opens the PR. You: merge.
+1. T05 Claude Code in the sandbox and in the cloud. You: T05-H1 to T05-H3 (connectors, Claude App scope, connection check). Agent: checks each. You: T05-H4 (allow Remote Control in the sandbox), T05-H5 (`/login` inside the sandbox; done early in T21, the agent confirms H1 to H3 came first), T05-H6 (cloud environment), T05-H7 (phone checks). Agent: records V6, V7, V20, V21, re-confirms V24 (recorded in T21), opens the PR. You: merge.
 2. T06 Codex in the sandbox and in the cloud. You: T06-H1 to T06-H3. Agent: checks each, installs Codex in the sandbox. You: T06-H4 (`sbx secret set openai --oauth` in the host shell), T06-H7 (save the sandbox as a template), T06-H5 (cloud environment), T06-H6 (phone checks). Agent: builds the dispatch script, runs the end-to-end Claude-to-Codex dispatch and review (V30), records V8, V10, V22, V28, V29, opens the PR. You: merge.
 
 ## Phase 2: Site
@@ -56,7 +57,7 @@ T01
 T02                  ← T01
 T03                  ← T02
 T04                  ← T03
-T05                  ← T03
+T05                  ← T03, T21
 T06                  ← T05
 T07                  ← T04, T06
 T08                  ← T07
@@ -72,6 +73,7 @@ T17                  ← T12, T13, T16
 T18                  ← T17
 T19                  ← T16
 T20                  ← T05, T16, T19
+T21                  ← T03
 ```
 
 ## Parallelism

@@ -15,7 +15,7 @@ One row per task. Each task is done by one session in one role and lands as one 
 | [T02](T02-machine-account-and-agent-scripts.md) | Machine account, App transfer, agent scripts | Platform | T01 | T02-H1, T02-H2, T02-H3, T02-H4, T02-H5, T02-H6, T02-H7, T02-H8 | M | done | [#2](https://github.com/januswtlin/januslin.me/pull/2) |
 | [T03](T03-sandbox-runtime.md) | Sandbox runtime and token broker | Platform | T02 | T03-H1, T03-H2, T03-H3, T03-H4, T03-H5 | M | done | [#4](https://github.com/januswtlin/januslin.me/pull/4) |
 | [T04](T04-coordinator-slack-channel.md) | Coordinator Slack channel, config outside the repo | Platform | T03 | T04-H1, T04-H2, T04-H3 | S | blocked | |
-| [T05](T05-claude-code-local-and-cloud.md) | Claude Code in the sandbox and in the cloud | Platform | T03 | T05-H1, T05-H2, T05-H3, T05-H4, T05-H5, T05-H6, T05-H7 | M | blocked | |
+| [T05](T05-claude-code-local-and-cloud.md) | Claude Code in the sandbox and in the cloud | Platform | T03, T21 | T05-H1, T05-H2, T05-H3, T05-H4, T05-H5, T05-H6, T05-H7 | M | blocked | |
 | [T06](T06-codex-local-and-cloud.md) | Codex in the sandbox and in the cloud | Platform | T05 | T06-H1, T06-H2, T06-H3, T06-H4, T06-H5, T06-H6, T06-H7 | M | blocked | |
 | [T07](T07-bootstrap-node-project.md) | Bootstrap the Node project and `pnpm verify` | Platform | T04, T06 | none | S | blocked | |
 | [T08](T08-task-plan-check.md) | `pnpm tasks`: check the board, print the next task | Platform | T07 | none | S | blocked | |
@@ -31,6 +31,7 @@ One row per task. Each task is done by one session in one role and lands as one 
 | [T18](T18-post-launch-audit.md) | Post-launch independent audit | Reviewer | T17 | T18-H1 | S | blocked | |
 | [T19](T19-renovate-and-maintenance.md) | Renovate, maintenance tooling, missing-English check | Platform | T16 | T19-H1 | M | blocked | |
 | [T20](T20-scheduled-agent-tasks.md) | Scheduled agent tasks and prompt files | Platform | T05, T16, T19 | T20-H1, T20-H2 | M | blocked | |
+| [T21](T21-sandbox-claude-login.md) | Claude login in the sandbox (credential binding) | Platform | T03 | T21-H1, T21-H2 | S | done | [#5](https://github.com/januswtlin/januslin.me/pull/5) |
 
 ## Task file format
 
