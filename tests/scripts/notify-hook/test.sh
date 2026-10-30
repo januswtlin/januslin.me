@@ -89,6 +89,8 @@ jq -e '.hooks.Notification[] | select(.matcher == "permission_prompt|elicitation
 check "settings.json: Notification hook runs scripts/claude-notify-slack.sh for permission and elicitation prompts" $?
 jq -e '.permissions.deny as $d | ["mcp__claude_ai_*","CronCreate","CronList","CronDelete","RemoteTrigger"] | all(. as $x | $d | index($x))' "$s" > /dev/null
 check "settings.json: connector, cron, and RemoteTrigger denies kept" $?
+jq -e '.permissions.deny | index("mcp__mcp-gateway__*")' "$s" > /dev/null
+check "settings.json: Docker's mcp-gateway tools denied" $?
 
 # The settings command must be harmless when the hook file is absent (an old branch checked out).
 cmd=$(jq -r '.hooks.Notification[0].hooks[0].command' "$s")

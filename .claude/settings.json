@@ -2,6 +2,7 @@
   "permissions": {
     "deny": [
       "mcp__claude_ai_*",
+      "mcp__mcp-gateway__*",
       "CronCreate",
       "CronList",
       "CronDelete",
