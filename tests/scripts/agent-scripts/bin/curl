@@ -1,0 +1,25 @@
+#!/bin/sh
+# Fake curl for tests/scripts/agent-scripts. Logs argv (one per line) and stdin to
+# $FAKE_LOG, writes a canned response for the request to the -o file, and prints
+# the HTTP status as -w would. No network.
+set -eu
+out= method=GET url=
+for a in "$@"; do printf 'argv: %s\n' "$a" >> "$FAKE_LOG"; done
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -o) out=$2; shift 2 ;;
+    -X) method=$2; shift 2 ;;
+    -w|-H|--data|--config|--max-time) shift 2 ;;
+    -*) shift ;;
+    *) url=$1; shift ;;
+  esac
+done
+sed 's/^/stdin: /' >> "$FAKE_LOG"
+case "$method $url" in
+  "POST https://api.github.com/app/installations/"*/access_tokens)
+    printf '{"token":"%s","expires_at":"2099-01-01T00:00:00Z","permissions":{"contents":"write"},"repositories":[{"full_name":"januswtlin/januslin.me"}]}' "$FAKE_TOKEN" > "$out"
+    printf 201 ;;
+  "DELETE https://api.github.com/installation/token")
+    : > "$out"; printf 204 ;;
+  *) printf '{"message":"unexpected"}' > "$out"; printf 404 ;;
+esac
