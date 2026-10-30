@@ -63,6 +63,7 @@ Available once T05 (Claude Code cloud) and T06 (Codex cloud) are done.
 - Their environments hold no secrets. They cannot run `scripts/agent-gh` (no App keys there); they use the vendor's GitHub connection.
 - Branch names: the rule in "Branches and commits" applies. Claude Code cloud pushes the `agent/...` name the prompt gives (V7); without one it picks `claude/<name>`, so the dispatch prompt always names the branch.
 - Commits from Claude Code cloud are authored as `Claude <noreply@anthropic.com>` (GitHub user `claude`, id 81847); the push and the PR are the machine account (V7). Identify a cloud session's work by the push actor and the PR author, not the commit author.
+- Cloud commits (and local Claude Code commits that follow its attribution guidance) carry a `Claude-Session:` trailer with the session URL. The author accepts these URLs in this public repository's history (2026-10-30): they open only for the author's claude.ai account.
 - A cloud session cannot delete remote branches (the GitHub proxy refuses with HTTP 403, V7); the author deletes branches it leaves behind, or GitHub does when the PR is merged.
 - The coordinator treats a cloud session's PR like any other: it starts a local reviewer subagent on it and reports to the author.
 
