@@ -17,7 +17,7 @@ ADR-0009, ADR-0011, ADR-0013, `docs/agents/sandbox.md`, `docs/agents/local-agent
 - Prepare T05-H1 to T05-H7 with exact values, in this order: connectors review; Claude App installation limited to this repository; check that the claude.ai GitHub connection is the machine account (V6 screenshot); only then the login in the sandbox. Never start the full login while the connection could still be `januswtlin`.
 - Login in the sandbox: `/login` inside `sbx run --name januslin` (it needs the credential binding from T21). **The login already exists:** the author logged in during T21 (2026-10-30), so T05-H5 is done out of order. Before using that login for anything, confirm T05-H1 to T05-H3 with the author (above all V6, that claude.ai's GitHub connection is `januslin-agent`); if any of them was not done before the T21 login, have the author do it now and then `/logout` and `/login` again. T21 already recorded V24 (the tokens stay on the host); re-confirm it rather than repeat it. Otherwise, find where the credential is stored (a file under `~/.claude` in the VM, or only on the host behind the proxy) and whether it survives `sbx stop` and `sbx run` (V24). If it is readable in the VM, record that next to the author's acceptance in `docs/agents/sandbox.md`. The old `setup-token` token was revoked in T03-H3; confirm no `claude-oauth-token` file is left. The host macOS managed settings stay unchanged (ADR-0013).
 - In-VM defaults: the repository's `.claude/settings.json` denies the claude.ai connector tools and the cron and scheduled-task tools (T03 created it; confirm it loads, `/permissions`).
-- Auto mode (V26 from T03) for the coordinator and its subagents. **Moved to T04 (decision 2026-10-30, Slack dropped):** a Claude Code `Notification` hook in the sandbox that runs `scripts/coordinator-channel.sh post` when Claude Code waits for input, so a paused auto mode reaches the author on Slack (V27, first observations; this task may add that hook and its test).
+- Auto mode (V26 from T03) for the coordinator and its subagents. **Moved to T04 (decision 2026-10-30, Slack dropped):** a Claude Code `Notification` hook in the sandbox that runs `scripts/coordinator-channel.sh post` when Claude Code waits for input, so a paused auto mode reaches the author on Slack (V27 moved to T04 with it).
 - V20: the coordinator prompt's Agent-tool subagents with `isolation: "worktree"` work in the sandbox clone; two run at once without touching each other's files.
 - Cloud environment for this repository: network level Limited, the default allowlist (the environment dialog offers only None, Limited, and Full; the docs call this level Trusted and also list a Custom level, which the dialog does not offer, 2026-10-30; if `pnpm install` needs more hosts, T07 revisits), no environment variables or secrets, a setup script that installs dependencies once a Node project exists. Record its settings.
 - Probes (V7), from a cloud session the author starts on the phone with a probe prompt the agent writes:
@@ -91,13 +91,13 @@ Do them in this order; never do T05-H5 before T05-H3 is confirmed.
   Remote Control (V21), after T05-H4: in the sandboxed coordinator session's terminal, type `/remote-control`, open the link on the phone, and send: `Run: git -C /Users/Agent/januslin.me status --short --branch. Then create branch agent/test/T05-rc-probe from origin/main with an empty commit (subject "chore: T05 Remote Control probe", body "Task: T05"), push it, report the commit SHA, and delete the remote branch again.` Send "T05-H7 RC done" with the session link; the agent reads the push actor from the API. If Remote Control fails to connect, send `sbx policy approval ls` output from `agent-session` (host names only).
 
 ## Acceptance criteria
-- [ ] V6 resolved: the Claude App's permission list (screenshot) with a one-line note on Workflows, Secrets, and Variables.
-- [ ] The Claude App is installed on `januswtlin` with this repository only; claude.ai's GitHub connection is the machine account; `januswtlin` does not authorize Claude (screenshots).
-- [ ] Connectors recorded (names only) with the author's decision for each.
-- [ ] V20 and V24 resolved: worktree subagents work in the sandbox; where the Claude login is stored is recorded.
-- [ ] No `setup-token` token or file remains (revoked in T03-H3; the author confirms).
-- [ ] V7 resolved with API output for each probe.
-- [ ] V21: Remote Control works from the phone to the sandboxed session, and a push from that session shows `januslin-agent[bot]`.
+- [x] V6 resolved: the Claude App's permission list (screenshot) with a one-line note on Workflows, Secrets, and Variables.
+- [x] The Claude App is installed on `januswtlin` with this repository only; claude.ai's GitHub connection is the machine account; `januswtlin` does not authorize Claude (screenshots).
+- [x] Connectors recorded (names only) with the author's decision for each.
+- [x] V20 and V24 resolved: worktree subagents work in the sandbox; where the Claude login is stored is recorded.
+- [x] No `setup-token` token or file remains (revoked in T03-H3; the author confirms).
+- [x] V7 resolved with API output for each probe.
+- [x] V21: Remote Control works from the phone to the sandboxed session, and a push from that session shows `januslin-agent[bot]`.
 
 ## Automated verification
 - None expected: account settings and docs.
