@@ -14,9 +14,12 @@ cp "$root/scripts/token-broker.sh" "$tmp/bin/token-broker.sh"
 cp "$here/fake-agent-token.sh" "$tmp/bin/agent-token.sh"
 broker="$tmp/bin/token-broker.sh"
 
-export JANUSLIN_AGENT_STATE_DIR="$tmp/state"
+export JANUSLIN_BROKER_ROOT="$tmp/state"
 export FAKE_LOG="$tmp/calls"
-state=$JANUSLIN_AGENT_STATE_DIR
+state=$JANUSLIN_BROKER_ROOT
+# agent-gh and the credential helper read JANUSLIN_AGENT_STATE_DIR as the token
+# directory; the broker must ignore it, even when it points at sandbox-tokens.
+export JANUSLIN_AGENT_STATE_DIR="$state/sandbox-tokens"
 
 fails=0
 pass() { echo "ok   - $1"; }
@@ -37,6 +40,9 @@ check "once: both tokens into sandbox-tokens" $?
 
 [ "$(ls -A "$state/sandbox-tokens" | tr '\n' ' ')" = "januslin-agent.token januslin-reviewer.token " ] && [ ! -e "$state/proxy-tokens" ]
 check "once: writes nothing else into the token directory, and no proxy-tokens directory" $?
+
+[ ! -e "$state/sandbox-tokens/sandbox-tokens" ] && [ ! -e "$state/sandbox-tokens/broker" ]
+check "once: ignores JANUSLIN_AGENT_STATE_DIR (no nested directories in sandbox-tokens)" $?
 
 [ "$(mode "$state/sandbox-tokens")" = 700 ] \
   && [ "$(mode "$state/sandbox-tokens/januslin-agent.token")" = 600 ] \
@@ -105,6 +111,16 @@ sh "$broker" stop >/dev/null 2>&1
 sleep 1
 ! kill -0 "$pid" 2>/dev/null && [ ! -e "$state/broker/broker.pid" ]
 check "stop: ends the broker" $?
+
+# ---- stop never kills an unrelated process ---------------------------------
+reset; mkdir -p "$state/broker"
+sleep 300 &
+other=$!
+echo "$other" > "$state/broker/broker.pid"
+sh "$broker" stop >/dev/null 2>&1
+kill -0 "$other" 2>/dev/null && [ ! -e "$state/broker/broker.pid" ]
+check "stop: leaves an unrelated process whose pid is in a stale pid file" $?
+kill "$other" 2>/dev/null
 
 echo "token-broker: $fails failure(s)"
 [ "$fails" -eq 0 ]
