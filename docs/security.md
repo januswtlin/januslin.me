@@ -61,7 +61,8 @@ None of the Apps has Administration, Secrets, Variables, Environments, Deploymen
 ### Cloud agents and tool logins (ADR-0009)
 - Claude Code cloud, Codex cloud, scheduled tasks, and the full claude.ai and ChatGPT logins used in the sandbox reach GitHub only as the machine account. Ceiling: the vendor App's permissions intersected with Write on this repository. The ruleset and environments apply to it like to any collaborator.
 - Only the author starts cloud and scheduled sessions. Their environments hold no secrets.
-- Connectors on the author's claude.ai and ChatGPT accounts are reviewed in T05 and T06; ones holding personal data are removed or accepted in writing.
+- Connectors on the author's claude.ai and ChatGPT accounts are reviewed in T05 and T06; ones holding personal data are removed or accepted in writing. claude.ai (T05-H1, 2026-10-30): none holding personal data is connected; in the sandbox the `mcp__claude_ai_*` deny keeps any connector's tools away from local sessions.
+- The Claude GitHub App (V6) has Workflows write, no Secrets or Variables, and repository hooks write, which needs admin on the repository to use and so has no effect at the machine account's Write. So a cloud session may be able to push branch workflows (the V7 probe checks); like the Apps' (ADR-0009, risk 5), those run without secrets and reach `main` only through the author's review.
 
 ### Slack bot token (ADR-0011)
 - One credential on the host in the `agent` account (`~/.config/januslin-agent/slack-bot-token`, `0600`), injected by the sandbox proxy for `slack.com`, for the app `januslin-coordinator`, scopes `chat:write`, `groups:history`, `reactions:write`, in the private channel `#januslin-me` only. If it leaks, someone can post as the bot and read that channel; nothing else.

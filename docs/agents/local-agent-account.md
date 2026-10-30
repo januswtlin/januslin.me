@@ -110,9 +110,9 @@ Script ported in T04: `scripts/coordinator-channel.sh`.
 
 ## Tool logins
 
-- **Current (until T03):** Claude Code in this account uses `claude setup-token` only; the token sits in `~/.config/januslin-agent/claude-oauth-token` (`0600`) and the session alias exports it. Codex is not installed.
-- **T03:** Claude Code is removed from this account (T03-H3), and the App keys are rotated (T03-H4).
-- **T05:** a full claude.ai login inside the sandbox (`/login`, which needs the `anthropic` OAuth binding in `~/.config/sbx/credentials.yaml`, T21; the tokens stay in `sbx`'s host secret store, V24), Remote Control with `sbx settings set claude.remoteControl true`. The claude.ai account's GitHub identity is the machine account.
+- No AI tool and no tool login in this account: Claude Code, its `setup-token` token, and the `claude-oauth-token` file were removed in T03-H3, and the App keys rotated (T03-H4).
+- **Claude Code:** a full claude.ai login inside the sandbox (`/login` in `sbx run --name januslin`, which needs the `anthropic` OAuth binding in `~/.config/sbx/credentials.yaml`, T21). The tokens stay in `sbx`'s host secret store (`sbx secret ls`: `anthropic`); the VM holds sentinels only (V24). Remote Control with `sbx settings set claude.remoteControl true` (T05-H4). The claude.ai account's GitHub identity is the machine account, and its connectors hold no personal data (T05-H1).
+- To end the Claude login: `/logout` in the sandbox, or remove the `anthropic` secret in `agent-session` (`sbx reset` removes every sandbox secret; the narrower subcommand is in `sbx secret --help`, not yet tried); and claude.ai → Settings to sign out its sessions ("Lost device").
 - **T06:** Codex with the author's ChatGPT login through `sbx secret set openai --oauth`, run in this account's host shell; the tokens stay in its Keychain (V22).
 - Local agents still act on GitHub only through the Apps, whatever the tool login can reach.
 
