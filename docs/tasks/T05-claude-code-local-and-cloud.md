@@ -19,7 +19,7 @@ ADR-0009, ADR-0011, ADR-0013, `docs/agents/sandbox.md`, `docs/agents/local-agent
 - In-VM defaults: the repository's `.claude/settings.json` denies the claude.ai connector tools and the cron and scheduled-task tools (T03 created it; confirm it loads, `/permissions`).
 - Auto mode (V26 from T03) for the coordinator and its subagents; a Claude Code `Notification` hook in the sandbox that runs `scripts/coordinator-channel.sh post` when Claude Code waits for input, so a paused auto mode reaches the author on Slack (V27, first observations; this task may add that hook and its test).
 - V20: the coordinator prompt's Agent-tool subagents with `isolation: "worktree"` work in the sandbox clone; two run at once without touching each other's files.
-- Cloud environment for this repository: network level Trusted (or Custom listing each host if `pnpm install` needs more), no environment variables or secrets, a setup script that installs dependencies once a Node project exists. Record its settings.
+- Cloud environment for this repository: network level Limited, the default allowlist (the environment dialog offers only None, Limited, and Full; the docs call this level Trusted and also list a Custom level, which the dialog does not offer, 2026-10-30; if `pnpm install` needs more hosts, T07 revisits), no environment variables or secrets, a setup script that installs dependencies once a Node project exists. Record its settings.
 - Probes (V7), from a cloud session the author starts on the phone with a probe prompt the agent writes:
   - A docs-only commit on `agent/test/T05-cloud-probe`, pushed, and a PR opened. Record push actor, commit author, and PR author from the API (expect the machine account, id 349746030). The author closes the PR and deletes the branch.
   - Reading another private repository of `januswtlin` that the author names fails.
@@ -44,12 +44,13 @@ Do them in this order; never do T05-H5 before T05-H3 is confirmed.
   As `januswtlin`: GitHub → Settings → Applications → Installed GitHub Apps → Claude → Configure → "Only select repositories" → `januswtlin/januslin.me` only → Save.
 - **T05-H3, check the GitHub connection (5 min). Done 2026-10-30, before the T21 login:** the connection is `januslin-agent`; `januswtlin` does not authorize Claude; permissions recorded as V6 (screenshots kept by the author, not posted).
   In the `januslin-agent` browser profile, open Claude Code on the web and confirm the GitHub connection is `januslin-agent`. Screenshot the Claude App's permission list and send it (V6).
-- **T05-H4, allow Remote Control in the sandbox (1 min).** In `agent-session`: `sbx settings set claude.remoteControl true`. Send "T05-H4 done". If `/remote-control` in the running session then says it is disabled, the setting applies from the next start: exit Claude Code, `sbx run --name januslin` again, and retry.
+- **T05-H4, allow Remote Control in the sandbox (1 min). Done 2026-10-30.** In `agent-session`: `sbx settings set claude.remoteControl true`. Send "T05-H4 done". If `/remote-control` in the running session then says it is disabled, the setting applies from the next start: exit Claude Code, `sbx run --name januslin` again, and retry.
 - **T05-H5, log in inside the sandbox (10 min). Done early in T21, 2026-10-30;** H1 to H3 came first, so no `/logout` and `/login` again.
   In `agent-session`: `sbx run --name januslin`, then `/login` in Claude Code and finish in your browser with your claude.ai account.
-- **T05-H6, cloud environment (5 min).** At claude.ai → Claude Code → Environments (in the browser profile whose claude.ai GitHub connection is `januslin-agent`), create:
+- **T05-H6, cloud environment (5 min). Done 2026-10-30:** created as below, with network access Limited (the screenshot is kept private by the author).
+  At claude.ai → Claude Code → Environments (in the browser profile whose claude.ai GitHub connection is `januslin-agent`), create:
   - Name: `januslin.me`
-  - Network access: **Trusted** (no Custom hosts for now; revisit in T07 if `pnpm install` needs more)
+  - Network access: **Limited** (the default allowlist; the docs call it Trusted). The dialog offers only None, Limited, and Full, with no Custom level, so if `pnpm install` needs more hosts, T07 revisits this (Full is not chosen without the author's decision).
   - Environment variables: **none**. Secrets: **none**.
   - Setup script (installs dependencies only once a Node project exists; does nothing before T07):
     ```
