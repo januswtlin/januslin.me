@@ -61,7 +61,10 @@ None of the Apps has Administration, Secrets, Variables, Environments, Deploymen
 ### Cloud agents and tool logins (ADR-0009)
 - Claude Code cloud, Codex cloud, scheduled tasks, and the full claude.ai and ChatGPT logins used in the sandbox reach GitHub only as the machine account. Ceiling: the vendor App's permissions intersected with Write on this repository. The ruleset and environments apply to it like to any collaborator.
 - Only the author starts cloud and scheduled sessions. Their environments hold no secrets.
-- Connectors on the author's claude.ai and ChatGPT accounts are reviewed in T05 and T06; ones holding personal data are removed or accepted in writing.
+- Connectors on the author's claude.ai and ChatGPT accounts are reviewed in T05 and T06; ones holding personal data are removed or accepted in writing. claude.ai (T05-H1, 2026-10-30): GitHub only, none holding personal data; in the sandbox the `mcp__claude_ai_*` deny keeps any connector's tools away from local sessions.
+- Docker's MCP gateway, which the sandbox template wires into Claude Code, is denied (`mcp__mcp-gateway__*`, the author, 2026-10-30): its tools would let an agent add and run unreviewed tools at runtime. A future MCP server comes in through a reviewed PR to `.claude/settings.json` (`docs/agents/sandbox.md`).
+- Claude Code commits may carry a `Claude-Session:` trailer with a session URL. The author accepts these in the public history (2026-10-30); the URLs open only for the author's claude.ai account.
+- The Claude GitHub App (V6) has Workflows write, no Secrets or Variables, and repository hooks write, which needs admin on the repository to use and so has no effect at the machine account's Write. So a cloud session can push branch workflows (the V7 probe's workflow branch was accepted, 2026-10-30); like the Apps' (ADR-0009, risk 5), those run without secrets and reach `main` only through the author's review.
 
 ### Slack bot token (ADR-0011)
 - One credential on the host in the `agent` account (`~/.config/januslin-agent/slack-bot-token`, `0600`), injected by the sandbox proxy for `slack.com`, for the app `januslin-coordinator`, scopes `chat:write`, `groups:history`, `reactions:write`, in the private channel `#januslin-me` only. If it leaks, someone can post as the bot and read that channel; nothing else.
