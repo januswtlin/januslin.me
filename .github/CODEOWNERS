@@ -12,3 +12,5 @@
 /scripts/agent-git-credential  @januswtlin
 /scripts/codex-launch*         @januswtlin
 /.githooks/                    @januswtlin
+/sandbox/                      @januswtlin
+/.claude/settings.json         @januswtlin
