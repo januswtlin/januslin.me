@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "deny": [
+      "mcp__claude_ai_*",
+      "CronCreate",
+      "CronList",
+      "CronDelete",
+      "RemoteTrigger"
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_DISABLE_CRON": "1"
+  }
+}

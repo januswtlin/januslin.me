@@ -53,6 +53,7 @@ content/            Author-owned. Markdown, co-located images, taxonomy. See doc
 drafts/             Author's local-only drafts. Gitignored except README.md; never read or commit it.
 src/                Astro source (theme, components, layouts, pages, content config)
 worker/             Cloudflare Worker entry (Markdown negotiation, headers). Keep tiny.
+sandbox/kit/        The sbx kit the local AI sandbox is created from (docs/agents/sandbox.md)
 public/             Static files copied as-is (fonts/, _headers, _redirects)
 automation/prompts/ Versioned prompt files for scheduled agent tasks (docs/automation.md)
 scripts/            Build, CI, and agent scripts
@@ -77,6 +78,7 @@ Most of this does not exist yet; the tasks in `docs/tasks/` create it.
 ### Identity
 - **AI tools never run directly in the host `agent` shell, only inside the sandbox** (`docs/agents/sandbox.md`). The host account holds the App keys; the sandbox never sees them. (T01 to T03 run before the sandbox exists and are the only exception.) Never ask the author to install or start an AI tool on the host.
 - Local agents act as `januslin-agent[bot]` through `scripts/agent-gh` and the agent git credential helper. Reviewer work uses `januslin-reviewer[bot]`.
+- Inside the sandbox, Docker places a generic agent guide (`/Users/Agent/CLAUDE.md` in the VM). Where it conflicts with this file, this file wins. In particular: never ask the author to run `sbx secret set github` or to add a token from their own `gh` (use `scripts/agent-gh` and the credential helper, which read the broker's tokens); never suggest `sbx policy allow network "**"` or any host not justified as in `docs/agents/sandbox.md` ("Adding a host"); and never `git add -A`.
 - Cloud sessions (Claude Code cloud, Codex cloud) and scheduled tasks act as the machine account `januslin-agent` (user id 349746030). That is not the App `januslin-agent` (`januslin-agent[bot]`, user id 349177542). Always say which.
 - Only the author starts cloud or scheduled sessions. Local sessions never do (`claude --cloud`, Codex cloud tasks, `/schedule`).
 - Agents never use the author's credentials. Merges, approvals of settings, repository settings, secrets, and account changes are the author's steps, written out in each task's "Human steps" section.

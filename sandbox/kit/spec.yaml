@@ -1,0 +1,82 @@
+# Sandbox kit for the local AI sandbox `januslin` (ADR-0013, T03).
+#   sbx create --clone --name januslin ./sandbox/kit ~/januslin.me \
+#     ~/.local/state/januslin-agent/sandbox-tokens:ro ~/.config/januslin-agent/sandbox-config:ro
+# Runs inside the VM at creation; needs the global allowlist in docs/agents/sandbox.md.
+# A CODEOWNERS path: it decides how Claude Code starts and what the VM installs.
+schemaVersion: "2"
+kind: sandbox
+name: januslin
+extends: claude
+sandbox:
+  # Auto mode, not the template's --dangerously-skip-permissions (docs/agents/sandbox.md).
+  entrypoint: [claude, "--permission-mode", "auto"]
+setup:
+  install:
+    - description: Claude Code managed settings (auto mode by default, bypass mode disabled)
+      user: "0"
+      command: |
+        set -eu
+        mkdir -p /etc/claude-code
+        cat > /etc/claude-code/managed-settings.json <<'EOF'
+        {
+          "permissions": {
+            "disableBypassPermissionsMode": "disable",
+            "defaultMode": "auto"
+          }
+        }
+        EOF
+        chmod 0644 /etc/claude-code/managed-settings.json
+    - description: Node 24 from nodejs.org, checked against its SHASUMS256.txt; pnpm through its bundled Corepack
+      user: "0"
+      command: |
+        set -eu
+        # Exact version; the Upgrade Engineer bumps it with .nvmrc (T07 onward).
+        NODE_VERSION=24.22.2
+        case "$(uname -m)" in
+          aarch64) arch=arm64 ;;
+          x86_64)  arch=x64 ;;
+          *) echo "unsupported architecture $(uname -m)" >&2; exit 1 ;;
+        esac
+        tarball="node-v$NODE_VERSION-linux-$arch.tar.xz"
+        work=$(mktemp -d)
+        cd "$work"
+        curl -fsSLO "https://nodejs.org/dist/v$NODE_VERSION/$tarball"
+        curl -fsSLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt"
+        grep " $tarball\$" SHASUMS256.txt | sha256sum -c -
+        rm -rf /opt/node24
+        mkdir -p /opt/node24
+        tar -xJf "$tarball" -C /opt/node24 --strip-components=1
+        cd /
+        rm -rf "$work"
+        /opt/node24/bin/corepack enable --install-directory /opt/node24/bin
+    - description: Chromium's system libraries from Ubuntu's mirror only
+      user: "0"
+      command: |
+        set -eu
+        # The template's Docker and GitHub CLI apt sources are not on the allowlist;
+        # the tools are already installed, so skip those sources.
+        for f in /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/github-cli.list; do
+          [ ! -e "$f" ] || mv "$f" "$f.disabled"
+        done
+        # Keep this version in step with Playwright in package.json (T07 onward).
+        PATH=/opt/node24/bin:$PATH /opt/node24/bin/npx -y playwright@1.64.1 install-deps chromium
+    - description: Environment for every shell (BASH_ENV sources this file)
+      user: "0"
+      command: |
+        set -eu
+        cat >> /etc/sandbox-persistent.sh <<'EOF'
+        export PATH=/opt/node24/bin:$PATH
+        export AGENT_TOOL=claude
+        export JANUSLIN_AGENT_STATE_DIR=/Users/Agent/.local/state/januslin-agent/sandbox-tokens
+        export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+        export WRANGLER_SEND_METRICS=false
+        export ASTRO_TELEMETRY_DISABLED=1
+        EOF
+    - description: Git for the clone (trailer hook, credential helper reading the mounted token)
+      user: "0"
+      command: |
+        set -eu
+        git config --system core.hooksPath .githooks
+        git config --system credential.helper ''
+        git config --system --add credential.helper '!/Users/Agent/januslin.me/scripts/agent-git-credential'
+        git config --system credential.useHttpPath true
