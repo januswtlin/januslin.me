@@ -12,7 +12,7 @@ One row per task. Each task is done by one session in one role and lands as one 
 | ID | Title | Role | Depends on | Human steps | Size | Status | PR |
 |---|---|---|---|---|---|---|---|
 | [T01](T01-repo-settings-and-ruleset.md) | Repository settings, `main` rulesets, App installations | Platform | none | T01-H1, T01-H2, T01-H3, T01-H4 | S | done | [#1](https://github.com/januswtlin/januslin.me/pull/1) |
-| [T02](T02-machine-account-and-agent-scripts.md) | Machine account, App transfer, agent scripts | Platform | T01 | T02-H1, T02-H2, T02-H3, T02-H4, T02-H5, T02-H6, T02-H7, T02-H8 | M | done | PR_LINK |
+| [T02](T02-machine-account-and-agent-scripts.md) | Machine account, App transfer, agent scripts | Platform | T01 | T02-H1, T02-H2, T02-H3, T02-H4, T02-H5, T02-H6, T02-H7, T02-H8 | M | done | [#2](https://github.com/januswtlin/januslin.me/pull/2) |
 | [T03](T03-sandbox-runtime.md) | Sandbox runtime and token broker | Platform | T02 | T03-H1, T03-H2, T03-H3, T03-H4, T03-H5 | M | blocked | |
 | [T04](T04-coordinator-slack-channel.md) | Coordinator Slack channel, config outside the repo | Platform | T03 | T04-H1, T04-H2, T04-H3 | S | blocked | |
 | [T05](T05-claude-code-local-and-cloud.md) | Claude Code in the sandbox and in the cloud | Platform | T03 | T05-H1, T05-H2, T05-H3, T05-H4, T05-H5, T05-H6, T05-H7 | M | blocked | |
