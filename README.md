@@ -23,11 +23,11 @@ The coordinator is the long-running Claude Code session that runs the task loop 
 2. Only after a restart of the Mac: `security unlock-keychain ~/Library/Keychains/sbx.keychain-db`.
 3. Update the host clone: `cd ~/januslin.me && git checkout main && git fetch origin && git merge --ff-only origin/main`.
 4. Start the token broker: `scripts/token-broker.sh start`, then `scripts/token-broker.sh status` (both Apps about an hour ahead).
-5. In a second Terminal, in your own account, keep the Mac awake while the coordinator runs: `caffeinate -dims` (Ctrl-C when you stop it). The coordinator cannot do this from the VM.
+5. In a second Terminal, in your own account, keep the Mac awake while the coordinator runs: `caffeinate -ims` (Ctrl-C when you stop it). The coordinator cannot do this from the VM.
 6. Back in `agent-session`: `sbx run --name januslin`. The status line must say `auto mode on`.
-7. Paste the coordinator prompt verbatim from [`docs/agents/workflow.md`](docs/agents/workflow.md#coordinator-loop-adr-0010), then one message with anything it cannot read from `main`: human steps you have done, which tools exist yet (Codex from T06, the Slack script from T04).
+7. Paste the coordinator prompt verbatim from [`docs/agents/workflow.md`](docs/agents/workflow.md#coordinator-loop-adr-0010), then one message with anything it cannot read from `main`: the human steps you have done since it last ran.
 
-To stop: tell it to stop, `/exit`, then `sbx stop januslin` and `scripts/token-broker.sh stop` in `agent-session`, and Ctrl-C the `caffeinate`. A new coordinator started the same way resumes from `main` and the open PRs. If `/login` is ever needed again, the sandbox needs the credential binding in `docs/agents/sandbox.md` ("Starting it").
+To stop: tell it to stop, `/exit`, then in `agent-session` run `sbx stop januslin` and `scripts/token-broker.sh stop`, leave it, and run `agent-end` in your own Terminal. Ctrl-C the `caffeinate`. A new coordinator started the same way resumes from `main` and the open PRs. If `/login` is ever needed again, the sandbox needs the credential binding in `docs/agents/sandbox.md` ("Starting it").
 
 ## Contributing
 
