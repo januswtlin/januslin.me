@@ -22,9 +22,9 @@ The account exists and was set up during the first attempt (`januswtlin/januslin
 | Slack bot token | `~/.config/januslin-agent/slack-bot-token` | `0600` |
 | Coordinator channel config (channel ID, author Slack ID) | `~/.config/januslin-agent/sandbox-config/coordinator-channel.conf`, mounted read-only into the sandbox (not a secret, but kept out of the public repository) | dir `0700`, file `0600` |
 | Installation tokens (T01, T02, until T03) | `~/.local/state/januslin-agent/<app>.token` (line 1 token, line 2 expiry) | dir `0700`, files `0600` |
-| Proxy token directory (from T03) | `~/.local/state/januslin-agent/proxy-tokens/januslin-agent.token`, written by the broker and read only by the `github` sandbox secret's command. **Not** mounted into the sandbox | dir `0700`, files `0600` |
-| Mounted token directory (from T03) | `~/.local/state/januslin-agent/sandbox-tokens/januslin-reviewer.token`, written by the broker. Never a key, never the implementer token (except in the V17/V18 fallback). Mounted read-only into the sandbox | dir `0700`, files `0600` |
-| `sbx` secrets (from T03) | The `agent` account's Keychain, managed with `sbx secret` | Keychain |
+| Mounted token directory (from T03) | `~/.local/state/januslin-agent/sandbox-tokens/januslin-agent.token` and `januslin-reviewer.token`, written only by the broker. Never a key. Mounted read-only into the sandbox (ADR-0013 fallback, V18) | dir `0700`, files `0600` |
+| Broker state (from T03) | `~/.local/state/januslin-agent/broker/`: `broker.pid`, `broker.log` (times and errors, never tokens), short-lived staging directories | dir `0700` |
+| `sbx` login and secrets (from T03) | Dedicated keychain `~/Library/Keychains/sbx.keychain-db`, the account's default keychain; its password is in the author's password manager. The account has no login keychain, because it is never logged in at the desktop (V15) | keychain |
 | Cloudflare ops token, only during T14, T15, T17 | `~/.local/state/januslin-agent/cloudflare-ops.token` (written by the author, T14-H1; deleted at the end, T14-H3). Injected by the sandbox proxy for `api.cloudflare.com` while the task runs (`docs/agents/sandbox.md`); never copied into the sandbox | `0600` |
 
 
@@ -61,6 +61,7 @@ alias agent-end='sudo pkill -u Agent'
 - `AGENT_TOOL=claude` (or `codex`) makes `prepare-commit-msg` add the matching trailer.
 - `GIT_TERMINAL_PROMPT=0` makes `git` fail fast instead of prompting if the helper returns nothing.
 - **Changes in T03:** `agent-session` becomes a host shell for `sbx` and the broker only; the AI starts with `sbx run --name januslin` (`docs/agents/sandbox.md`), and `AGENT_TOOL` is set inside the sandbox. The `CLAUDE_CODE_OAUTH_TOKEN` export and the `claude-oauth-token` file go away in T03-H3, together with Claude Code on the host.
+- **After a restart of the Mac**, unlock the `sbx` keychain once in `agent-session` before using `sbx`: `security unlock-keychain ~/Library/Keychains/sbx.keychain-db`. Created in T03 with `security create-keychain` (password prompted), made the default and only keychain with `security list-keychains -d user -s …` and `security default-keychain -d user -s …`, and set to stay unlocked with `security set-keychain-settings` (no timeout). Without it, `sbx login` shows a macOS "Keychain Not Found" dialog; cancel it (never "Reset To Defaults", which runs in the author's desktop session).
 - End the session with `agent-end` (after `sbx stop januslin` and `scripts/token-broker.sh stop`). Until T03, do not leave the author's own dev servers running while a session is open; loopback is shared. From T03, agent servers live in the VM.
 - The author never runs `pnpm install`, scripts, hooks, or editor tasks from the agent's working tree.
 
@@ -92,7 +93,8 @@ Scripts in `scripts/`, ported from the archive in T02 and tested by `sh tests/sc
 - `scripts/agent-token.sh --revoke <app>` revokes it and deletes the file.
 - `scripts/agent-gh <app> <gh args…>` runs `gh` with that token for one process, for example `scripts/agent-gh januslin-agent pr create --draft …` or `scripts/agent-gh januslin-reviewer pr review <n> --approve`.
 - Git pushes use the credential helper, which reads the `januslin-agent` token file.
-- Installation tokens last one hour. Until T03, rerun `agent-token.sh` before the hour is over (`agent-gh` reports "expired"; a stale token shows up as a failed push). From T03 the broker does it.
+- Installation tokens last one hour. Until T03, rerun `agent-token.sh` before the hour is over (`agent-gh` reports "expired"; a stale token shows up as a failed push). From T03 the broker does it: `scripts/token-broker.sh start|stop|once|status` mints into a private staging directory and moves each finished token file into `sandbox-tokens/`, refreshing a token with under 10 minutes left (checked every minute).
+- Inside the sandbox, `JANUSLIN_AGENT_STATE_DIR` points `agent-gh` and the credential helper at the mounted `sandbox-tokens/`.
 - Never run `gh auth login` in this account, never run `scripts/agent-gh <app> auth token` (it prints the token), and never put a GitHub token in an environment variable or argv.
 - `prepare-commit-msg` does not run on rebase picks; check the trailer if you ever rebase a local, unpushed branch.
 

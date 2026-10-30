@@ -17,7 +17,7 @@ Cloudflare account ID: `f2f02d203f0d3a3861b811030cb6f37f`. Workers subdomain: `j
 | Repository | Visibility | State |
 |---|---|---|
 | `januswtlin/januslin.me` | public | This repository. Created by the author on 2026-10-29. Settings, rulesets, labels, environments, and interaction limit applied 2026-10-30 (T01); see "GitHub settings as applied" below. |
-| `januswtlin/januslin.me-archive` | private | The first attempt (renamed from `januswtlin/januslin.me`). Reference only; to be archived. |
+| `januswtlin/januslin.me-archive` | private | Archived by the author on 2026-10-30 (T02-H8). The first attempt (renamed from `januswtlin/januslin.me`). Reference only; to be archived. |
 | `januswtlin/januslin` | private | The old Hugo site behind the Pages project. Archived in T17 after cutover. |
 
 ### GitHub identities and Apps
@@ -47,7 +47,7 @@ Permissions of the Apps (checked from installation tokens on this repository, 20
 - macOS account `agent` (short name `Agent`): standard, set up, File Sharing and Remote Login off, `sudoers` rule installed, no cron jobs or LaunchAgents (`docs/agents/local-agent-account.md`).
 - Clone of the archive at `~/januslin.me-archive` (origin `januslin.me-archive`, no credential helper); fresh clone of this repository at `~/januslin.me`, with its credential helper pointing at `~/januslin.me/scripts/agent-git-credential` (T02).
 - Claude Code in `agent`: `setup-token` login only, running directly in the account (until T03). Codex: not installed.
-- Docker Sandboxes (`sbx`): not installed (T03).
+- Docker Sandboxes (`sbx`) v0.50.1, installed with Homebrew from the author's account (`/opt/homebrew/bin/sbx`, `docker/tap`), run by `agent`. Signed in to Docker (`sbx login`) in `agent`; login and secrets in the dedicated keychain `~/Library/Keychains/sbx.keychain-db`. Settings: `ssh.agentForwardingEnabled false`. Global policy `deny-all` plus the global allowlist in `docs/agents/sandbox.md`. Sandbox `januslin` created from `sandbox/kit` (template `docker/sandbox-templates:claude-code-docker`, Ubuntu 26.04 arm64, Claude Code 2.1.306 in the image, Node 24.22.2, pnpm 12.16.1). No `sbx` secrets. Token broker `scripts/token-broker.sh` (T03).
 - Claude Code managed settings installed, root-owned, with `disableRemoteControl: true`; kept unchanged as a host backstop (ADR-0013).
 
 ### Slack
@@ -72,7 +72,7 @@ Permissions of the Apps (checked from installation tokens on this repository, 20
 | Bot Fight Mode, AI Labyrinth, Email Obfuscation, Rocket Loader | Off unless an ADR says otherwise | T17 |
 | Email DNS hardening | Null MX, `v=spf1 -all`, DMARC `p=reject` (optional, the author approves) | T17 |
 | Search Console, Bing Webmaster Tools | Verified by DNS TXT, sitemap submitted | T17 |
-| The archive repository | Apps uninstalled from it (T01); archived, read-only (T02) | T01, T02 |
+| The archive repository | Apps uninstalled from it (T01); archived, read-only (T02-H8, done 2026-10-30) | T01, T02 |
 
 ## Open verifications
 
