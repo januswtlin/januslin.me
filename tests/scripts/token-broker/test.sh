@@ -31,36 +31,34 @@ iso() { date -u -d "@$1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "$1" +%Y-
 reset
 out=$(sh "$broker" once 2>&1); rc=$?
 [ $rc -eq 0 ] \
-  && [ -f "$state/proxy-tokens/januslin-agent.token" ] \
-  && [ -f "$state/sandbox-tokens/januslin-reviewer.token" ] \
-  && [ ! -e "$state/sandbox-tokens/januslin-agent.token" ] \
-  && [ ! -e "$state/proxy-tokens/januslin-reviewer.token" ]
-check "once: januslin-agent into proxy-tokens, januslin-reviewer into sandbox-tokens" $?
+  && [ -f "$state/sandbox-tokens/januslin-agent.token" ] \
+  && [ -f "$state/sandbox-tokens/januslin-reviewer.token" ]
+check "once: both tokens into sandbox-tokens" $?
 
-[ "$(ls -A "$state/proxy-tokens")" = "januslin-agent.token" ] && [ "$(ls -A "$state/sandbox-tokens")" = "januslin-reviewer.token" ]
-check "once: writes nothing else into the token directories" $?
+[ "$(ls -A "$state/sandbox-tokens" | tr '\n' ' ')" = "januslin-agent.token januslin-reviewer.token " ] && [ ! -e "$state/proxy-tokens" ]
+check "once: writes nothing else into the token directory, and no proxy-tokens directory" $?
 
-[ "$(mode "$state/proxy-tokens")" = 700 ] && [ "$(mode "$state/sandbox-tokens")" = 700 ] \
-  && [ "$(mode "$state/proxy-tokens/januslin-agent.token")" = 600 ] \
+[ "$(mode "$state/sandbox-tokens")" = 700 ] \
+  && [ "$(mode "$state/sandbox-tokens/januslin-agent.token")" = 600 ] \
   && [ "$(mode "$state/sandbox-tokens/januslin-reviewer.token")" = 600 ]
-check "once: directories 0700, token files 0600" $?
+check "once: directory 0700, token files 0600" $?
 
 ! printf '%s' "$out" | grep -q 'ghs_FAKE'
 check "once: prints no token" $?
 
 # ---- refresh only near expiry ---------------------------------------------
 now=$(date +%s)
-reset; mkdir -p "$state/proxy-tokens" "$state/sandbox-tokens"
-printf 'ghs_FAKE_old\n%s\n' "$(iso $((now + 1800)))" > "$state/proxy-tokens/januslin-agent.token"
+reset; mkdir -p "$state/sandbox-tokens"
+printf 'ghs_FAKE_old\n%s\n' "$(iso $((now + 1800)))" > "$state/sandbox-tokens/januslin-agent.token"
 printf 'ghs_FAKE_old\n%s\n' "$(iso $((now + 300)))" > "$state/sandbox-tokens/januslin-reviewer.token"
 sh "$broker" once >/dev/null 2>&1
 [ "$(calls januslin-agent)" = 0 ] && [ "$(calls januslin-reviewer)" = 1 ] \
-  && [ "$(sed -n 1p "$state/proxy-tokens/januslin-agent.token")" = ghs_FAKE_old ] \
+  && [ "$(sed -n 1p "$state/sandbox-tokens/januslin-agent.token")" = ghs_FAKE_old ] \
   && [ "$(sed -n 1p "$state/sandbox-tokens/januslin-reviewer.token")" != ghs_FAKE_old ]
 check "once: refreshes a token with under 10 minutes left, keeps one with 30" $?
 
-reset; mkdir -p "$state/proxy-tokens"
-printf 'ghs_FAKE_old\n%s\n' "$(iso $((now - 60)))" > "$state/proxy-tokens/januslin-agent.token"
+reset; mkdir -p "$state/sandbox-tokens"
+printf 'ghs_FAKE_old\n%s\n' "$(iso $((now - 60)))" > "$state/sandbox-tokens/januslin-agent.token"
 sh "$broker" once >/dev/null 2>&1
 [ "$(calls januslin-agent)" = 1 ]
 check "once: replaces an expired token" $?
@@ -72,8 +70,8 @@ sh "$broker" once >/dev/null 2>&1; rc=$?
 [ $rc -ne 0 ] && [ -z "$(ls -A "$tmp/elsewhere")" ]
 check "refuses a symlinked token directory" $?
 
-reset; mkdir -p "$state/proxy-tokens" "$tmp/elsewhere2"
-ln -s "$tmp/elsewhere2/x" "$state/proxy-tokens/januslin-agent.token"
+reset; mkdir -p "$state/sandbox-tokens" "$tmp/elsewhere2"
+ln -s "$tmp/elsewhere2/x" "$state/sandbox-tokens/januslin-agent.token"
 sh "$broker" once >/dev/null 2>&1; rc=$?
 [ $rc -ne 0 ] && [ ! -e "$tmp/elsewhere2/x" ]
 check "refuses a symlinked token file" $?
@@ -81,7 +79,7 @@ check "refuses a symlinked token file" $?
 # ---- failure of the minting script ----------------------------------------
 reset
 FAKE_FAIL=januslin-reviewer sh "$broker" once >/dev/null 2>&1; rc=$?
-[ $rc -ne 0 ] && [ -f "$state/proxy-tokens/januslin-agent.token" ] && [ ! -e "$state/sandbox-tokens/januslin-reviewer.token" ]
+[ $rc -ne 0 ] && [ -f "$state/sandbox-tokens/januslin-agent.token" ] && [ ! -e "$state/sandbox-tokens/januslin-reviewer.token" ]
 check "once: reports a failed mint and leaves no partial file" $?
 
 # ---- start, status, stop --------------------------------------------------
@@ -89,7 +87,7 @@ reset
 sh "$broker" start >/dev/null 2>&1; rc=$?
 sleep 2
 pid=$(cat "$state/broker/broker.pid" 2>/dev/null)
-[ $rc -eq 0 ] && [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && [ -f "$state/proxy-tokens/januslin-agent.token" ]
+[ $rc -eq 0 ] && [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null && [ -f "$state/sandbox-tokens/januslin-agent.token" ]
 check "start: runs in the background and mints" $?
 
 sh "$broker" start >/dev/null 2>&1; rc=$?
