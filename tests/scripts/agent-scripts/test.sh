@@ -118,8 +118,9 @@ for app in januslin-agent januslin-reviewer; do
   check "agent-token: $app token file is 0600" $?
   ! printf '%s' "$out" | grep -q "$FAKE_TOKEN" && ! printf '%s' "$out" | grep -qF "$key_line"
   check "agent-token: $app prints no token or key" $?
-  ! grep '^argv:' "$FAKE_LOG" | grep -q -e "$FAKE_TOKEN" -e 'Bearer' -e 'BEGIN' -F -e "$key_line"
-  check "agent-token: $app puts no credential in curl argv" $?
+  jwt=$(sed -n 's/^stdin: header = "Authorization: Bearer \(.*\)"$/\1/p' "$FAKE_LOG" | head -n 1)
+  [ -n "$jwt" ] && ! grep '^argv:' "$FAKE_LOG" | grep -q -F -e "$jwt" -e "$FAKE_TOKEN" -e 'Bearer' -e 'BEGIN' -e 'eyJ' -e "$key_line"
+  check "agent-token: $app puts no credential (JWT, token, key) in curl argv" $?
   grep -q '^stdin: header = "Authorization: Bearer ' "$FAKE_LOG" && grep -q 'argv: {"repositories":\["januslin.me"\]}' "$FAKE_LOG"
   check "agent-token: $app sends the JWT on stdin and restricts to januslin.me" $?
 done
@@ -154,6 +155,11 @@ check "prepare-commit-msg: adds Agent: claude" $?
 (cd "$repo" && AGENT_TOOL=claude sh "$hook" msg)
 [ "$(grep -c '^Agent:' "$repo/msg")" = 1 ]
 check "prepare-commit-msg: does not add a second trailer" $?
+
+printf 'docs: x\n\nAgent: claude\n\nCo-Authored-By: someone <x@example.com>\n' > "$repo/msg"
+(cd "$repo" && AGENT_TOOL=claude sh "$hook" msg)
+[ "$(grep -c '^Agent:' "$repo/msg")" = 1 ]
+check "prepare-commit-msg: no second trailer when Agent: is above another trailer block" $?
 
 msg; (cd "$repo" && AGENT_TOOL=codex sh "$hook" msg)
 grep -q '^Agent: codex$' "$repo/msg"
