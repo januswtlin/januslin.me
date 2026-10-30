@@ -18,7 +18,9 @@ set -eu
 umask 077
 
 here=$(cd "$(dirname "$0")" && pwd)
-STATE="${JANUSLIN_AGENT_STATE_DIR:-$HOME/.local/state/januslin-agent}"
+# Its own root variable: JANUSLIN_AGENT_STATE_DIR means "the token directory" to
+# agent-gh and the credential helper, and may point at sandbox-tokens.
+STATE="${JANUSLIN_BROKER_ROOT:-$HOME/.local/state/januslin-agent}"
 WORK="$STATE/broker"
 PIDFILE="$WORK/broker.pid"
 LOG="$WORK/broker.log"
@@ -76,7 +78,14 @@ once() {
   return $rc
 }
 
-running() { [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; }
+# Running only if the pid in the file is alive and is this broker, so a stale
+# pid file never makes `stop` kill an unrelated process.
+running() {
+  [ -f "$PIDFILE" ] || return 1
+  pid=$(cat "$PIDFILE")
+  case "$pid" in ''|*[!0-9]*) return 1 ;; esac
+  ps -p "$pid" -o args= 2>/dev/null | grep -q 'token-broker\.sh start'
+}
 
 case "${1:-}" in
   once)
