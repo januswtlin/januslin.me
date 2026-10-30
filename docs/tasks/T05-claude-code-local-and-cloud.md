@@ -1,7 +1,7 @@
 # T05: Claude Code in the sandbox and in the cloud
 
 - Role: Platform Engineer
-- Depends on: T03 · Human steps: T05-H1 to T05-H7
+- Depends on: T03, T21 · Human steps: T05-H1 to T05-H7
 - Identity: app (`januslin-agent[bot]`) for this task's PR; the cloud probes run as the machine account
 - Branch: `agent/platform/T05-claude-code`
 - Size: M
@@ -15,7 +15,7 @@ ADR-0009, ADR-0011, ADR-0013, `docs/agents/sandbox.md`, `docs/agents/local-agent
 
 ## Scope
 - Prepare T05-H1 to T05-H7 with exact values, in this order: connectors review; Claude App installation limited to this repository; check that the claude.ai GitHub connection is the machine account (V6 screenshot); only then the login in the sandbox. Never start the full login while the connection could still be `januswtlin`.
-- Login in the sandbox: `/login` inside `sbx run --name januslin`; find where the credential is stored (a file under `~/.claude` in the VM, or only on the host behind the proxy) and whether it survives `sbx stop` and `sbx run` (V24). If it is readable in the VM, record that next to the author's acceptance in `docs/agents/sandbox.md`. The old `setup-token` token was revoked in T03-H3; confirm no `claude-oauth-token` file is left. The host macOS managed settings stay unchanged (ADR-0013).
+- Login in the sandbox: `/login` inside `sbx run --name januslin` (it needs the credential binding from T21; the author's test login in T21 already showed V24: the tokens stay on the host); find where the credential is stored (a file under `~/.claude` in the VM, or only on the host behind the proxy) and whether it survives `sbx stop` and `sbx run` (V24). If it is readable in the VM, record that next to the author's acceptance in `docs/agents/sandbox.md`. The old `setup-token` token was revoked in T03-H3; confirm no `claude-oauth-token` file is left. The host macOS managed settings stay unchanged (ADR-0013).
 - In-VM defaults: the repository's `.claude/settings.json` denies the claude.ai connector tools and the cron and scheduled-task tools (T03 created it; confirm it loads, `/permissions`).
 - Auto mode (V26 from T03) for the coordinator and its subagents; a Claude Code `Notification` hook in the sandbox that runs `scripts/coordinator-channel.sh post` when Claude Code waits for input, so a paused auto mode reaches the author on Slack (V27, first observations; this task may add that hook and its test).
 - V20: the coordinator prompt's Agent-tool subagents with `isolation: "worktree"` work in the sandbox clone; two run at once without touching each other's files.

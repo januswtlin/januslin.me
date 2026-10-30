@@ -112,7 +112,7 @@ Script ported in T04: `scripts/coordinator-channel.sh`.
 
 - **Current (until T03):** Claude Code in this account uses `claude setup-token` only; the token sits in `~/.config/januslin-agent/claude-oauth-token` (`0600`) and the session alias exports it. Codex is not installed.
 - **T03:** Claude Code is removed from this account (T03-H3), and the App keys are rotated (T03-H4).
-- **T05:** a full claude.ai login inside the sandbox (`/login`; where the credential is stored is V24), Remote Control with `sbx settings set claude.remoteControl true`. The claude.ai account's GitHub identity is the machine account.
+- **T05:** a full claude.ai login inside the sandbox (`/login`, which needs the `anthropic` OAuth binding in `~/.config/sbx/credentials.yaml`, T21; the tokens stay in `sbx`'s host secret store, V24), Remote Control with `sbx settings set claude.remoteControl true`. The claude.ai account's GitHub identity is the machine account.
 - **T06:** Codex with the author's ChatGPT login through `sbx secret set openai --oauth`, run in this account's host shell; the tokens stay in its Keychain (V22).
 - Local agents still act on GitHub only through the Apps, whatever the tool login can reach.
 

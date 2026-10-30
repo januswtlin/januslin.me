@@ -33,6 +33,7 @@ Docker Sandboxes (`sbx`) run an agent in a microVM with its own kernel and Docke
 - **The VM is set up by a kit in the repository** (`sandbox/kit/spec.yaml`, a CODEOWNERS path). A mixin cannot change the launch command, so it is a sandbox kit that extends `claude`: Claude Code starts with `--permission-mode auto`, managed settings disable bypass mode, and it installs Node 24 (the official nodejs.org release at a pinned version, checked against `SHASUMS256.txt`), pnpm through Node's bundled Corepack, and Chromium's system libraries.
 - **`sbx` needs a keychain in the `agent` account**, which has none because it is never logged in at the desktop: a dedicated `sbx.keychain-db`, unlocked once per restart of the Mac (V15).
 - Docker writes its own agent guide into the VM (`/Users/Agent/CLAUDE.md`); `AGENTS.md` takes precedence where they conflict.
+- **Found after T03 (T21, 2026-10-30): the kit needs a credential binding.** To `sbx`, `sandbox/kit` is a third-party kit; it inherits Claude Code's `anthropic` OAuth credential from `extends: claude` but may use it only with an approved binding in the `agent` account's `~/.config/sbx/credentials.yaml`. T03 created the sandbox without the first-run prompt, so the proxy refused every token request (`no authorizing binding`) and `/login` failed with 401. A sandbox of the built-in `claude` agent, which needs no binding, logged in. With the binding written (`docs/agents/sandbox.md`, "Starting it"), `/login` works and the real tokens stay on the host (V24); the kit is unchanged.
 
 ## Alternatives considered
 - **AI directly in the `agent` macOS account (the first attempt):** keys readable, no egress control.
@@ -45,8 +46,8 @@ Docker Sandboxes (`sbx`) run an agent in a microVM with its own kernel and Docke
 ## Consequences
 - Key exfiltration and unlimited minting are closed once the keys have been rotated after AI left the host (T03-H4): a compromised agent holds at most one-hour tokens, and in the preferred design not even those for the implementer identity.
 - A pushed branch workflow runs networked code on GitHub's runners, outside the allowlist, without secrets (ADR-0009, risk 5).
-- Allowed hosts are still exfiltration channels for whatever the VM can read (the one-hour reviewer token, possibly the Claude login). The limits are the token lifetime, secret scanning with push protection, and each identity's Write ceiling.
-- If V24 finds the Claude `/login` credential readable inside the VM, the author accepts it (2026-10-30): connectors that hold personal data are removed (T05-H1), egress is allowlisted, and Remote Control needs the full login.
+- Allowed hosts are still exfiltration channels for whatever the VM can read (the one-hour reviewer token; not the Claude login, which V24 found only as a sentinel in the VM). The limits are the token lifetime, secret scanning with push protection, and each identity's Write ceiling.
+- If V24 finds the Claude `/login` credential readable inside the VM, the author accepts it (2026-10-30; V24 found it is not, T21): connectors that hold personal data are removed (T05-H1), egress is allowlisted, and Remote Control needs the full login.
 - Codex runs in the same sandbox, dispatched by the coordinator with `codex exec` (T06, `docs/agents/sandbox.md`).
 - Only the author changes `sbx` secrets and policy, from the host shell; the agent in the VM cannot run `sbx`.
 - Snapshot baselines are recorded on Linux in the sandbox, the same platform as CI.
