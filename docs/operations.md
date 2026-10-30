@@ -43,6 +43,7 @@ The author does the checks no App can read, in the browser; the agent prepares t
 
 Steps only the author can do that belong to no task. Steps for a task are in that task's "Human steps" section, and `docs/tasks/plan.md` shows them in order.
 
+- **Start the coordinator** after a restart of the Mac or when it has stopped: `README.md`, "Starting the coordinator".
 - **Read and merge PRs** when the coordinator reports one ready (Slack or the terminal), after reading the final diff and opening the `ci` run link the coordinator gives (it must be the `ci.yml` run for the PR's head commit). Answer `needs-human` items in the PR thread or on Slack.
 - **Working Copy on a new device** (15 min, when mobile publishing is first needed, then per device):
   1. In Working Copy: Settings → SSH Keys → generate a new key. Then add a repository by cloning `git@github.com:januswtlin/januslin.me.git` (the SSH URL; a deploy key does not work over HTTPS) and pick that key. Never connect a GitHub account inside Working Copy.
