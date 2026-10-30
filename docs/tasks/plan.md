@@ -18,13 +18,13 @@ Protect `main` first, then give the machine account Write, then move local AI in
 1. T01 Repository settings, `main` rulesets, App installations. You: T01-H1 right after the push. Agent: re-clones in `agent` and prepares the settings commands. You: T01-H2 (apply them), T01-H3 (install the Apps here). Agent: verifies and opens the PR. You: T01-H4 (verification pushes), merge.
 2. T02 Machine account, App transfer, agent scripts. You: T02-H1 (secure the machine account), T02-H2 (delete the `januslin-platform` App). Agent: records the two Apps before the transfer. You: T02-H3 (public, transfer), T02-H4 (new keys), T02-H5 (Workflows permission for `januslin-agent`), T02-H6 (collaborator). Agent: rechecks, ports the scripts and tests, opens the PR. You: T02-H7 (V2 as the machine account), merge, then T02-H8 (archive the old repo).
 3. T03 Sandbox runtime and token broker. You: T03-H1 (install `sbx`), T03-H2 (Docker login, network policy). Agent (still in the host shell, the last time): writes the broker, creates the sandbox, runs the canary and the other checks, opens the PR. You: merge, then T03-H3 (remove AI from the host), T03-H4 (rotate the App keys), T03-H5 (start the broker and the sandbox). From here on, every local agent runs in the sandbox.
-4. T04 Coordinator Slack channel, config outside the repo. Agent (in the sandbox): checks the host has no AI CLI left, ports the script and tests. You: T04-H2 (config file and Slack secret on the host). Agent: posts a test. You: T04-H1 (reply from the phone), T04-H3 (rotate the Slack token), merge.
 
 ## Phase 1: Agent tooling
 Every login changes here, so later tasks run on the final setup. Claude before Codex.
 0. T21 Claude login in the sandbox (added 2026-10-30, after T05-H5 failed). You: T21-H1 (inspect the kit), T21-H2 (credential binding, `/login`, checks). Agent (a cloud session, because the sandbox could not log in): records the finding, opens the PR. You: merge.
 1. T05 Claude Code in the sandbox and in the cloud. You: T05-H1 to T05-H3 (connectors, Claude App scope, connection check). Agent: checks each. You: T05-H4 (allow Remote Control in the sandbox), T05-H5 (`/login` inside the sandbox; done early in T21, the agent confirms H1 to H3 came first), T05-H6 (cloud environment), T05-H7 (phone checks). Agent: records V6, V7, V20, V21, re-confirms V24 (recorded in T21), opens the PR. You: merge.
-2. T06 Codex in the sandbox and in the cloud. You: T06-H1 to T06-H3. Agent: checks each, installs Codex in the sandbox. You: T06-H4 (`sbx secret set openai --oauth` in the host shell), T06-H7 (save the sandbox as a template), T06-H5 (cloud environment), T06-H6 (phone checks). Agent: builds the dispatch script, runs the end-to-end Claude-to-Codex dispatch and review (V30), records V8, V10, V22, V28, V29, opens the PR. You: merge.
+2. T04 Drop Slack: watch `main` on GitHub, notify over Remote Control (re-scoped 2026-10-30; the author dropped Slack after T05 proved Remote Control). You: T04-H1 (host check). Agent: ADR-0014, `scripts/main-watch.sh` and tests, the coordinator prompt, Slack removed from the docs. You: merge, then T04-H2 (remove the Slack app, token, and any secret) and T04-H3 (live notification check, away from the Mac). Agent: records V27 in a follow-up docs PR if needed.
+3. T06 Codex in the sandbox and in the cloud. You: T06-H1 to T06-H3. Agent: checks each, installs Codex in the sandbox. You: T06-H4 (`sbx secret set openai --oauth` in the host shell), T06-H7 (save the sandbox as a template), T06-H5 (cloud environment), T06-H6 (phone checks). Agent: builds the dispatch script, runs the end-to-end Claude-to-Codex dispatch and review (V30), records V8, V10, V22, V28, V29, opens the PR. You: merge.
 
 ## Phase 2: Site
 1. T07 Bootstrap the Node project and `pnpm verify`. Agent only. You: merge.
@@ -56,7 +56,7 @@ Read as "task ← what it waits for". The board in `README.md` is the source; `p
 T01
 T02                  ← T01
 T03                  ← T02
-T04                  ← T03
+T04                  ← T03, T05
 T05                  ← T03, T21
 T06                  ← T05
 T07                  ← T04, T06
@@ -78,7 +78,7 @@ T21                  ← T03
 
 ## Parallelism
 
-- **Phases 0 and 1 run one task at a time.** They change the settings, identities, and logins every other task uses. T04 may run alongside T05 only if T05 is waiting on the author and T04 touches no file T05 touches.
+- **Phases 0 and 1 run one task at a time.** They change the settings, identities, and logins every other task uses. T04 runs after T05 is merged, because both edit the sandbox and workflow docs.
 - **Phase 2**, after T09 merges, has two streams that do not edit the same files:
   - Site: T10 → T11 → T12 and T13 (T12 and T13 may run in parallel; both edit `astro.config.ts`, so the second to merge merges `main` and is re-reviewed).
   - Platform: T14 → T15, then T16 once T10 is merged.
@@ -93,7 +93,7 @@ T21                  ← T03
   |---|---|---|
   | T00 Bootstrap the repository | T01 (settings, ruleset), T07 (scaffolding) | Split |
   | T16 Agent GitHub Apps and `agent` account | T01, T02 | Account and Apps exist; re-pointed and ported |
-  | T17 Slack channel | T04 | IDs move out of the repo; runs in the sandbox |
+  | T17 Slack channel | T04 | Re-scoped 2026-10-30: Slack dropped, `main` watched on GitHub |
   | (new) | T03 | Sandbox runtime and token broker (ADR-0013) |
   | T18 Machine account | T02 | |
   | T19 Claude Code local and cloud | T05 | |
