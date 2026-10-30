@@ -54,13 +54,13 @@ git config --local core.hooksPath .githooks
 Aliases in the **author's** `~/.zshrc` (not in the repo):
 
 ```
-alias agent-session='sudo -iu agent env AGENT_TOOL=claude GIT_TERMINAL_PROMPT=0 sh -c '\''export CLAUDE_CODE_OAUTH_TOKEN="$(cat ~/.config/januslin-agent/claude-oauth-token)"; cd ~/januslin.me && exec zsh -l'\'''
+alias agent-session='sudo -iu agent env GIT_TERMINAL_PROMPT=0 sh -c '\''cd ~/januslin.me && exec zsh -l'\'''
 alias agent-end='sudo pkill -u Agent'
 ```
 
-- `AGENT_TOOL=claude` (or `codex`) makes `prepare-commit-msg` add the matching trailer.
+- `AGENT_TOOL` (which makes `prepare-commit-msg` add the matching trailer) is set inside the sandbox by the kit, not by the alias.
 - `GIT_TERMINAL_PROMPT=0` makes `git` fail fast instead of prompting if the helper returns nothing.
-- **Changes in T03:** `agent-session` becomes a host shell for `sbx` and the broker only; the AI starts with `sbx run --name januslin` (`docs/agents/sandbox.md`), and `AGENT_TOOL` is set inside the sandbox. The `CLAUDE_CODE_OAUTH_TOKEN` export and the `claude-oauth-token` file go away in T03-H3, together with Claude Code on the host.
+- **Since T03:** `agent-session` is a host shell for `sbx` and the broker only; the AI starts with `sbx run --name januslin` (`docs/agents/sandbox.md`). The alias above is the T03-H3 version, without the old `CLAUDE_CODE_OAUTH_TOKEN` export; the `claude-oauth-token` file and Claude Code on the host are gone.
 - **After a restart of the Mac**, unlock the `sbx` keychain once in `agent-session` before using `sbx`: `security unlock-keychain ~/Library/Keychains/sbx.keychain-db`. Created in T03 with `security create-keychain` (password prompted), made the default and only keychain with `security list-keychains -d user -s …` and `security default-keychain -d user -s …`, and set to stay unlocked with `security set-keychain-settings` (no timeout). Without it, `sbx login` shows a macOS "Keychain Not Found" dialog; cancel it (never "Reset To Defaults", which runs in the author's desktop session).
 - End the session with `agent-end` (after `sbx stop januslin` and `scripts/token-broker.sh stop`). Until T03, do not leave the author's own dev servers running while a session is open; loopback is shared. From T03, agent servers live in the VM.
 - The author never runs `pnpm install`, scripts, hooks, or editor tasks from the agent's working tree.
