@@ -62,7 +62,8 @@ Do them in this order; never do T05-H5 before T05-H3 is confirmed.
     fi
     ```
   Send a screenshot of the saved settings (not public; the agent records the values).
-- **T05-H7, phone checks (15 min).** From the phone, start a Claude Code cloud session on `januswtlin/januslin.me` in the `januslin.me` environment with the probe prompt below, and later start Remote Control to the local session the agent names. Send the agent the session links, and the name of a private `januswtlin` repository to use in step 4 if not `januswtlin/januslin`.
+- **T05-H7, phone checks (15 min). Done 2026-10-30:** cloud probe (PR #8, closed unmerged, both probe branches deleted by the author; private repository used: `januswtlin/januslin`) and Remote Control to the coordinator session; results in V7 and V21.
+  From the phone, start a Claude Code cloud session on `januswtlin/januslin.me` in the `januslin.me` environment with the probe prompt below, and later start Remote Control to the local session the agent names. Send the agent the session links, and the name of a private `januswtlin` repository to use in step 4 if not `januswtlin/januslin`.
   Probe prompt (V7):
   ````
   **Probe agent:** you are a probe session for januslin.me (task T05, check V7). Do only the steps below, in order. Report every command with its full output, refusals included. Do not retry a refused step another way, do not look for a workaround to any refusal, do not open any other PR, and do not change anything else.

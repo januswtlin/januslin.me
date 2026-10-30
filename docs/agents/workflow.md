@@ -61,7 +61,9 @@ Available once T05 (Claude Code cloud) and T06 (Codex cloud) are done.
 - Only the author starts them, from the web or the phone, with the dispatch prompt above. No local session starts one, the coordinator included.
 - They act as the machine account `januslin-agent`. They follow `AGENTS.md` like local sessions; the `main` ruleset refuses pushes to `main` and merges by them.
 - Their environments hold no secrets. They cannot run `scripts/agent-gh` (no App keys there); they use the vendor's GitHub connection.
-- Branch names: the rule in "Branches and commits" applies; V7 (T05) records whether Claude Code cloud lets a session push `agent/...` names or forces its own prefix, and this line is updated with the result.
+- Branch names: the rule in "Branches and commits" applies. Claude Code cloud pushes the `agent/...` name the prompt gives (V7); without one it picks `claude/<name>`, so the dispatch prompt always names the branch.
+- Commits from Claude Code cloud are authored as `Claude <noreply@anthropic.com>` (GitHub user `claude`, id 81847); the push and the PR are the machine account (V7). Identify a cloud session's work by the push actor and the PR author, not the commit author.
+- A cloud session cannot delete remote branches (the GitHub proxy refuses with HTTP 403, V7); the author deletes branches it leaves behind, or GitHub does when the PR is merged.
 - The coordinator treats a cloud session's PR like any other: it starts a local reviewer subagent on it and reports to the author.
 
 ## Coordinator loop (ADR-0010)

@@ -71,7 +71,7 @@ Steps only the author can do that belong to no task. Steps for a task are in tha
 
 ### Suspicious commit or PR (Platform Engineer, author approves)
 `main` cannot change without the author's merge, so this is about branches, PRs, issues, and comments.
-1. Identify the actor from the push event or the timeline: `januslin-agent[bot]` and the other Apps (local agents), the machine account `januslin-agent` (cloud sessions, scheduled tasks, tool logins), `januswtlin` (the author, or a phone's deploy key: compare each key's "last used" date), or someone else.
+1. Identify the actor from the push event or the timeline: `januslin-agent[bot]` and the other Apps (local agents), the machine account `januslin-agent` (cloud sessions, scheduled tasks, tool logins; their commits are authored by `Claude <noreply@anthropic.com>`, GitHub user `claude`, so go by the push actor, not the commit author, V7), `januswtlin` (the author, or a phone's deploy key: compare each key's "last used" date), or someone else.
 2. Close the PR or delete the branch; do not merge it. If something did reach production, roll back first.
 3. Revoke or rotate the credential involved (author).
 4. Write an incident note in `docs/reports/incident-YYYY-MM-DD.md`.

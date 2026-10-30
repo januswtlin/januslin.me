@@ -44,7 +44,7 @@ sbx run --name januslin                  # Claude Code in auto mode (see "Permis
 - Clone mode copies the host's `origin` (`https://github.com/januswtlin/januslin.me.git`) into the VM, so branches are pushed to GitHub. The host clone gets a `sandbox-januslin` remote served by a git daemon on `127.0.0.1`; the host never fetches it.
 - Docker also writes a generic agent guide into the VM (`/Users/Agent/CLAUDE.md`, loaded by Claude Code as a parent-directory `CLAUDE.md`). Its advice on GitHub tokens, `"**"` network rules, and `git add -A` conflicts with this project; `AGENTS.md` ("Identity") says which wins.
 - Codex runs in the same sandbox: T06 installs the Codex CLI into `januslin` and the author saves the result with `sbx template save` ("Codex in the sandbox" below).
-- Remote Control (ADR-0011): allowed once on the host with `sbx settings set claude.remoteControl true` in `agent-session` (T05-H4). The author starts it from the sandboxed session's terminal with `/remote-control`; the coordinator never starts it. GitHub access from that session stays on the Apps. Which hosts it needs is V21 (T05-H7).
+- Remote Control (ADR-0011): allowed once on the host with `sbx settings set claude.remoteControl true` in `agent-session` (T05-H4). The author starts it from the sandboxed session's terminal with `/remote-control`; the coordinator never starts it. GitHub access from that session stays on the Apps (a push from it shows `januslin-agent[bot]`), and it needs no host beyond the allowlist (V21, 2026-10-30).
 - Stop with `sbx stop januslin`. The broker keeps running only while the sandbox is in use (`scripts/token-broker.sh stop`).
 
 ## Credentials
@@ -74,7 +74,7 @@ Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`)
 | `cdn.playwright.dev`, `playwright.download.prss.microsoft.com` | `:443` | `pnpm exec playwright install chromium` (Mermaid at build time, tests) |
 | `storage.googleapis.com` | `:443`, HTTP `GET,HEAD`, path `/chrome-for-testing-public/**` | `cdn.playwright.dev` redirects Chromium downloads to Google's Chrome for Testing bucket; other paths and methods are refused (403, checked) |
 | `ports.ubuntu.com` | `:80`, HTTP `GET,HEAD`, path `/ubuntu-ports/**` | Chromium's system libraries, installed by the kit; `apt` verifies Ubuntu's signatures |
-| `api.anthropic.com`, `bridge.claudeusercontent.com`, `claude.com`, `code.claude.com`, `downloads.claude.ai`, `mcp-proxy.anthropic.com`, `platform.claude.com` | `:443`, added by the Claude Code kit (inherited by `sandbox/kit`) | Claude Code; whatever Remote Control needs beyond these is V21 |
+| `api.anthropic.com`, `bridge.claudeusercontent.com`, `claude.com`, `code.claude.com`, `downloads.claude.ai`, `mcp-proxy.anthropic.com`, `platform.claude.com` | `:443`, added by the Claude Code kit (inherited by `sandbox/kit`) | Claude Code, including Remote Control, which needs nothing more (V21) |
 | OpenAI hosts | added in T06 | Codex |
 | `slack.com` | `:443`, added in T04 | `scripts/coordinator-channel.sh` |
 | `api.cloudflare.com` | `:443` | Only during T14, T15, T17; the author adds the rule at the start (T14-H1) and removes it at the end (T14-H3) |
