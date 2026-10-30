@@ -48,7 +48,6 @@ git config --local core.hooksPath .githooks
 - The empty `credential.helper` resets the list first (the system gitconfig sets `osxkeychain`). `useHttpPath` makes the helper answer only for `januswtlin/januslin.me`.
 - `core.hooksPath .githooks` enables `prepare-commit-msg`, which adds the `Agent:` trailer. The author's own clone does not set it.
 - **From T03** this host clone is only the source for the sandbox and the place the broker runs from: `core.hooksPath` is unset (T03-H3), it only fast-forwards `main`, and it never fetches `sandbox-januslin` or checks out an agent branch, because code here runs next to the keys.
-- Until T02 lands the scripts in the new repository, use the copies in the archive clone (`~/januslin.me-archive/scripts/`); they restrict tokens to a repository named `januslin.me`, which is the new one after the rename.
 
 ## Opening and ending a session
 
@@ -70,15 +69,22 @@ alias agent-end='sudo pkill -u Agent'
 The author hands a key to the account as that user, so it is never readable by anyone else:
 
 ```
+cd /
 sudo -u Agent sh -c 'umask 077; mkdir -p /Users/Agent/.config/januslin-agent'
 sudo -u Agent sh -c 'umask 077; cat > /Users/Agent/.config/januslin-agent/<app>.pem' < <downloaded file>
 ```
 
-Then delete the downloaded file. Keys are generated in the App settings of the machine account `januslin-agent`, which owns the Apps from T02.
+Then delete the downloaded file; never leave a copy in a folder the `agent` account or anyone else can read. `cd /` avoids `getcwd` warnings from `sudo` when the author's current directory is their own home, which `Agent` cannot enter (the copy still works).
+
+To match a key file with the key GitHub lists (prints a public fingerprint, never the key), in `agent-session`:
+
+```
+for a in januslin-agent januslin-reviewer; do printf '%s SHA256:' "$a"; openssl rsa -in ~/.config/januslin-agent/$a.pem -pubout -outform DER 2>/dev/null | openssl dgst -sha256 -binary | openssl base64 -A; echo; done
+``` Keys are generated in the App settings of the machine account `januslin-agent`, which owns the Apps from T02.
 
 ## Tokens and `gh`
 
-Scripts ported from the archive in T02 (from T03, the broker runs `agent-token.sh` on the host and the sandbox never runs it; `docs/agents/sandbox.md`):
+Scripts in `scripts/`, ported from the archive in T02 and tested by `sh tests/scripts/run.sh` (from T03, the broker runs `agent-token.sh` on the host and the sandbox never runs it; `docs/agents/sandbox.md`):
 
 - `scripts/agent-token.sh <januslin-agent|januslin-reviewer>` mints a one-hour installation token restricted to this repository and prints the permissions GitHub granted (compare with ADR-0009).
 - `scripts/agent-token.sh --revoke <app>` revokes it and deletes the file.
