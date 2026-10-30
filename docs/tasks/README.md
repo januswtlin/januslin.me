@@ -31,7 +31,7 @@ One row per task. Each task is done by one session in one role and lands as one 
 | [T18](T18-post-launch-audit.md) | Post-launch independent audit | Reviewer | T17 | T18-H1 | S | blocked | |
 | [T19](T19-renovate-and-maintenance.md) | Renovate, maintenance tooling, missing-English check | Platform | T16 | T19-H1 | M | blocked | |
 | [T20](T20-scheduled-agent-tasks.md) | Scheduled agent tasks and prompt files | Platform | T05, T16, T19 | T20-H1, T20-H2 | M | blocked | |
-| [T21](T21-sandbox-claude-login.md) | Claude login in the sandbox (credential binding) | Platform | T03 | T21-H1, T21-H2 | S | done | |
+| [T21](T21-sandbox-claude-login.md) | Claude login in the sandbox (credential binding) | Platform | T03 | T21-H1, T21-H2 | S | done | [#5](https://github.com/januswtlin/januslin.me/pull/5) |
 
 ## Task file format
 
