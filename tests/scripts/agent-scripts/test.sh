@@ -64,8 +64,8 @@ path=januswtlin/januslin.me.git
 host=github.com
 '; do
   out=$(cred "$input")
-  [ -z "$out" ]
-  check "credential: silent for $(printf '%s' "$input" | tr '\n' ' ')" $?
+  [ -z "$out" ]; rc=$?
+  check "credential: silent for $(printf '%s' "$input" | tr '\n' ' ')" $rc
 done
 
 out=$(cred 'protocol=https
