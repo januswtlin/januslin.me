@@ -17,7 +17,7 @@ Runbooks and the recurring maintenance calendar. Each item names the role that d
 | Monthly | `sbx` release notes (early access): upgrade in the `agent` account, then re-run T03's verifications that the release touches | Platform Engineer + author |
 | Monthly | Roadmap review (`docs/roadmap.md`) | Coordinator, author decides |
 | Quarterly | Security review (below) | Platform Engineer + author |
-| Before expiry | Renew the repository interaction limit (collaborators only, six months; the author, Settings → Moderation options → Interaction limits). Current expiry: *recorded by T01 as a fixed date on this line*; every renewal updates it. No workflow can read the limit (it needs Administration read), so the monthly maintenance issue copies this date and the coordinator reminds the author a month ahead | Author |
+| Before expiry | Renew the repository interaction limit (collaborators only, six months; the author, Settings → Moderation options → Interaction limits). Current expiry: **2027-04-29** (set 2026-10-30, T01-H1; GitHub shows no date, so this is six months minus one day); every renewal updates it. No workflow can read the limit (it needs Administration read), so the monthly maintenance issue copies this date and the coordinator reminds the author a month ahead | Author |
 | Before expiry | Rotate the deploy token and the Access service token `ci-smoke-test` (author creates and stores; agent updates docs) | Author + Platform Engineer |
 
 ### Retypeset upstream watch (monthly)

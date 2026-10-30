@@ -4,7 +4,7 @@ Configuration that does **not** live in code: Cloudflare, GitHub, accounts outsi
 
 Cloudflare account ID: `f2f02d203f0d3a3861b811030cb6f37f`. Workers subdomain: `janus-weitang-lin.workers.dev`.
 
-## Current state (2026-10-29, carried over from the first attempt)
+## Current state (2026-10-30; carried over from the first attempt, updated by T01)
 
 ### Domain and Cloudflare
 - `januslin.me` at Cloudflare Registrar, auto-renew on, expires 2027-10-11. Zone on the Free plan.
@@ -16,7 +16,7 @@ Cloudflare account ID: `f2f02d203f0d3a3861b811030cb6f37f`. Workers subdomain: `j
 ### GitHub repositories
 | Repository | Visibility | State |
 |---|---|---|
-| `januswtlin/januslin.me` | public | This repository. Created by the author on 2026-10-29; initial docs commit only. Settings and ruleset: T01. |
+| `januswtlin/januslin.me` | public | This repository. Created by the author on 2026-10-29. Settings, rulesets, labels, environments, and interaction limit applied 2026-10-30 (T01); see "GitHub settings as applied" below. |
 | `januswtlin/januslin.me-archive` | private | The first attempt (renamed from `januswtlin/januslin.me`). Reference only; to be archived. |
 | `januswtlin/januslin` | private | The old Hugo site behind the Pages project. Archived in T17 after cutover. |
 
@@ -25,7 +25,7 @@ Cloudflare account ID: `f2f02d203f0d3a3861b811030cb6f37f`. Workers subdomain: `j
 |---|---|---|
 | `januswtlin` (author) | 2433928 | Owner. Passkey or 2FA on. |
 | Machine account `januslin-agent` | 349746030 | Exists. The claude.ai account is connected to GitHub as this account. Not yet a collaborator here (T02). |
-| App `januslin-agent` (`januslin-agent[bot]`, bot user id 349177542) | App ID 5506552, installation 176078591 | Owned by `januswtlin`, private, installed on the archive only. Installed here in T01, transferred to the machine account in T02. |
+| App `januslin-agent` (`januslin-agent[bot]`, bot user id 349177542) | App ID 5506552, installation 176078591 | Owned by `januswtlin`, private, installed on the archive only. Installed here (this repository only) on 2026-10-30 (T01-H3), transferred to the machine account in T02. |
 | App `januslin-reviewer` | App ID 5506595, installation 176079192 | Same as above. |
 | App `januslin-platform` (historical) | App ID 5506604, installation 176080447 | Used in the first attempt for workflow changes. Not installed here; deleted in T02-H2 (ADR-0009). |
 | Claude GitHub App | n/a | Installed on `januswtlin` with a repository selection (the archive); the author's own authorization of Claude on `januswtlin` is revoked. Selection moves to this repository in T05. |
@@ -34,9 +34,16 @@ Cloudflare account ID: `f2f02d203f0d3a3861b811030cb6f37f`. Workers subdomain: `j
 
 Permissions of the Apps (from the first attempt, checked from installation tokens; T02 adds workflows RW to `januslin-agent`): `januslin-agent` actions R, checks R, contents RW, issues RW, metadata R, pull requests RW; `januslin-reviewer` actions R, checks R, contents R, issues R, metadata R, pull requests RW; `januslin-platform` (historical) had `januslin-agent`'s set plus workflows RW. None has administration, secrets, variables, environments, or deployments.
 
+### GitHub settings as applied (T01, 2026-10-30)
+- Settings: public; squash merge only (title from the PR title, message from the PR body); auto-merge off; head branches deleted on merge; wiki, projects, and discussions off; issues on. Read back with `gh api repos/januswtlin/januslin.me` (full output in the T01 PR). PR and issue creation limits, workflow-approval policy, default `GITHUB_TOKEN` permissions, secret scanning, and Dependabot settings need Administration read; the author's outputs are in the T01 PR.
+- Rulesets (both `active`, target `~DEFAULT_BRANCH`): `main-protect` (id 26176065): pull request with 0 approvals and squash only, block force pushes, restrict deletions, require linear history, no bypass actors, no `ci` check yet (T16). `main-restrict-updates` (id 26176087): restrict updates, bypass: repository admin role in pull-request-only mode (bypass actors are hidden from App tokens; confirmed from the author's `rulesets` output in the T01 PR).
+- Environments `production`, `preview`, `smoke`: deployment branch policy "selected branches" with one `branch` rule `main` each, no secrets, no required reviewers.
+- Labels: GitHub's defaults plus `needs-human`, `translation-needed`, `incident`, `upgrade`, `maintenance`, `roadmap`.
+- Interaction limit: collaborators only, set 2026-10-30 for six months. GitHub shows no expiry date; the calendar in `docs/operations.md` records 2027-04-29. Whether GitHub offers a permanent equivalent is not confirmed; the author says in the T01 PR.
+
 ### The author's Mac
 - macOS account `agent` (short name `Agent`): standard, set up, File Sharing and Remote Login off, `sudoers` rule installed, no cron jobs or LaunchAgents (`docs/agents/local-agent-account.md`).
-- Clone of the archive at `~/januslin.me` in that account, with the agent scripts (T01 re-clones; T02 ports the scripts).
+- Clone of the archive at `~/januslin.me-archive` (origin `januslin.me-archive`, no credential helper); fresh clone of this repository at `~/januslin.me`, with its credential helper pointing at the archive's `scripts/agent-git-credential` until T02 ports the scripts.
 - Claude Code in `agent`: `setup-token` login only, running directly in the account (until T03). Codex: not installed.
 - Docker Sandboxes (`sbx`): not installed (T03).
 - Claude Code managed settings installed, root-owned, with `disableRemoteControl: true`; kept unchanged as a host backstop (ADR-0013).
@@ -106,4 +113,5 @@ Claims the docs rely on that nobody has tested yet. Whoever reaches the "When" s
 
 | Date | Change | By (task / PR) |
 |---|---|---|
+| 2026-10-30 | T01: repository settings, both `main` rulesets, labels, environments, interaction limit (collaborators only, calendar expiry 2027-04-29), and App installations applied by the author (T01-H1 to T01-H3); V1 (Apps), V2, and V4 progress below. | T01 |
 | 2026-10-29 | Fresh start: new public repository `januswtlin/januslin.me`; the first attempt renamed to `januswtlin/januslin.me-archive`. State above carried over from the archive's `docs/infra-current-state.md`. | Coordinator (initial commit) |
