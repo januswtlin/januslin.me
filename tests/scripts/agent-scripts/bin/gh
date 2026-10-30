@@ -1,0 +1,5 @@
+#!/bin/sh
+# Fake gh: logs argv and whether GH_TOKEN equals $FAKE_TOKEN; prints nothing secret.
+for a in "$@"; do printf 'argv: %s\n' "$a" >> "$FAKE_LOG"; done
+if [ "${GH_TOKEN:-}" = "$FAKE_TOKEN" ]; then echo "gh_token: expected" >> "$FAKE_LOG"; else echo "gh_token: other" >> "$FAKE_LOG"; fi
+echo "fake gh ran"

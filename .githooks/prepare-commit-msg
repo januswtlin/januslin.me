@@ -1,0 +1,14 @@
+#!/bin/sh
+# Add the `Agent: <tool>` trailer (AGENTS.md). Agent sessions set AGENT_TOOL=claude|codex
+# (docs/agents/local-agent-account.md). Without it (the author's own commits) nothing changes.
+set -eu
+
+case "${AGENT_TOOL:-}" in
+  claude|codex) ;;
+  *) exit 0 ;;
+esac
+
+# interpret-trailers only sees the last paragraph; skip if the line is anywhere already.
+grep -q "^Agent: $AGENT_TOOL\$" "$1" && exit 0
+
+git interpret-trailers --if-exists doNothing --trailer "Agent: $AGENT_TOOL" --in-place "$1"

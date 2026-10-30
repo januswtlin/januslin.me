@@ -32,7 +32,7 @@ Last reviewed upstream commit: `a636b6d393be714cab52d3fc4baddd3f3905f701` (2026-
 The author does the checks no App can read, in the browser; the agent prepares the list and records the results in a report.
 - Interaction limit set to collaborators only, with its expiry more than a month away.
 - Both `main` rulesets unchanged (`gh api repos/januswtlin/januslin.me/rulesets` and the ruleset history); repository settings as in `docs/security.md`, auto-merge off.
-- Collaborators: only the machine account `januslin-agent`, Write. Deploy keys: one per device in use. Environments: secrets and branch policies as in `docs/deployment.md`; no repository secrets or variables.
+- Collaborators (`GET /repos/januswtlin/januslin.me/collaborators?affiliation=direct`): the owner `januswtlin` (listed as `admin`) and the machine account `januslin-agent`, `write`; nobody else. Deploy keys: one per device in use. Environments: secrets and branch policies as in `docs/deployment.md`; no repository secrets or variables.
 - Each of the two Apps has exactly one installation (`GET /app/installations` with the App's JWT) on `januswtlin`, with this repository only, and one private key. The Claude and Codex connector Apps are installed on this repository only; claude.ai and ChatGPT connectors as recorded in T05 and T06.
 - The machine account: no SSH keys, PATs, or OAuth apps; passkey or 2FA on; recent sessions only from the author's browser.
 - The sandbox: re-run the V16 canary from T03 (no key or host file outside the read-only mounts is readable from the VM); `sbx policy ls januslin` equals the allowlist in `docs/agents/sandbox.md`; `sbx secret ls` lists only the expected secrets; `sbx version` recorded.
@@ -82,8 +82,9 @@ Steps only the author can do that belong to no task. Steps for a task are in tha
 ### Rotate the agent App keys (author)
 For each of `januslin-agent` and `januslin-reviewer`, signed in as the machine account `januslin-agent` (the owner):
 1. GitHub → Settings → Developer settings → GitHub Apps → the App → Private keys: generate a new key. Put it where ADR-0009 says: `januslin-agent` and `januslin-reviewer` as `0600` files in the `agent` account (`docs/agents/local-agent-account.md`, "Keys"). Delete the downloaded file.
-2. Delete the old key on the same page.
-3. In the `agent` account, `scripts/agent-token.sh <app>` and `scripts/agent-gh <app> api /installation/repositories` confirm the new key works.
+2. In the `agent` account, `scripts/agent-token.sh <app>` confirms the new key mints a token with the expected permissions.
+3. Only then delete the old keys on the same page, so the App always has a working key.
+4. Confirm the key file is the one left on the page: the fingerprint command in `docs/agents/local-agent-account.md` ("Keys") prints the same `SHA256:` value the page shows.
 
 ### Dependency upgrade (Upgrade Engineer)
 1. Read release notes and migration guides for the version range.
