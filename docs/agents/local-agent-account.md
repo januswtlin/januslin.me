@@ -1,6 +1,6 @@
 # The `agent` macOS account (host)
 
-Last reviewed: 2026-10-29
+Last reviewed: 2026-10-30
 
 The host side of local agents (ADR-0009, ADR-0013): the macOS account that holds the App keys and the Slack token, runs the token broker and `sbx`, and starts the sandbox. **From T03 on, no AI tool runs in this account**; Claude Code and Codex run only inside the sandbox (`docs/agents/sandbox.md`). T01 to T03 still run their agent in this account's shell, because the sandbox does not exist yet. Procedures only; the reasoning is in the ADRs.
 
@@ -80,7 +80,9 @@ To match a key file with the key GitHub lists (prints a public fingerprint, neve
 
 ```
 for a in januslin-agent januslin-reviewer; do printf '%s SHA256:' "$a"; openssl rsa -in ~/.config/januslin-agent/$a.pem -pubout -outform DER 2>/dev/null | openssl dgst -sha256 -binary | openssl base64 -A; echo; done
-``` Keys are generated in the App settings of the machine account `januslin-agent`, which owns the Apps from T02.
+```
+
+Keys are generated in the App settings of the machine account `januslin-agent`, which owns the Apps from T02.
 
 ## Tokens and `gh`
 

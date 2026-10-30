@@ -8,4 +8,7 @@ case "${AGENT_TOOL:-}" in
   *) exit 0 ;;
 esac
 
+# interpret-trailers only sees the last paragraph; skip if the line is anywhere already.
+grep -q "^Agent: $AGENT_TOOL\$" "$1" && exit 0
+
 git interpret-trailers --if-exists doNothing --trailer "Agent: $AGENT_TOOL" --in-place "$1"
