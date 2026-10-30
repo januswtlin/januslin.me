@@ -8,12 +8,12 @@
 #   scripts/token-broker.sh status   broker state and token expiries (no tokens)
 #
 # Tokens come from the sibling agent-token.sh, which mints into a private staging
-# directory; the finished file is then moved into place in one rename:
-#   januslin-agent    -> $STATE/proxy-tokens/   (never mounted; read by the sbx
-#                        `github` secret's command)
-#   januslin-reviewer -> $STATE/sandbox-tokens/ (mounted read-only into the VM)
+# directory; the finished file is then moved in one rename into
+# $STATE/sandbox-tokens/, which is mounted read-only into the VM. Both Apps'
+# tokens live there: the proxy-injected `github` secret is not used, because it
+# overrides every Authorization header, the reviewer's included (V18, ADR-0013).
 # A token is replaced when it has less than 10 minutes left. Nothing here prints
-# a token, and nothing but token files is ever written to the two directories.
+# a token, and nothing but token files is ever written to that directory.
 set -eu
 umask 077
 
@@ -27,8 +27,7 @@ INTERVAL=60    # seconds between checks in the background loop
 
 target_dir() {
   case "$1" in
-    januslin-agent)    echo "$STATE/proxy-tokens" ;;
-    januslin-reviewer) echo "$STATE/sandbox-tokens" ;;
+    januslin-agent|januslin-reviewer) echo "$STATE/sandbox-tokens" ;;
   esac
 }
 
