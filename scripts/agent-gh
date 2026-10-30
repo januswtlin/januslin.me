@@ -1,0 +1,27 @@
+#!/bin/sh
+# Run `gh` as a GitHub App (ADR-0009):  scripts/agent-gh <app> <gh args...>
+# The token is read from the token file and handed to this one gh process only;
+# it is never exported into the shell or written to gh's config.
+set -eu
+
+[ $# -ge 2 ] || { echo "usage: $0 <januslin-agent|januslin-reviewer> <gh args...>" >&2; exit 2; }
+app=$1
+shift
+case "$app" in
+  januslin-agent|januslin-reviewer) ;;
+  *) echo "agent-gh: unknown app '$app'." >&2; exit 2 ;;
+esac
+
+token_file="${JANUSLIN_AGENT_STATE_DIR:-$HOME/.local/state/januslin-agent}/$app.token"
+[ -r "$token_file" ] || { echo "agent-gh: no token for $app; run scripts/agent-token.sh $app." >&2; exit 1; }
+
+expires=$(sed -n 2p "$token_file")
+# BSD date (macOS host) first, then GNU date (Linux, where the tests also run).
+expires_epoch=$(date -j -u -f '%Y-%m-%dT%H:%M:%SZ' "$expires" +%s 2>/dev/null \
+  || date -u -d "$expires" +%s 2>/dev/null || echo 0)
+if [ "$expires_epoch" -le "$(date +%s)" ]; then
+  echo "agent-gh: $app token expired ($expires); run scripts/agent-token.sh $app." >&2
+  exit 1
+fi
+
+GH_TOKEN=$(sed -n 1p "$token_file") GH_PROMPT_DISABLED=1 exec gh "$@"
