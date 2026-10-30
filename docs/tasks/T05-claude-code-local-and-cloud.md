@@ -38,7 +38,7 @@ Only the author can do these. The agent prepares each one with the exact values 
 
 Do them in this order; never do T05-H5 before T05-H3 is confirmed.
 
-- **T05-H1, connectors (10 min). Done 2026-10-30, before the T21 login:** no connector that holds personal data is connected. Names still to send: the full list.
+- **T05-H1, connectors (10 min). Done 2026-10-30, before the T21 login:** no connector that holds personal data is connected. Names (2026-10-30): GitHub only. "Claude Docs", visible to Claude Code in the sandbox, is not in this list (built into claude.ai, it appears; denied by `mcp__claude_ai_*`).
   claude.ai → Settings → Connectors: send the agent the list of names. For each one that holds personal data (mail, files, calendar), remove it or reply "keep <name>".
 - **T05-H2, limit the Claude App (2 min). Done 2026-10-30, before the T21 login.**
   As `januswtlin`: GitHub → Settings → Applications → Installed GitHub Apps → Claude → Configure → "Only select repositories" → `januswtlin/januslin.me` only → Save.

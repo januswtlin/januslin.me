@@ -61,7 +61,7 @@ None of the Apps has Administration, Secrets, Variables, Environments, Deploymen
 ### Cloud agents and tool logins (ADR-0009)
 - Claude Code cloud, Codex cloud, scheduled tasks, and the full claude.ai and ChatGPT logins used in the sandbox reach GitHub only as the machine account. Ceiling: the vendor App's permissions intersected with Write on this repository. The ruleset and environments apply to it like to any collaborator.
 - Only the author starts cloud and scheduled sessions. Their environments hold no secrets.
-- Connectors on the author's claude.ai and ChatGPT accounts are reviewed in T05 and T06; ones holding personal data are removed or accepted in writing. claude.ai (T05-H1, 2026-10-30): none holding personal data is connected; in the sandbox the `mcp__claude_ai_*` deny keeps any connector's tools away from local sessions.
+- Connectors on the author's claude.ai and ChatGPT accounts are reviewed in T05 and T06; ones holding personal data are removed or accepted in writing. claude.ai (T05-H1, 2026-10-30): GitHub only, none holding personal data; in the sandbox the `mcp__claude_ai_*` deny keeps any connector's tools away from local sessions.
 - The Claude GitHub App (V6) has Workflows write, no Secrets or Variables, and repository hooks write, which needs admin on the repository to use and so has no effect at the machine account's Write. So a cloud session can push branch workflows (the V7 probe's workflow branch was accepted, 2026-10-30); like the Apps' (ADR-0009, risk 5), those run without secrets and reach `main` only through the author's review.
 
 ### Slack bot token (ADR-0011)
