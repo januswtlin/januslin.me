@@ -11,19 +11,5 @@
   },
   "env": {
     "CLAUDE_CODE_DISABLE_CRON": "1"
-  },
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "permission_prompt|elicitation_dialog",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/scripts/claude-notify-slack.sh\" ] || sh \"$CLAUDE_PROJECT_DIR/scripts/claude-notify-slack.sh\"",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
   }
 }
