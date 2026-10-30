@@ -26,15 +26,15 @@ sbx run --name januslin                  # Claude Code in auto mode (see "Permis
 
 - Before the sandbox is created (or re-created), the `agent` account's `sbx` credential bindings file must approve Claude Code's OAuth for the kit. `sandbox/kit` is a third-party kit to `sbx`, and a third-party kit that extends a built-in agent may use the inherited credentials only with an approved binding ([credential bindings](https://docs.docker.com/ai/sandboxes/configuration/credentials/#credential-bindings)). `sbx` asks for it on the first interactive run; T03 created the sandbox without that prompt, so the proxy refused `/login` (`proxy: OAuth refresh denied (no authorizing binding)`, T21). The file holds approvals only, no secret; the author writes it in `agent-session`:
   ```
-  mkdir -p ~/.config/sbx && ( umask 077; cat > ~/.config/sbx/credentials.yaml <<'EOF'
+  f=~/.config/sbx/credentials.yaml; if [ -e "$f" ]; then echo "$f exists: merge by hand"; else mkdir -p ~/.config/sbx && ( umask 077; cat > "$f" <<'EOF'
   bindings:
     anthropic:
       oauth:
         domains: [platform.claude.com, api.anthropic.com]
   EOF
-  )
+  ); fi
   ```
-  If the file already exists, merge the `anthropic` entry instead of overwriting it. If `sbx` later asks to approve more domains for `anthropic`, approve only Claude's hosts and update this block.
+  The command refuses to overwrite an existing file; then add the `anthropic` entry by hand under `bindings:`. If `sbx` later asks to approve more domains for `anthropic`, approve only Claude's hosts and update this block.
 - The sandbox is created once, from the kit in this repository (`sandbox/kit/spec.yaml`, a CODEOWNERS path):
   ```
   sbx create --clone --name januslin ./sandbox/kit ~/januslin.me ~/.local/state/januslin-agent/sandbox-tokens:ro ~/.config/januslin-agent/sandbox-config:ro
