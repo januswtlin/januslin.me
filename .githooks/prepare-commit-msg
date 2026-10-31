@@ -1,6 +1,6 @@
 #!/bin/sh
 # Add the `Agent: <tool>` trailer (AGENTS.md). Agent sessions set AGENT_TOOL=claude|codex
-# (docs/agents/local-agent-account.md). Without it (the author's own commits) nothing changes.
+# (docs/admin-guide.md, "The host clone"; docs/agents/sandbox.md). Without it (the author's own commits) nothing changes.
 set -eu
 
 case "${AGENT_TOOL:-}" in

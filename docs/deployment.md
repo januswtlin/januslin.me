@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-10-29 · Decisions: ADR-0002 (Workers), ADR-0003 (Actions, ruleset, environments)
 
-Target design. T14 (Worker), T15 (Access), T16 (CI/CD), and T17 (cutover) build it and correct this file to what they built.
+**Status: design, not built yet.** Nothing in this file runs today. T14 ([#18](https://github.com/januswtlin/januslin.me/issues/18), Worker), T15 ([#20](https://github.com/januswtlin/januslin.me/issues/20), Access), T16 ([#23](https://github.com/januswtlin/januslin.me/issues/23), CI/CD), and T17 ([#24](https://github.com/januswtlin/januslin.me/issues/24), cutover) build it, and each corrects this file to what it built. What exists today: `docs/infra-current-state.md`.
 
 ## Overview
 
@@ -18,12 +18,12 @@ GitHub Actions is the only path to production. Cloudflare Workers Builds is not 
 | Control | Where | What it stops |
 |---|---|---|
 | Two `main` rulesets: `main-protect` (PR required, required check `ci`, linear history, no force push, no deletion; no bypass) and `main-restrict-updates` (only the repository admin may update, via PR); auto-merge off | GitHub, server-side (T01, `ci` check added in T16) | Direct or force pushes and merges by anyone but the author, including the machine account, the Apps, the phone's deploy key, and the author's own direct pushes; merges of red PRs by anyone |
-| Environment secrets: the Cloudflare token lives only in the `production` and `preview` environments, the Access service token only in `smoke`, each limited to the `main` branch | GitHub, server-side (T14-H2, T15-H2) | A branch workflow reading the token. Workflows on other branches and on `pull_request` refs cannot enter these environments |
+| Environment secrets: the Cloudflare token lives only in the `production` and `preview` environments, the Access service token only in `smoke`, each limited to the `main` branch | GitHub, server-side (T14, T15) | A branch workflow reading the token. Workflows on other branches and on `pull_request` refs cannot enter these environments |
 | Build and deploy in separate jobs | `ci.yml` | A malicious dependency in `pnpm install` seeing the token: the token is only in the deploy job, which runs a pinned `wrangler` on the downloaded artifact and no repo script |
 | Previews use `main`'s Worker and config | `preview.yml` | A PR changing `wrangler.jsonc` (for example a `build` command) or `worker/` and having it run next to the token |
 | Smoke test and automatic rollback | `ci.yml` deploy job | A broken deploy staying live |
 
-The first attempt's compensating controls for a private repo on GitHub Free (a per-commit deploy gate, `main-guard.yml`, a local `pre-push` hook, a gate exception variable) are not used: the ruleset and environments enforce the same things on the server. ADR-0003 explains each.
+The compensating controls a private repository on GitHub Free would need (a per-commit deploy gate, `main-guard.yml`, a local `pre-push` hook, a gate exception variable) are not used: the ruleset and environments enforce the same things on the server. ADR-0003 explains each.
 
 ## `wrangler.jsonc` (target shape; T14 owns the final version)
 

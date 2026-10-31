@@ -20,7 +20,7 @@ The author wants upgrades and reviews to happen without starting each one, and a
 ## Consequences
 - Scheduled tasks are a research preview; the fallback stays documented.
 - Only the author creates scheduled tasks.
-- Human steps: install Renovate on the repository, create the scheduled tasks (T19-H1, T20-H1).
+- Human steps: install Renovate on the repository, create the scheduled tasks (T19, T20; raised as human-task issues).
 
 ## Revisit when
 - Scheduled tasks leave preview with different limits or features.

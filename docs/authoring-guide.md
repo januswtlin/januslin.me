@@ -30,7 +30,7 @@ The repository is public, so anything you commit (including `draft: true` entrie
 
 There is no CMS (ADR-0004). On the iPhone or iPad the same Markdown files are edited directly:
 
-1. One-time setup per device: clone `januswtlin/januslin.me` in Working Copy with a deploy key (`docs/operations.md` → "Author's recurring steps"), and add the clone to iA Writer as a library location (Working Copy's Files provider).
+1. One-time setup per device: clone `januswtlin/januslin.me` in Working Copy with a deploy key (`docs/admin-guide.md` → "Mobile publishing: Working Copy on a new device"), and add the clone to iA Writer as a library location (Working Copy's Files provider).
 2. In Working Copy, create a branch for the post (any name except `main`).
 3. Write `content/posts/<slug>/index.zh-tw.md` in iA Writer, starting from `content/_templates/post.md`.
 4. Photos: run the "Prepare photo for januslin.me" Shortcut (JPEG, long edge 2400 px, no metadata; steps in T12) on each photo, then add the results to the post's folder in Working Copy. HEIC and files over 5 MB fail CI.
@@ -85,5 +85,5 @@ You write English versions yourself, as `index.en.md` in the same folder, with t
 ## When something goes wrong
 
 - Published by mistake: revert the PR on GitHub, or ask an agent.
-- Lost phone: delete that device's deploy key on GitHub (`docs/operations.md` → "Lost device").
+- Lost phone: delete that device's deploy key on GitHub (`docs/admin-guide.md` → "Lost device").
 - Any other technical problem: open an issue describing it and hand it to an agent.

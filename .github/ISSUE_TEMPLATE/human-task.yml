@@ -1,0 +1,51 @@
+name: Human task
+description: One sitting of work only the author can do (docs/agents/workflow.md, "Human tasks").
+labels: ["human-task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Never put a secret, a token, or private data in this issue: the repository is public. Add it as a sub-issue of the task it serves. Assign it to the author only when it is actionable, with every value filled in.
+  - type: input
+    id: for
+    attributes:
+      label: For, where, time, when
+      placeholder: "#13 (T04) · agent-session on the Mac · about 10 min · after T04's PR is merged"
+    validations:
+      required: true
+  - type: input
+    id: blocked-by
+    attributes:
+      label: Blocked by
+      placeholder: "#30, or an event, or nothing"
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What this unblocks, and why only the author can do it.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: Plain language. Each step links a runbook on main (https://github.com/januswtlin/januslin.me/blob/main/docs/runbooks/<file>.md). No commands or values here.
+      value: "1. "
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Checkable conditions, preferably ones the agent can verify itself.
+    validations:
+      required: true
+  - type: textarea
+    id: reply-with
+    attributes:
+      label: Reply with
+      description: Usually the output of the runbook's Check block. Names only, never secret values.
+    validations:
+      required: true
