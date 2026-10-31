@@ -11,7 +11,7 @@ macOS (the author's Mac) → the standard macOS account `agent` (keys, token bro
 | Layer | Holds | Runs | Can reach |
 |---|---|---|---|
 | The author's macOS account | Own GitHub login, SSH keys, Keychain | The author's tools | Everything the author can |
-| macOS account `agent` (host) | `januslin-agent.pem`, `januslin-reviewer.pem`, `sbx` and its keychain secrets, the token broker | `sbx`, `scripts/token-broker.sh`, `git` for the host clone. **Never an AI tool.** | GitHub as the Apps (through the broker), Docker login |
+| macOS account `agent` (host) | The active App set's keys (`~/.config/januslin-agent/active/`, put there by the author, ADR-0015), `sbx` and its keychain secrets, the token broker | `sbx`, `scripts/token-broker.sh`, `git` for the host clone. **Never an AI tool.** | GitHub as the Apps (through the broker), Docker login |
 | Sandbox `januslin` (microVM, Linux) | A private clone of the repository; the one-hour tokens of both Apps in a read-only directory; never a key | Claude Code, the coordinator and subagents, `pnpm`, Playwright | Only the hosts on the allowlist below; credentials injected by the host proxy |
 
 The sandbox never sees a `.pem`, the author's files, or the `agent` account's home outside its mounts. The host runs only reviewed code from `main` (the broker and the other host scripts are CODEOWNERS paths, `.github/CODEOWNERS`), never a branch the sandbox pushed.
@@ -26,7 +26,7 @@ The sandbox is created from the kit in this repository, `sandbox/kit/spec.yaml` 
 - sets `PATH`, `AGENT_TOOL=claude`, `JANUSLIN_AGENT_STATE_DIR`, and the telemetry switches in `/etc/sandbox-persistent.sh` (sourced by every shell through `BASH_ENV`);
 - sets git's `core.hooksPath` and the credential helper in the system git config.
 
-Mounts (read-only, writes refused even as root): the host clone at `/run/sandbox/source`, the token directory `sandbox-tokens/`, and `sandbox-config/` (empty; reserved for non-secret configuration).
+Mounts (read-only, writes refused even as root): the host clone at `/run/sandbox/source`, the token directory `sandbox-tokens/`, and `sandbox-config/` (non-secret configuration: `identity.json`, the active App set's name, owner, and each role's App ID, bot slug, and bot user ID, written by the broker).
 
 Clone mode gives the VM its own clone, with the host's `origin` (`https://github.com/januswtlin/januslin.me.git`), so branches are pushed to GitHub. The host clone has a `sandbox-januslin` remote served by a git daemon on `127.0.0.1`; the host never fetches it.
 
@@ -37,6 +37,7 @@ Remote Control is allowed for this sandbox (`claude.remoteControl`). The author 
 ## GitHub tokens
 
 - The host broker (`scripts/token-broker.sh`) mints one-hour installation tokens for both Apps with `scripts/agent-token.sh`, which runs only on the host, and moves each finished token file into `sandbox-tokens/` (`januslin-agent.token`, `januslin-reviewer.token`). It refreshes a token with under 10 minutes left, checked every minute. The directory never holds a key.
+- Which Apps the tokens belong to is the author's choice of App set (ADR-0015, `docs/runbooks/app-key-sets.md`). The file names stay the role names whatever set is active. When the author switches sets, the broker revokes the old tokens and mints from the new set within a minute; when the author turns the set off, both tokens are revoked and none is minted. Never assume the bot names `januslin-agent[bot]` and `januslin-reviewer[bot]`: read the active ones from `sandbox-config/identity.json` (for example `jq -r .apps.reviewer.slug`). A failed call right after a switch is retried, not worked around.
 - In the VM, `JANUSLIN_AGENT_STATE_DIR` points the scripts at that mount:
   - `scripts/agent-gh <januslin-agent|januslin-reviewer> <gh args…>` runs `gh` with that App's token for one process, for example `scripts/agent-gh januslin-agent pr create --draft …` or `scripts/agent-gh januslin-reviewer pr review <n> --approve`.
   - Git pushes use `scripts/agent-git-credential` (in the system git config), which reads the `januslin-agent` token and answers only for `januswtlin/januslin.me`.

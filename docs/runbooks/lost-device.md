@@ -12,13 +12,13 @@ Where: a trusted device's browser (and the Mac, if it is not the lost one) · Ti
 ## The Mac
 The App keys, the `agent` account, and the sandbox are on it.
 5. Steps 3 and 4.
-6. In the machine account's browser profile, on another device: for each App, GitHub → Settings → Developer settings → GitHub Apps → the App → Private keys → delete **every** key. Local agents stop working until a new Mac is set up (`rotate-app-keys.md` then generates new keys).
+6. On another device, as each set's owner (the machine account's browser profile for `machine`, `januswtlin` for the fallback): for every App of every set, GitHub → Settings → Developer settings → GitHub Apps → the App → Private keys → delete **every** key. The Mac held every set (ADR-0015). Local agents stop working until a new Mac is set up (`app-key-sets.md`, "Rotate a set's keys", then generates new keys).
 7. Docker Hub → Account settings → sign out all sessions (the `sbx` login).
 8. Rotate the deploy token and `ci-smoke-test`, once they exist.
 9. Optional: Cloudflare Zero Trust → revoke the device's Access sessions.
 
 ## The Mac is not lost but a laptop or session may be compromised
-10. `rotate-app-keys.md`, and in `agent-session` remove every sandbox secret (the Claude login included; log in again afterwards):
+10. `app-key-sets.md` ("Rotate a set's keys") for every set, and in `agent-session` remove every sandbox secret (the Claude login included; log in again afterwards):
     ```sh
     sbx reset
     ```

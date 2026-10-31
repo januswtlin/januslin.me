@@ -21,7 +21,7 @@ For the author, the only human in this project: everything done by hand, in one 
 |---|---|---|
 | GitHub `januswtlin` (id 2433928) | Your browser, GitHub Mobile, your own `gh` | Owner, admin. The only identity that merges. Passkey or 2FA |
 | Machine account `januslin-agent` (id 349746030) | A separate browser profile, only on your Mac | Write collaborator; owns the two Apps; claude.ai's GitHub connection. No SSH keys, PATs, or OAuth apps |
-| Apps `januslin-agent`, `januslin-reviewer` | Owned by the machine account, installed by `januswtlin` on this repository only | Keys in the `agent` macOS account |
+| Apps `januslin-agent`, `januslin-reviewer` (the set `machine`), and each other App set | `machine` is owned by the machine account, a fallback set by `januswtlin`; all installed on this repository only | Keys of every set in your account (`~/.config/januslin-keys/`); only the active set in the `agent` account (ADR-0015) |
 | macOS account `agent` | Your Mac | Keys, token broker, `sbx`; never AI |
 | Docker account | Signed in by `sbx` in the `agent` account | Needed by `sbx` |
 | claude.ai account | Your browser; the sandbox's Claude Code login | Connectors: GitHub only |
@@ -39,9 +39,9 @@ For the author, the only human in this project: everything done by hand, in one 
 | What | Where (in the `agent` account) | Mode |
 |---|---|---|
 | Repository clone | `~/januslin.me` | normal |
-| App keys (`januslin-agent.pem`, `januslin-reviewer.pem`) | `~/.config/januslin-agent/` | dir `0700`, files `0600` |
+| The active App set (`apps.json`, `implementer.pem`, `reviewer.pem`), put there by `januslin-keys use` | `~/.config/januslin-agent/active/` | dir `0700`, files `0600` |
 | Token directory mounted into the sandbox | `~/.local/state/januslin-agent/sandbox-tokens/` (`januslin-agent.token`, `januslin-reviewer.token`), written only by the broker; never a key | dir `0700`, files `0600` |
-| Config directory mounted into the sandbox | `~/.config/januslin-agent/sandbox-config/`, empty | dir `0700` |
+| Config directory mounted into the sandbox | `~/.config/januslin-agent/sandbox-config/`: `identity.json` (the active set's name, bots, and App IDs; written by the broker; no secret) | dir `0700`, file `0600` |
 | Broker state | `~/.local/state/januslin-agent/broker/`: `broker.pid`, `broker.log` (times and errors, never tokens), short-lived staging directories | dir `0700` |
 | `sbx` login and secrets | The dedicated keychain `~/Library/Keychains/sbx.keychain-db`, the account's default and only keychain; its password is in your password manager. The account has no login keychain because it is never logged in at the desktop | keychain |
 | `sbx` credential bindings | `~/.config/sbx/credentials.yaml` (approvals only, no secret) | `0600` |
@@ -80,7 +80,7 @@ Monthly, when the release notes show a new version (`sbx` is early access): [`up
 
 ## Keys and tokens
 
-- **App keys** are generated in the App settings of the machine account `januslin-agent`, which owns both Apps, and live only in the `agent` account. Put a key there: [`hand-over-app-key.md`](runbooks/hand-over-app-key.md). Rotate both, with the fingerprint check: [`rotate-app-keys.md`](runbooks/rotate-app-keys.md).
+- **App key sets** (ADR-0015): each set is an implementer and a reviewer App with their keys: `machine` (owned by the machine account) and a fallback owned by `januswtlin`. All sets live in your account, `~/.config/januslin-keys/sets/`; the `agent` account holds only the active one. `januslin-keys use <set>` switches within a minute, `januslin-keys off` stops every token, `januslin-keys add <set>` adds a set or rotates its keys: [`app-key-sets.md`](runbooks/app-key-sets.md).
 - **The token broker** (`scripts/token-broker.sh start|stop|once|status` in `agent-session`) mints the one-hour tokens the sandbox uses. It runs only while the sandbox is in use, from the host clone on `main`; [`start-coordinator.md`](runbooks/start-coordinator.md) starts and stops it.
 
 ## Tool logins

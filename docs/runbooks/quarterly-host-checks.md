@@ -21,10 +21,10 @@ Where: your own Terminal (your own `gh`), the browser as `januswtlin` and as the
    ```sh
    command -v claude codex; echo "ai exit=$?"
    crontab -l 2>&1 | head -3; ls ~/Library/LaunchAgents 2>/dev/null; echo "launchagents exit=$?"
-   ls ~/.local/state/januslin-agent/
+   ls ~/.local/state/januslin-agent/ ~/.config/januslin-agent/ ~/.config/januslin-agent/active/
    sbx version; sbx settings get ssh.agentForwardingEnabled; sbx secret ls; sbx policy ls januslin --wide
    ```
-5. Run the Check in `rotate-app-keys.md` and compare with each App's page (exactly one key each).
+5. Run the Check in `app-key-sets.md` and compare with each App's page (exactly one key each); the `agent` account holds only the active set.
 
 ## Check
 Reply with the output of steps 1 and 4, and one line each for steps 2, 3, 5.

@@ -40,8 +40,7 @@ Expected: <what the output shows>
 | [upgrade-sbx.md](upgrade-sbx.md) | Upgrade `sbx` |
 | [setup-shell-aliases.md](setup-shell-aliases.md) | The `agent-session` and `agent-end` aliases |
 | [claude-cloud-environment.md](claude-cloud-environment.md) | The Claude Code cloud environment `januslin.me` |
-| [hand-over-app-key.md](hand-over-app-key.md) | Put an App private key into the `agent` account |
-| [rotate-app-keys.md](rotate-app-keys.md) | Rotate both App keys, with the fingerprint check |
+| [app-key-sets.md](app-key-sets.md) | App key sets: install `januslin-keys`, add a set, switch, turn off, rotate keys, fingerprint check |
 | [recreate-host-clone.md](recreate-host-clone.md) | Re-create the host clone in the `agent` account |
 | [install-managed-settings.md](install-managed-settings.md) | Install the host Claude Code managed settings |
 | [github-mobile-notifications.md](github-mobile-notifications.md) | Turn on the phone notifications agents rely on |

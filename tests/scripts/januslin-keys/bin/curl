@@ -1,0 +1,37 @@
+#!/bin/sh
+# Fake curl for tests/scripts/januslin-keys. Logs argv and stdin to $FAKE_LOG and
+# answers like GitHub for the key that signed the JWT: the App ID is the JWT's iss,
+# unless FAKE_KEY_APP_ID says the key belongs to another App. FAKE_NOT_INSTALLED=1
+# makes the installation lookup fail. No network.
+set -eu
+out= url=
+for a in "$@"; do printf 'argv: %s\n' "$a" >> "$FAKE_LOG"; done
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -o) out=$2; shift 2 ;;
+    -w|-H|--config|--max-time|-X) shift 2 ;;
+    -*) shift ;;
+    *) url=$1; shift ;;
+  esac
+done
+stdin=$(cat)
+printf '%s\n' "$stdin" | sed 's/^/stdin: /' >> "$FAKE_LOG"
+jwt=$(printf '%s\n' "$stdin" | sed -n 's/^header = "Authorization: Bearer \(.*\)"$/\1/p')
+iss=
+if [ -n "$jwt" ]; then
+  p=$(printf '%s' "$jwt" | cut -d. -f2 | tr -- '-_' '+/')
+  while [ $(( ${#p} % 4 )) -ne 0 ]; do p="$p="; done
+  iss=$(printf '%s' "$p" | openssl base64 -d -A | jq -r .iss)
+fi
+case "$url" in
+  https://api.example.test/app)
+    id=${FAKE_KEY_APP_ID:-$iss}
+    printf '{"id":%s,"slug":"app-%s","owner":{"login":"%s"}}' "$id" "$id" "${FAKE_OWNER:-januswtlin}" > "$out"; printf 200 ;;
+  https://api.example.test/repos/januswtlin/januslin.me/installation)
+    if [ -n "${FAKE_NOT_INSTALLED:-}" ]; then printf '{"message":"Not Found"}' > "$out"; printf 404
+    else printf '{"id":%s}' "$((iss + 1000))" > "$out"; printf 200; fi ;;
+  https://api.example.test/users/app-*%5Bbot%5D)
+    n=${url#https://api.example.test/users/app-}; n=${n%%%5Bbot%5D}
+    printf '{"id":%s}' "$((n + 2000))" > "$out"; printf 200 ;;
+  *) printf '{"message":"unexpected"}' > "$out"; printf 404 ;;
+esac

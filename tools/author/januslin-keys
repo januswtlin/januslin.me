@@ -1,0 +1,208 @@
+#!/bin/sh
+# The author's tool for GitHub App key sets (ADR-0015, docs/runbooks/app-key-sets.md).
+# Runs in the author's own macOS account, from a copy of main in ~/bin; never in
+# the `agent` account, never inside the sandbox, never from an agent's working tree.
+#
+#   januslin-keys add <set>     create or replace a set: asks for each role's App ID and key file
+#   januslin-keys use <set>     make <set> the one set in the agent account
+#   januslin-keys off           remove the set from the agent account: no new tokens
+#   januslin-keys status        the sets here, the active one, and the token expiries
+#
+# A set is ~/.config/januslin-keys/sets/<set>/: apps.json (public IDs only) and
+# implementer.pem, reviewer.pem (0600). The agent account only ever holds the one
+# set in ~/.config/januslin-agent/active/; its broker notices a change within a
+# minute, revokes the old tokens, and mints from the new set (scripts/token-broker.sh).
+# Nothing here prints a key or a token; secrets reach curl on stdin, never argv.
+set -eu
+umask 077
+
+command -v jq >/dev/null 2>&1 || { echo "januslin-keys: jq is required (ships with current macOS)." >&2; exit 1; }
+
+REPO="januswtlin/januslin.me"
+API="${JANUSLIN_KEYS_API:-https://api.github.com}"
+KEYS="${JANUSLIN_KEYS_DIR:-$HOME/.config/januslin-keys}"
+AGENT_HOME="${JANUSLIN_AGENT_HOME:-/Users/Agent}"
+AGENT_CONF="$AGENT_HOME/.config/januslin-agent"
+ROLES="implementer reviewer"
+
+die() { echo "januslin-keys: $*" >&2; exit 1; }
+
+usage() {
+  echo "usage: januslin-keys add <set> | use <set> | off | status" >&2
+  exit 2
+}
+
+# Runs a command as the agent account. -H sets HOME to the agent's: macOS sudo
+# keeps the caller's HOME by default. `cd /` avoids sudo's warning about a
+# current directory the agent cannot enter. The tests replace the prefix.
+as_agent() { (cd / && ${JANUSLIN_KEYS_AS_AGENT:-sudo -H -u Agent} "$@"); }
+
+valid_name() {
+  case "$1" in
+    ''|-*|*[!a-z0-9-]*) die "a set name is lowercase letters, digits, and hyphens: '$1'." ;;
+  esac
+  [ ${#1} -le 32 ] || die "a set name is at most 32 characters."
+}
+
+ask() { # $1 = prompt; sets $answer; fails at end of input
+  printf '%s' "$1" >&2
+  IFS= read -r answer || die "no answer; nothing changed."
+}
+
+b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
+
+jwt() { # $1 = App ID, $2 = key file
+  now=$(date +%s)
+  h=$(printf '{"alg":"RS256","typ":"JWT"}' | b64url)
+  p=$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' $((now - 60)) $((now + 540)) "$1" | b64url)
+  s=$(printf '%s.%s' "$h" "$p" | openssl dgst -sha256 -sign "$2" -binary | b64url)
+  printf '%s.%s.%s' "$h" "$p" "$s"
+}
+
+# GET $1 from the API, with bearer $2 if given; prints the body on HTTP 200.
+get() {
+  resp=$(mktemp "$KEYS/.response.XXXXXX")
+  code=$({
+    [ -z "${2:-}" ] || printf 'header = "Authorization: Bearer %s"\n' "$2"
+    printf 'header = "Accept: application/vnd.github+json"\n'
+    printf 'header = "X-GitHub-Api-Version: 2022-11-28"\n'
+    printf 'header = "User-Agent: januslin-keys"\n'
+  } | curl -sS --max-time 30 --config - -o "$resp" -w '%{http_code}' "$API$1") || code=000
+  if [ "$code" = 200 ]; then
+    cat "$resp"
+    rm -f "$resp"
+  else
+    echo "januslin-keys: GitHub returned HTTP $code for $1: $(jq -r '.message // empty' "$resp" 2>/dev/null)" >&2
+    rm -f "$resp"
+    return 1
+  fi
+}
+
+# The same checks the agent's scripts/agent-token.sh makes, so `use` never sends a
+# set the broker would refuse.
+check_set() { # $1 = set directory, $2 = set name
+  [ -f "$1/apps.json" ] || die "no set '$2' in $KEYS/sets."
+  jq -e --arg set "$2" '
+    def id: type == "number" and . > 0 and floor == .;
+    .version == 1 and .set == $set and .repository == "januswtlin/januslin.me"
+    and ([.apps.implementer, .apps.reviewer] | all(. != null and (.app_id | id)
+         and (.installation_id | id) and (.bot_user_id | id) and (.slug | type == "string")
+         and (.key | type == "string" and test("^[a-z0-9-]+\\.pem$"))))' "$1/apps.json" >/dev/null 2>&1 \
+    || die "$1/apps.json is not a valid set; run januslin-keys add $2 again."
+  for role in $ROLES; do
+    k="$1/$(jq -r --arg r "$role" '.apps[$r].key' "$1/apps.json")"
+    [ -f "$k" ] || die "missing key $k."
+    # GNU stat first: on Linux, `stat -f` succeeds with file-system output instead.
+    perm=$(stat -c '%a' "$k" 2>/dev/null || stat -f '%Lp' "$k")
+    [ "$perm" = 600 ] || die "key $k must be mode 0600 (is $perm)."
+  done
+}
+
+add() {
+  name=$1
+  valid_name "$name"
+  dir="$KEYS/sets/$name"
+  mkdir -p "$KEYS/sets"
+  chmod 700 "$KEYS" "$KEYS/sets"
+  if [ -e "$dir" ]; then
+    ask "Set '$name' exists. Replace it (for example with a new key)? [y/N] "
+    [ "$answer" = y ] || [ "$answer" = Y ] || die "nothing changed."
+  fi
+  new="$KEYS/sets/.new-$name"
+  rm -rf "$new"
+  mkdir "$new"
+  trap 'rm -rf "$new"' EXIT
+  sources="$new/.sources"
+  : > "$sources"
+  owner=
+  for role in $ROLES; do
+    ask "$role App ID (App settings > General > App ID): "
+    app_id=$answer
+    case "$app_id" in ''|*[!0-9]*) die "an App ID is a number: '$app_id'." ;; esac
+    default=$(ls -t "$HOME"/Downloads/*.private-key.pem 2>/dev/null | head -n 1 || true)
+    ask "$role private key file${default:+ [$default]}: "
+    src=${answer:-$default}
+    [ -n "$src" ] && [ -r "$src" ] || die "cannot read the key file '$src'."
+    openssl rsa -in "$src" -check -noout >/dev/null 2>&1 || die "$src is not an RSA private key."
+    cp "$src" "$new/$role.pem"
+    chmod 600 "$new/$role.pem"
+    printf '%s\n' "$src" >> "$sources"
+
+    t=$(jwt "$app_id" "$new/$role.pem")
+    app=$(get /app "$t") || die "the key does not belong to App $app_id, or GitHub refused it."
+    slug=$(printf '%s' "$app" | jq -er --argjson id "$app_id" 'select(.id == $id) | .slug') \
+      || die "the key belongs to another App, not $app_id."
+    this_owner=$(printf '%s' "$app" | jq -r '.owner.login')
+    [ -z "$owner" ] || [ "$owner" = "$this_owner" ] || die "both Apps of a set must have the same owner ($owner, $this_owner)."
+    owner=$this_owner
+    inst=$(get "/repos/$REPO/installation" "$t" | jq -er '.id') \
+      || die "App $slug is not installed on $REPO; install it on that repository only, then run add again."
+    bot=$(get "/users/$slug%5Bbot%5D" | jq -er '.id') || die "cannot find the bot user $slug[bot]."
+    jq -n --argjson app_id "$app_id" --argjson inst "$inst" --arg slug "$slug" --argjson bot "$bot" \
+      --arg key "$role.pem" \
+      '{app_id: $app_id, installation_id: $inst, slug: $slug, bot_user_id: $bot, key: $key}' > "$new/$role.json"
+    echo "januslin-keys: $role: $slug[bot] (bot user $bot), App $app_id, installation $inst, owner $owner" >&2
+  done
+  jq -n --arg set "$name" --arg owner "$owner" --arg repo "$REPO" \
+    --slurpfile i "$new/implementer.json" --slurpfile r "$new/reviewer.json" \
+    '{version: 1, set: $set, owner: $owner, repository: $repo,
+      apps: {implementer: $i[0], reviewer: $r[0]}}' > "$new/apps.json"
+  rm -f "$new/implementer.json" "$new/reviewer.json"
+  rm -rf "$dir"
+  mv "$new/.sources" "$KEYS/.sources-$name"
+  mv "$new" "$dir"
+  trap - EXIT
+  check_set "$dir" "$name"
+  echo "januslin-keys: set '$name' saved in $dir. It is not active; januslin-keys use $name makes it so." >&2
+  ask "Delete the key files you gave (the set has its own copies)? [Y/n] "
+  if [ "$answer" != n ] && [ "$answer" != N ]; then
+    while IFS= read -r f; do rm -f "$f"; done < "$KEYS/.sources-$name"
+  fi
+  rm -f "$KEYS/.sources-$name"
+}
+
+use() {
+  name=$1
+  valid_name "$name"
+  dir="$KEYS/sets/$name"
+  check_set "$dir" "$name"
+  as_agent sh -c 'umask 077; c=$1; mkdir -p "$c"; chmod 700 "$c"; rm -rf "$c/active.new"; mkdir "$c/active.new"' sh "$AGENT_CONF"
+  for f in apps.json $(jq -r '.apps[].key' "$dir/apps.json" | sort -u); do
+    as_agent sh -c 'umask 077; cat > "$1"' sh "$AGENT_CONF/active.new/$f" < "$dir/$f"
+  done
+  # Two renames: between them the broker sees no set for a moment, fails one
+  # mint, and tries again a minute later.
+  as_agent sh -c 'c=$1; rm -rf "$c/active.old"; if [ -e "$c/active" ]; then mv "$c/active" "$c/active.old"; fi
+    mv "$c/active.new" "$c/active"; rm -rf "$c/active.old"' sh "$AGENT_CONF"
+  echo "januslin-keys: '$name' is the active set. The broker switches within a minute (januslin-keys status)."
+}
+
+off() {
+  as_agent sh -c 'c=$1; rm -rf "$c/active" "$c/active.new" "$c/active.old"' sh "$AGENT_CONF"
+  echo "januslin-keys: no active set. Within a minute the broker revokes both tokens and mints no more."
+  echo "januslin-keys: if the agent account may be compromised, also suspend the Apps' installations (docs/runbooks/app-key-sets.md)."
+}
+
+status() {
+  echo "Sets in $KEYS/sets:"
+  found=0
+  for d in "$KEYS"/sets/*/; do
+    [ -f "$d/apps.json" ] || continue
+    found=1
+    jq -r '"  \(.set): \(.apps.implementer.slug), \(.apps.reviewer.slug) (owner \(.owner))"' "$d/apps.json"
+  done
+  [ "$found" = 1 ] || echo "  none"
+  active=$(as_agent sh -c 'cat "$1/active/apps.json" 2>/dev/null || true' sh "$AGENT_CONF" | jq -r '.set // empty' 2>/dev/null || true)
+  echo "Active in the agent account: ${active:-none}"
+  as_agent sh "$AGENT_HOME/januslin.me/scripts/token-broker.sh" status || true
+}
+
+cmd=${1:-}
+[ $# -eq 0 ] || shift
+case "$cmd" in
+  add) [ $# -eq 1 ] || usage; mkdir -p "$KEYS"; add "$1" ;;
+  use) [ $# -eq 1 ] || usage; use "$1" ;;
+  off) [ $# -eq 0 ] || usage; off ;;
+  status) [ $# -eq 0 ] || usage; status ;;
+  *) usage ;;
+esac
