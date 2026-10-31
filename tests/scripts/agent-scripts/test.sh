@@ -46,7 +46,7 @@ check "credential: answers for https://github.com/januswtlin/januslin.me" $?
 for input in \
   'protocol=https
 host=github.com
-path=januswtlin/januslin.me-archive.git
+path=januswtlin/januslin.me-other.git
 ' \
   'protocol=https
 host=github.com

@@ -1,6 +1,8 @@
 # Overview and architecture
 
-Last reviewed: 2026-10-29
+Last reviewed: 2026-10-31
+
+**What exists today:** the repository, its rules and settings, the agent identities, and the local AI sandbox with its coordinator (`docs/infra-current-state.md`). The site, the Worker, CI/CD, and the automation described below are the **target architecture**, built by the tasks in the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11); the old site still serves `januslin.me` until cutover (T17).
 
 ## Purpose
 
@@ -25,7 +27,7 @@ The site should read like a well-typeset book: typography-first, calm, fast, and
 
 ## People and roles
 
-- **Janus (author):** writes content, sets direction, reviews and merges every PR, does the steps that need the author's credentials (each task's "Human steps"; recurring ones in `docs/operations.md`).
+- **Janus (author):** writes content, sets direction, approves tasks, reviews and merges every PR, and does the steps that need the author's credentials, raised as `human-task` issues (`docs/admin-guide.md`).
 - **Agents:** `docs/agents/roles.md`. A coordinator session runs the task loop (ADR-0010).
 
 ## Limits to keep in mind
@@ -119,6 +121,7 @@ Entries with `draft: true` are committed and therefore public in the repository;
 ## Where things are decided
 
 - Technology and process choices: [`docs/decisions/`](decisions/README.md) (ADRs).
-- Work to do now: the [task board](tasks/README.md) and the [plan](tasks/plan.md).
+- Work to do now: the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11) and its task and human-task sub-issues (ADR-0014).
+- Steps for the author: [`docs/admin-guide.md`](admin-guide.md).
 - Ideas and future work: [`docs/roadmap.md`](roadmap.md).
 - Writing and publishing: [`docs/authoring-guide.md`](authoring-guide.md).

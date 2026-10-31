@@ -6,7 +6,7 @@
 ## Context
 Agents always have GitHub access, not necessarily Cloudflare access, and CI must also run checks unrelated to deployment (content validation, SEO outputs, secret scanning). The repository is public (ADR-0012), so GitHub Free gives it rulesets, environment secrets, and deployment branch policies, and standard Actions runners cost nothing.
 
-Several identities can write branches: the App `januslin-agent[bot]` (with Workflows write, so it can also push branch workflows), the machine account `januslin-agent` (Write collaborator, used by AI tools), and a phone's deploy key (ADR-0009). None of them may change `main` or reach the deploy token. On a private Free repository the first attempt emulated this with compensating controls; on a public repository GitHub enforces it.
+Several identities can write branches: the App `januslin-agent[bot]` (with Workflows write, so it can also push branch workflows), the machine account `januslin-agent` (Write collaborator, used by AI tools), and a phone's deploy key (ADR-0009). None of them may change `main` or reach the deploy token. A private repository on GitHub Free would need compensating controls for this; on a public repository GitHub enforces it.
 
 ## Decision
 - **GitHub Actions** runs all checks, builds, preview uploads (`wrangler versions upload --preview-alias pr-<n>`), and production deploys (`wrangler deploy`). Cloudflare Workers Builds is not used, so logs and checks stay in one place.
@@ -17,11 +17,11 @@ Several identities can write branches: the App `januslin-agent[bot]` (with Workf
 - No required reviewers on the environments: every commit on `main` is already the author's merge, and a second approval per publish adds friction for no protection. V3 records whether the owner could approve their own deploys, in case this is revisited.
 - Repository settings: default `GITHUB_TOKEN` read-only, Actions may not create or approve PRs, approval required for outside contributors' workflow runs.
 
-### What the first attempt's compensating controls become
+### Compensating controls a private Free repository would need, and why they are not used
 | Control (private repo on GitHub Free) | Now | Why |
 |---|---|---|
 | Per-commit deploy gate (every commit since the last deploy must be an author merge; forward-only; `GATE_ACCEPTED_SHAS` exceptions) | Dropped. The deploy job only skips a run that is no longer the tip of `main` | The ruleset makes every `main` commit an author merge and forbids force pushes, server-side |
-| `main-guard.yml` (incident issue on force pushes and non-PR commits) | Dropped | The ruleset refuses both; the quarterly review checks the ruleset itself. The coordinator's merge check (ADR-0011) still flags anything unexpected |
+| `main-guard.yml` (incident issue on force pushes and non-PR commits) | Dropped | The ruleset refuses both; the quarterly review checks the ruleset itself. The coordinator's merge check (ADR-0014) still flags anything unexpected |
 | `.githooks/pre-push` refusing pushes to `main` | Dropped | The server refuses them with a clear error. `.githooks/` keeps only `prepare-commit-msg` for the `Agent:` trailer |
 | `workflow_run` for deploys, wrangler config allow-list, last-deployed-commit Worker in previews | Deploy runs inside `ci.yml` on `main`; previews keep `workflow_run` with `main`'s Worker and config; no allow-list | `main` is trusted once only the author can update it. Previews still must not run a PR's `wrangler.jsonc` (a `build` command) next to the token |
 | Repository secrets readable by any branch workflow; "no `push`/`pull_request` workflow references a secret" rule | Environment secrets limited to `main` | Server-enforced |
@@ -33,7 +33,7 @@ Several identities can write branches: the App `januslin-agent[bot]` (with Workf
 
 ## Consequences
 - One required status check (`ci`), one place for logs.
-- The deploy token is created by the author (T14-H2) only after the environments exist.
+- The deploy token is created by the author (T14) only after the environments exist.
 - Changes to the ruleset, environments, or settings are the author's, and the quarterly review checks them.
 - A `workflow_run` job using a `main`-only environment is assumed to work (V9); the CI task confirms it.
 

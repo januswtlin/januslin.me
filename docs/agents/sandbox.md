@@ -1,70 +1,67 @@
 # The local AI sandbox
 
-Last reviewed: 2026-10-30 · Decision: ADR-0013
+Last reviewed: 2026-10-31 · Decision: ADR-0013
 
-How local AI runs: macOS (the author's Mac) → the standard macOS account `agent` (keys, broker, `sbx`, no AI) → one Docker Sandbox microVM `januslin` (Claude Code, Codex, the coordinator and its subagents, `pnpm verify`). T03 built and verified it with `sbx` v0.50.1; claims still untested are open verifications in `docs/infra-current-state.md`.
+How local AI runs, for agents and reviewers. The author's procedures (creating the sandbox, starting it, changing its policy and secrets) are in `docs/admin-guide.md`.
+
+macOS (the author's Mac) → the standard macOS account `agent` (keys, token broker, `sbx`, no AI) → one Docker Sandbox microVM, `januslin` (Claude Code, the coordinator and its subagents, `pnpm verify`). `sbx` version and the open questions about it: `docs/infra-current-state.md`.
 
 ## Layers
 
 | Layer | Holds | Runs | Can reach |
 |---|---|---|---|
 | The author's macOS account | Own GitHub login, SSH keys, Keychain | The author's tools | Everything the author can |
-| macOS account `agent` (host) | `januslin-agent.pem`, `januslin-reviewer.pem`, the Slack bot token, `sbx` and its Keychain secrets, the token broker | `sbx`, `scripts/token-broker.sh`, `git` for the host clone. **Never an AI tool.** | GitHub as the Apps (through the broker), Docker login |
-| Sandbox `januslin` (microVM, Linux) | A private clone of the repository; the one-hour tokens of both Apps and the non-secret coordinator config in read-only directories; never a key | Claude Code, Codex, the coordinator and subagents, `pnpm`, Playwright | Only the hosts on the allowlist below; credentials injected by the host proxy |
+| macOS account `agent` (host) | `januslin-agent.pem`, `januslin-reviewer.pem`, `sbx` and its keychain secrets, the token broker | `sbx`, `scripts/token-broker.sh`, `git` for the host clone. **Never an AI tool.** | GitHub as the Apps (through the broker), Docker login |
+| Sandbox `januslin` (microVM, Linux) | A private clone of the repository; the one-hour tokens of both Apps in a read-only directory; never a key | Claude Code, the coordinator and subagents, `pnpm`, Playwright | Only the hosts on the allowlist below; credentials injected by the host proxy |
 
 The sandbox never sees a `.pem`, the author's files, or the `agent` account's home outside its mounts. The host runs only reviewed code from `main` (the broker and the other host scripts are CODEOWNERS paths, `.github/CODEOWNERS`), never a branch the sandbox pushed.
 
-## Starting it
+## Inside the VM
 
-In `agent-session` (the host shell of the `agent` account; `docs/agents/local-agent-account.md`), from `~/januslin.me` on `main`:
+The sandbox is created from the kit in this repository, `sandbox/kit/spec.yaml` (a CODEOWNERS path), which extends the built-in `claude` agent (template `docker/sandbox-templates:claude-code-docker`). At creation the kit:
+- starts Claude Code with `--permission-mode auto` (see "Permissions inside the VM");
+- writes Claude Code's Linux managed settings in `/etc/claude-code/`;
+- installs Node 24 into `/opt/node24` from the official nodejs.org release at a pinned version, checked against `SHASUMS256.txt` (the template has Node 22), and enables pnpm through Node's bundled Corepack;
+- installs Chromium's system libraries with `playwright install-deps chromium` from Ubuntu's mirror, after disabling the template's Docker and GitHub CLI apt sources;
+- sets `PATH`, `AGENT_TOOL=claude`, `JANUSLIN_AGENT_STATE_DIR`, and the telemetry switches in `/etc/sandbox-persistent.sh` (sourced by every shell through `BASH_ENV`);
+- sets git's `core.hooksPath` and the credential helper in the system git config.
 
-```
-security unlock-keychain ~/Library/Keychains/sbx.keychain-db   # after each restart of the Mac
-scripts/token-broker.sh start            # mints both Apps' tokens now, then refreshes each with under 10 minutes left
-sbx run --name januslin                  # Claude Code in auto mode (see "Permissions inside the VM")
-```
+Mounts (read-only, writes refused even as root): the host clone at `/run/sandbox/source`, the token directory `sandbox-tokens/`, and `sandbox-config/` (empty; reserved for non-secret configuration).
 
-- Before the sandbox is created (or re-created), the `agent` account's `sbx` credential bindings file must approve Claude Code's OAuth for the kit. `sandbox/kit` is a third-party kit to `sbx`, and a third-party kit that extends a built-in agent may use the inherited credentials only with an approved binding ([credential bindings](https://docs.docker.com/ai/sandboxes/configuration/credentials/#credential-bindings)). `sbx` asks for it on the first interactive run; T03 created the sandbox without that prompt, so the proxy refused `/login` (`proxy: OAuth refresh denied (no authorizing binding)`, T21). The file holds approvals only, no secret; the author writes it in `agent-session`:
-  ```
-  f=~/.config/sbx/credentials.yaml; if [ -e "$f" ]; then echo "$f exists: merge by hand"; else mkdir -p ~/.config/sbx && ( umask 077; cat > "$f" <<'EOF'
-  bindings:
-    anthropic:
-      oauth:
-        domains: [platform.claude.com, api.anthropic.com]
-  EOF
-  ); fi
-  ```
-  The command refuses to overwrite an existing file; then add the `anthropic` entry by hand under `bindings:`. If `sbx` later asks to approve more domains for `anthropic`, approve only Claude's hosts and update this block.
-- The sandbox is created once, from the kit in this repository (`sandbox/kit/spec.yaml`, a CODEOWNERS path):
-  ```
-  sbx create --clone --name januslin ./sandbox/kit ~/januslin.me ~/.local/state/januslin-agent/sandbox-tokens:ro ~/.config/januslin-agent/sandbox-config:ro
-  ```
-  The kit extends the built-in `claude` agent (template `docker/sandbox-templates:claude-code-docker`) and, at creation: starts Claude Code with `--permission-mode auto`; writes the managed settings in `/etc/claude-code/`; installs Node 24 into `/opt/node24` from the official release on nodejs.org at a pinned version, checked against that release's `SHASUMS256.txt` (the template has Node 22), and enables pnpm through Node's bundled Corepack; installs Chromium's system libraries with `playwright install-deps chromium` from Ubuntu's mirror, after disabling the template's Docker and GitHub CLI apt sources (not allowed, tools already installed); sets `PATH`, `AGENT_TOOL=claude`, `JANUSLIN_AGENT_STATE_DIR`, and the telemetry switches in `/etc/sandbox-persistent.sh` (sourced by every shell through `BASH_ENV`); and sets git's `core.hooksPath` and the credential helper in the system git config. Creation needs the allowlist below.
-- `sbx rm januslin` deletes its clone (push every branch first) **and every policy rule scoped to it**; that is why the allowlist is global. After re-creating, re-run the T03 canary. To re-create from the template saved in T06 (T06-H7): `sbx create -t januslin:codex-<date> --clone --name januslin ./sandbox/kit …` (V28 confirms `-t` with a kit).
-- Clone mode copies the host's `origin` (`https://github.com/januswtlin/januslin.me.git`) into the VM, so branches are pushed to GitHub. The host clone gets a `sandbox-januslin` remote served by a git daemon on `127.0.0.1`; the host never fetches it.
-- Docker also writes a generic agent guide into the VM (`/Users/Agent/CLAUDE.md`, loaded by Claude Code as a parent-directory `CLAUDE.md`). Its advice on GitHub tokens, `"**"` network rules, and `git add -A` conflicts with this project; `AGENTS.md` ("Identity") says which wins.
-- Codex runs in the same sandbox: T06 installs the Codex CLI into `januslin` and the author saves the result with `sbx template save` ("Codex in the sandbox" below).
-- Remote Control (ADR-0011): allowed once on the host with `sbx settings set claude.remoteControl true` in `agent-session` (T05-H4). The author starts it from the sandboxed session's terminal with `/remote-control`; the coordinator never starts it. GitHub access from that session stays on the Apps (a push from it shows `januslin-agent[bot]`), and it needs no host beyond the allowlist (V21, 2026-10-30).
-- Stop with `sbx stop januslin`. The broker keeps running only while the sandbox is in use (`scripts/token-broker.sh stop`).
+Clone mode gives the VM its own clone, with the host's `origin` (`https://github.com/januswtlin/januslin.me.git`), so branches are pushed to GitHub. The host clone has a `sandbox-januslin` remote served by a git daemon on `127.0.0.1`; the host never fetches it.
+
+Docker also writes a generic agent guide into the VM (`/Users/Agent/CLAUDE.md`, loaded by Claude Code as a parent-directory `CLAUDE.md`). Its advice on GitHub tokens, `"**"` network rules, and `git add -A` conflicts with this project; `AGENTS.md` ("Identity") wins.
+
+Remote Control is allowed for this sandbox (`claude.remoteControl`). The author starts it with `/remote-control` in the session; the coordinator never does. GitHub access from a Remote Control session stays on the Apps, and Remote Control needs no host beyond the allowlist.
+
+## GitHub tokens
+
+- The host broker (`scripts/token-broker.sh`) mints one-hour installation tokens for both Apps with `scripts/agent-token.sh`, which runs only on the host, and moves each finished token file into `sandbox-tokens/` (`januslin-agent.token`, `januslin-reviewer.token`). It refreshes a token with under 10 minutes left, checked every minute. The directory never holds a key.
+- In the VM, `JANUSLIN_AGENT_STATE_DIR` points the scripts at that mount:
+  - `scripts/agent-gh <januslin-agent|januslin-reviewer> <gh args…>` runs `gh` with that App's token for one process, for example `scripts/agent-gh januslin-agent pr create --draft …` or `scripts/agent-gh januslin-reviewer pr review <n> --approve`.
+  - Git pushes use `scripts/agent-git-credential` (in the system git config), which reads the `januslin-agent` token and answers only for `januswtlin/januslin.me`.
+- The VM's `GH_TOKEN` is a placeholder that GitHub rejects, so plain `gh` fails; always use `scripts/agent-gh`.
+- Never run `gh auth login`, never run `scripts/agent-gh <app> auth token` (it prints the token), and never put a GitHub token in an environment variable or argv.
+- A push or `gh` call that fails with an expired token means the broker stopped: report it, do not work around it.
+- `prepare-commit-msg` adds the `Agent:` trailer but does not run on rebase picks; check the trailer if you ever rebase a local, unpushed branch.
+
+Why tokens are files and not proxy-injected: an `sbx` `github` secret makes the proxy replace every Authorization header to GitHub, the reviewer's included, so reviews would post as the implementer (ADR-0013, "Outcome of T03").
 
 ## Credentials
 
 | Credential | Where it lives | How the sandbox uses it |
 |---|---|---|
-| `januslin-agent` installation token | Minted by the broker into `/Users/Agent/.local/state/januslin-agent/sandbox-tokens/januslin-agent.token` (mounted read-only) | `scripts/agent-git-credential` (system git config in the VM) and `scripts/agent-gh januslin-agent` read it; `JANUSLIN_AGENT_STATE_DIR` points them at the mount. This is ADR-0013's fallback: the preferred `sbx secret set github --command …` worked for the implementer (V17) but the proxy then replaces **every** Authorization header to GitHub, the reviewer's included (V18 failed, 2026-10-30), so it is not used. The VM's `GH_TOKEN` is a placeholder that GitHub rejects, so plain `gh` fails; always use `scripts/agent-gh` |
-| `januslin-reviewer` token | `sandbox-tokens/januslin-reviewer.token` (mounted read-only) | `scripts/agent-gh januslin-reviewer` passes it to one `gh` process (V18 passed with no `github` secret) |
-| Claude subscription login | `/login` inside the sandbox, approved by the `anthropic` OAuth binding above. The proxy intercepts the token response and keeps the real tokens on the host, in `sbx`'s secret store (`sbx secret ls`: `anthropic`, global, "oauth configured"); the VM's `~/.claude/.credentials.json` holds 26-character sentinels (V24, 2026-10-30). It survives `sbx stop` and `sbx run` | Injected by the proxy on Claude's hosts. The agent can use the login through the proxy but cannot read or copy the token. The secret is global because `sbx` creates it that way; only `januslin` exists |
-| Codex ChatGPT login | `sbx secret set openai --oauth`, on the host, in the `agent` account's keychain (`sbx.keychain-db`; V22). `sbx` v0.50.1's help says `--oauth` is "openai/global only", so it cannot be scoped to `januslin` | Injected by the proxy |
-| Slack bot token | `/Users/Agent/.config/januslin-agent/slack-bot-token` on the host | The author runs `sbx secret set-custom --sandbox januslin --host slack.com --env SLACK_BOT_TOKEN --command 'cat /Users/Agent/.config/januslin-agent/slack-bot-token'` (T04-H2, V23). Fallback: the author copies the token into `/Users/Agent/.config/januslin-agent/sandbox-config/` (read-only in the VM) |
-| Cloudflare ops token (T14, T15, T17 only) | Written by the author into `/Users/Agent/.local/state/januslin-agent/cloudflare-ops.token` on the host | The author runs `sbx secret set-custom --sandbox januslin --host api.cloudflare.com --env CLOUDFLARE_API_TOKEN --command 'cat /Users/Agent/.local/state/januslin-agent/cloudflare-ops.token'` and `sbx policy allow network --sandbox januslin api.cloudflare.com` at the start (T14-H1), and removes both at the end (T14-H3). V25: wrangler works with the placeholder |
+| `januslin-agent` installation token | `sandbox-tokens/januslin-agent.token`, written by the broker on the host, mounted read-only | `scripts/agent-git-credential` and `scripts/agent-gh januslin-agent` |
+| `januslin-reviewer` installation token | `sandbox-tokens/januslin-reviewer.token`, the same way | `scripts/agent-gh januslin-reviewer` |
+| Claude subscription login | `sbx`'s secret store on the host (`sbx secret ls`: `anthropic`, global, "oauth configured"). The VM's `~/.claude/.credentials.json` holds 26-character sentinels only. It survives `sbx stop` and `sbx run` | Injected by the proxy on Claude's hosts. The agent can use the login through the proxy but cannot read or copy the token |
 
-The App keys are never mounted, and the token-only directory never holds a key. `sbx` keeps its Docker login and secrets in the `agent` account's dedicated keychain `~/Library/Keychains/sbx.keychain-db`, because that account has no login keychain (it is never logged in at the desktop; V15). `sbx secret set --command` stores the command, not the value, and the daemon replays it from a fresh temporary directory on the host, so commands use absolute paths; the command only reads a file, so no secret appears in its text. The agent inside the VM cannot run `sbx`; every `sbx secret` and `sbx policy` change is the author's, in `agent-session`.
+The App keys are never mounted. The agent inside the VM cannot run `sbx`; every `sbx secret` and `sbx policy` change is the author's, in the host shell. If a later `sbx` or kit change made the Claude login readable in the VM, the author has accepted that in advance (2026-10-30): no connector holding personal data is connected, egress is allowlisted, and Remote Control needs the full login.
 
-**What an agent can still leak.** Anything readable in the VM (the one-hour tokens of both Apps; not the Claude login, which stays on the host, V24) can be sent out over an allowed host: pushed to a public branch, posted in an issue or on Slack. A pushed branch workflow is a second way out: it runs networked code on GitHub's runners, outside this allowlist (with no secrets; `docs/security.md`). The limits are the one-hour token lifetime, GitHub secret scanning with push protection, and the Write ceiling of each identity; no key and no long-lived GitHub credential is ever readable.
+**What an agent can still leak.** Anything readable in the VM (the one-hour tokens of both Apps) can be sent out over an allowed host: pushed to a public branch, or posted in an issue. A pushed branch workflow is a second way out: it runs networked code on GitHub's runners, outside this allowlist (with no secrets; `docs/security.md`). The limits are the one-hour token lifetime, GitHub secret scanning with push protection, and the Write ceiling of each identity; no key and no long-lived GitHub credential is ever readable.
 
 ## Egress allowlist
 
-Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. Only `januslin` exists, so global and scoped are the same in effect. Each host is limited to port 443 (or 80 for Ubuntu's mirror). Kits add their own per-sandbox rules; `sbx policy ls januslin --wide` must show exactly this table.
+Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. Only `januslin` exists, so global and scoped are the same in effect. Each host is limited to port 443 (or 80 for Ubuntu's mirror). `sbx policy ls januslin --wide` must show exactly this table.
 
 | Host | Rule | Why |
 |---|---|---|
@@ -72,58 +69,44 @@ Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`)
 | `registry.npmjs.org` | `:443` | `pnpm install`, Corepack's pnpm download |
 | `nodejs.org` | `:443`, HTTP `GET,HEAD`, path `/dist/**` | Node 24 for the kit: the release tarball and its `SHASUMS256.txt` |
 | `cdn.playwright.dev`, `playwright.download.prss.microsoft.com` | `:443` | `pnpm exec playwright install chromium` (Mermaid at build time, tests) |
-| `storage.googleapis.com` | `:443`, HTTP `GET,HEAD`, path `/chrome-for-testing-public/**` | `cdn.playwright.dev` redirects Chromium downloads to Google's Chrome for Testing bucket; other paths and methods are refused (403, checked) |
+| `storage.googleapis.com` | `:443`, HTTP `GET,HEAD`, path `/chrome-for-testing-public/**` | `cdn.playwright.dev` redirects Chromium downloads to Google's Chrome for Testing bucket; other paths and methods are refused (403) |
 | `ports.ubuntu.com` | `:80`, HTTP `GET,HEAD`, path `/ubuntu-ports/**` | Chromium's system libraries, installed by the kit; `apt` verifies Ubuntu's signatures |
-| `api.anthropic.com`, `bridge.claudeusercontent.com`, `claude.com`, `code.claude.com`, `downloads.claude.ai`, `mcp-proxy.anthropic.com`, `platform.claude.com` | `:443`, added by the Claude Code kit (inherited by `sandbox/kit`) | Claude Code, including Remote Control, which needs nothing more (V21) |
-| OpenAI hosts | added in T06 | Codex |
-| `slack.com` | `:443`, added in T04 | `scripts/coordinator-channel.sh` |
-| `api.cloudflare.com` | `:443` | Only during T14, T15, T17; the author adds the rule at the start (T14-H1) and removes it at the end (T14-H3) |
+| `api.anthropic.com`, `bridge.claudeusercontent.com`, `claude.com`, `code.claude.com`, `downloads.claude.ai`, `mcp-proxy.anthropic.com`, `platform.claude.com` | `:443`, added by the Claude Code kit (inherited by `sandbox/kit`) | Claude Code, including Remote Control |
 
 `WRANGLER_SEND_METRICS=false` and `ASTRO_TELEMETRY_DISABLED=1` are set in the sandbox so no telemetry host is needed.
 
-`sbx` v0.50.1 stops listing the `default-deny-all` rule once other local rules exist, though the default deny still applies (`sbx diagnose`: "Global network policy — initialized"). Check the deny by behavior: `curl https://example.com` in the VM returns 403 "Approval required" and appears in `sbx policy approval ls`. The template's own start-up requests to `cli.github.com` and `download.docker.com` (its package sources, which the kit disables) can also appear there; dismiss them. The default filesystem rules (`read`/`write` allow `**`) govern which host paths `sbx` may mount; only the `agent` account runs `sbx create`, with the mounts above.
+`sbx` stops listing the `default-deny-all` rule once other local rules exist, though the default deny still applies (`sbx diagnose`: "Global network policy — initialized"). Check the deny by behavior: `curl https://example.com` in the VM returns 403 "Approval required" and appears in `sbx policy approval ls`. The template's own start-up requests to `cli.github.com` and `download.docker.com` (its package sources, which the kit disables) can also appear there; dismiss them.
 
-### Adding a host
-1. The agent reports the blocked host (`sbx policy approval ls` on the host shows it) and why it is needed, through the coordinator.
-2. The author decides. If yes, in `agent-session`: `sbx policy allow network <host>:443` (narrower with `--method` and `--path` where possible).
-3. The same day, a docs PR adds the row to the table above. A rule without a row is a finding in the quarterly review.
-
-Never use `allow-all` or `**`.
+**Adding a host:** the agent raises a `human-task` issue naming the blocked host (`sbx policy approval ls` on the host shows it) and why it is needed. The author decides and adds the rule (`docs/admin-guide.md`, "Allow a new host"); the same day a docs PR adds the row above. A rule without a row is a finding in the quarterly review. Never `allow-all` or `**`.
 
 ## Permissions inside the VM
 
-**Claude Code runs in auto mode, not bypass mode** (decided by the author, 2026-10-30). Anthropic's [permission modes](https://code.claude.com/docs/en/permission-modes) doc says bypass mode "offers no protection against prompt injection or unintended actions" and is meant for isolated environments "without internet access". This VM has allowlisted internet, and what matters most is on GitHub, reachable with the one-hour App tokens in the read-only mount, which the VM boundary does not protect. Auto mode runs a classifier on every action, subagents included; by default it blocks, among others, sending sensitive data to external endpoints, force pushes, `git reset --hard` and similar, downloading and running code, and printing a live credential.
+**Claude Code runs in auto mode, not bypass mode** (the author, 2026-10-30). Anthropic's [permission modes](https://code.claude.com/docs/en/permission-modes) doc says bypass mode "offers no protection against prompt injection or unintended actions" and is meant for isolated environments "without internet access". This VM has allowlisted internet, and what matters most is on GitHub, reachable with the one-hour App tokens, which the VM boundary does not protect. Auto mode runs a classifier on every action, subagents included; by default it blocks, among others, sending sensitive data to external endpoints, force pushes, `git reset --hard` and similar, downloading and running code, and printing a live credential.
 
-How it is set: the templates launch `claude --dangerously-skip-permissions`. A mixin kit cannot change the launch, so `sandbox/kit` is a full sandbox kit that extends `claude` with `sandbox.entrypoint: [claude, "--permission-mode", "auto"]`, and also writes Claude Code's Linux managed settings (`/etc/claude-code/managed-settings.json`: `permissions.disableBypassPermissionsMode: "disable"`, `permissions.defaultMode: "auto"`) as a backstop for any other launch. Live check after the first working `/login` (V26, T21): the session shows `auto mode on`, and `claude --dangerously-skip-permissions` starts but runs in auto mode (`"permissionMode":"auto"` in `stream-json` output), so the managed settings hold even if the entrypoint is bypassed. Inside the VM the agent is root, so these settings are defaults, not a control against a determined agent; the classifier is the check against injected instructions.
+How it is set: the templates launch `claude --dangerously-skip-permissions`, and a mixin kit cannot change the launch, so `sandbox/kit` is a full kit with `sandbox.entrypoint: [claude, "--permission-mode", "auto"]`. Its managed settings (`/etc/claude-code/managed-settings.json`: `permissions.disableBypassPermissionsMode: "disable"`, `permissions.defaultMode: "auto"`) back that up: the session shows `auto mode on`, and `claude --dangerously-skip-permissions` starts but runs in auto mode. Inside the VM the agent is root, so these settings are defaults, not a control against a determined agent; the classifier is the check against injected instructions.
 
 Behavior to know:
-- After 3 consecutive or 20 total blocks, auto mode pauses and asks. In the interactive coordinator session that means the loop waits until someone answers; the author can answer through Remote Control. How the author learns that the session waits is T04's (moved from T05, 2026-10-30). V27 records how this goes in long unattended runs.
+- After 3 consecutive or 20 total blocks, auto mode pauses and asks. In the interactive coordinator session the loop then waits until someone answers; the author can answer through Remote Control.
 - Subagents (implementers and reviewers started with the Agent tool) are checked by the same classifier before they start, while they run, and when they finish; a block inside a subagent surfaces in the coordinator's session and counts toward the pause. Implementers report blocked actions in their handoff.
 - Blocked actions are listed in `/permissions` → Recently denied.
 
-**Codex:** `codex exec --sandbox workspace-write --approve-for-me` (and in config, `approval_policy = "on-request"`, `approvals_reviewer = "auto_review"`, `[sandbox_workspace_write] network_access = true`), not `--dangerously-bypass-approvals-and-sandbox`. Codex's own sandbox keeps edits to the workspace and asks before leaving it; automatic review routes those requests through a reviewer agent that "checks for data exfiltration, credential probing, persistent security weakening" and fails closed ([approvals and security](https://learn.chatgpt.com/docs/agent-approvals-security), [non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)). Network inside Codex's sandbox is on because `sbx` already limits egress to the allowlist. V29 checks that Codex's Linux sandbox and automatic review work inside the microVM; Under `workspace-write`, `.git` is read-only, so every commit and push escalates to automatic review; V29 includes them. If the Codex sandbox cannot run in the VM, the only fallback is `--sandbox danger-full-access`, where almost nothing escalates, so automatic review would check nearly nothing: that fallback is an author decision, asked in T06.
+The repository's `.claude/settings.json` denies the claude.ai connector tools (`mcp__claude_ai_*`) and the cron and scheduled-task tools (`CronCreate`, `CronList`, `CronDelete`, `RemoteTrigger`) as defaults. Check it with `/permissions`, or without a prompt: `claude -p ok --output-format stream-json --verbose --max-turns 1 | head -1 | jq '.tools'` (23 tools in the repository, 29 outside it).
 
-Codex's actions are not seen by Claude's classifier: auto mode sees only the `codex exec ...` command the coordinator runs (and might block it, V30). Inside a Codex run, only Codex's sandbox and automatic review check its actions.
+**Docker's MCP gateway is denied** (the author, 2026-10-30). The sandbox template wires a user-level MCP server, `mcp-gateway` (`http://mcp-gateway.docker.internal/mcp` in `~/.claude.json`, its credential managed by the proxy). Its tools (`mcp-find`, `mcp-add`, `mcp-config-set`, `mcp-exec`, `code-mode`) would let an agent add and run unreviewed tools at runtime, so `.claude/settings.json` denies `mcp__mcp-gateway__*`. The server still connects; only its tools are withheld. A future MCP server comes in through a PR that changes this file (a CODEOWNERS path).
 
-The repository's `.claude/settings.json` denies the claude.ai connector tools and the cron and scheduled-task tools as defaults, and the Codex project config does the same where it can. V31 (T05) checked that it loads: `RemoteTrigger` and the `mcp__claude_ai_*` tools are not offered in the repository, though the claude.ai connector itself connects. Check it with `/permissions` (the deny list shows these entries), or without a prompt: `claude -p ok --output-format stream-json --verbose --max-turns 1 | head -1 | jq '.tools'`.
-
-**Docker's MCP gateway is denied (decided by the author, 2026-10-30).** The sandbox template wires a user-level MCP server, `mcp-gateway` (`http://mcp-gateway.docker.internal/mcp` in `~/.claude.json`, its credential managed by the proxy). Its tools (`mcp-find`, `mcp-add`, `mcp-config-set`, `mcp-exec`, `code-mode`) would let an agent add and run unreviewed tools at runtime, so `.claude/settings.json` denies `mcp__mcp-gateway__*`. A future need for an MCP server goes through a PR that changes this file (a CODEOWNERS path). Checked as for `RemoteTrigger`: the `init` tool list has 23 tools in the repository and 29 outside it; the six missing are `RemoteTrigger` and the five gateway tools. The gateway server itself still connects; only its tools are withheld.
-
-**Claude login readable in the VM (decided, 2026-10-30):** if V24 finds the `/login` credential readable inside the VM, the author accepts it. Reasons: connectors that hold personal data are removed (T05-H1), egress is allowlisted, and Remote Control needs the full login. **V24 result (T21, 2026-10-30): not readable.** The VM holds only sentinels; the real tokens stay in `sbx`'s host secret store. The acceptance stays as the fallback if a later `sbx` or kit change sets `passthrough`.
-
-**Workflows permission on every implementer token (decided, 2026-10-30):** every `januslin-agent` token keeps Workflows write (option A), and before merging, the coordinator and the author confirm `ci` from the `ci.yml` run for the exact head commit. **Trigger to change:** T16 tests whether a workflow pushed to another branch can post a passing check or status named `ci` on a PR's head commit. If it can, switch to option B in a follow-up PR: the broker mints the everyday token without `workflows`, and the author enables it for a workflow task with one host command (`scripts/token-broker.sh workflows on|off`). The result and the switch are recorded in ADR-0009.
-
-## Codex in the sandbox
-
-The coordinator (Claude Code) dispatches tasks to Codex inside the same VM (T06):
-- **Runtime:** the Codex CLI is installed in the `januslin` sandbox (from the Claude template), and the author saves it with `sbx template save` so a re-created sandbox keeps it. A saved template captures the whole container filesystem, including anything stored in it and anything the root agent changed (`/etc` settings, binaries, git config), so it is not a clean slate: save only right after a reviewed install, keep it in the local image store (never push it to a registry), and re-check the canary after re-creating. User-level config under `/home/agent` (`~/.codex`) may not survive; V28 checks, and anything that must survive lives in the repository or in `/etc`. This needs no Docker Desktop: building a custom template with a Dockerfile does ([kits v2](https://docs.docker.com/ai/sandboxes/customize/kits-v2/)), saving a configured sandbox does not ([usage](https://docs.docker.com/ai/sandboxes/usage/)). Codex's ChatGPT login is the host-side `sbx secret set openai --oauth` (the docs do not show `--oauth` with `--sandbox`; V22 records whether scoping works) (V28: Codex in a Claude-template sandbox uses the injected credential).
-- **Mechanism:** `codex exec` with `--json`, `--output-schema` for the result, `-o` for the final message, and `codex exec resume <SESSION_ID>` for review fixes in the same session. The official `codex-plugin-cc` plugin (`/codex:rescue`, `/codex:status`, `/codex:result`, background jobs) wraps the same CLI but is built for a person at the keyboard and does not document sandbox or approval flags, so the loop uses `codex exec`; the plugin may be used ad hoc.
-- **Fallback** if V28 or V29 fails: a host-side launcher (`scripts/codex-launch.sh`, a CODEOWNERS path, run from `main` only) runs Codex in a second sandbox from the `codex` template, which needs its own `github` secret and network policy. It is fed through a narrow read-write dispatch directory that it treats as data: it accepts only file names that match a task-ID pattern, never follows symlinks, never writes into that directory, and builds the prompt itself. T06 records which one is in use.
+**Workflows permission on the implementer token** (the author, 2026-10-30): every `januslin-agent` token has Workflows write, and before merging, the coordinator and the author confirm `ci` from the `ci.yml` run for the exact head commit (ADR-0009, risk 5).
 
 ## Tests in the sandbox
 
-`pnpm verify`, Playwright, and visual snapshots run on Linux in the VM, the same platform as CI, so one set of baselines serves both. Dev servers started by agents bind inside the VM; publish a port with `sbx ports januslin --publish <port>` only when the author asks to see something.
+`pnpm verify`, Playwright, and visual snapshots run on Linux in the VM, the same platform as CI, so one set of baselines serves both. Dev servers started by agents bind inside the VM; a port is published to the host (`sbx ports januslin --publish <port>`) only when the author asks to see something.
 
 ## Checks
 
-The canary and the other verifications are in T03. The quarterly review (`docs/operations.md`) re-runs the canary and compares `sbx policy ls januslin` with the table above.
+The quarterly review (`docs/operations.md`) re-runs the canary (no key or host file outside the read-only mounts is readable from the VM) and compares `sbx policy ls januslin --wide` with the allowlist above.
+
+## Planned changes
+
+- **Codex** (T06, [#14](https://github.com/januswtlin/januslin.me/issues/14)): the Codex CLI installed in this sandbox and saved as a template; its ChatGPT login through `sbx secret set openai --oauth`, kept on the host; `codex exec --sandbox workspace-write --approve-for-me` with automatic review, never full bypass; OpenAI hosts added to the allowlist. The issue holds the design and the fallback.
+- **Cloudflare ops token** (T14, [#18](https://github.com/januswtlin/januslin.me/issues/18); also T15, T17): while a Cloudflare task runs, the author lends a short-lived token that the proxy injects for `api.cloudflare.com` as `CLOUDFLARE_API_TOKEN`, with a temporary rule for that host (`docs/admin-guide.md`). V25 checks that wrangler works with the placeholder.
+- **Narrow implementer token** (decided trigger, T16, [#23](https://github.com/januswtlin/januslin.me/issues/23)): if a branch workflow can post a passing `ci` check on another PR's head commit, the broker mints the everyday token without `workflows`, and the author enables it per workflow task with `scripts/token-broker.sh workflows on|off`.
+- **`main` watch** (T04, [#13](https://github.com/januswtlin/januslin.me/issues/13)): `scripts/main-watch.sh` keeps its state in `~/.local/state/januslin-agent/main-watch.state` in the VM.

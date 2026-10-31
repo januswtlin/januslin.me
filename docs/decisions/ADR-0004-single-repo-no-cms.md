@@ -4,7 +4,7 @@
 - Deciders: Janus, coordinator session
 
 ## Context
-The author writes on the laptop (iA Writer, Obsidian) and sometimes on the phone. Content and code could live apart, and a web CMS could serve the phone. GitHub has no path-level write permission, so a "content only" credential for a CMS cannot be enforced; the first attempt's attempts to emulate it in CI kept leaking.
+The author writes on the laptop (iA Writer, Obsidian) and sometimes on the phone. Content and code could live apart, and a web CMS could serve the phone. GitHub has no path-level write permission, so a "content only" credential for a CMS cannot be enforced, and a CI check that rejects non-content changes runs only after the credential has already written them.
 
 ## Decision
 - **One repository.** The Astro project is at the root; `content/` sits at the root, outside `src/`, and is owned by the author: plain Markdown, documented frontmatter, co-located images, no MDX, no framework components. Agents' write scope on it is set by `docs/agents/roles.md` and enforced by review.

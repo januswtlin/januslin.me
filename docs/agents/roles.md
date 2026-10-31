@@ -1,16 +1,16 @@
 # Agent roles
 
-Last reviewed: 2026-10-29
+Last reviewed: 2026-10-31
 
 Each dispatched session takes exactly one role. The role determines what it may change. If a task needs changes outside the role's write scope, split the task or escalate to the coordinator.
 
 ## Roles
 
 ### Coordinator (the author, assisted by a coordinator session)
-- Owns direction: ADRs, roadmap, task specs, priorities. The author decides; the coordinator session proposes and writes.
-- The author merges every PR and resolves `needs-human` items. Only the author merges.
+- Owns direction: ADRs, roadmap, task issues, priorities. The author decides (approves tasks with the `approved` label, orders the plan issue); the coordinator session proposes and writes.
+- The author merges every PR, closes human tasks, and resolves `needs-human` items. Only the author merges.
 - A coordinator session in the local sandbox dispatches tasks to implementer subagents and starts reviewer subagents, following "Coordinator loop" in `docs/agents/workflow.md` (ADR-0010). Each subagent takes exactly one role and acts through that role's App.
-- Coordinator sessions write `docs/` (except `docs/reports/`) and never implement features.
+- Coordinator sessions write `docs/` (except `docs/reports/`) and issues (task and human-task issues, comments, assignments to the author), and never implement features. They never close task or human-task issues (only the author's closes count, ADR-0014).
 
 ### Site Engineer
 - Builds and maintains the Astro site: theme, components, layouts, routes, content collections, topic hubs, i18n routing, search, images, rich content, SEO outputs implementation.
@@ -18,7 +18,7 @@ Each dispatched session takes exactly one role. The role determines what it may 
 
 ### Platform Engineer (SRE)
 - Owns `wrangler.jsonc`, `worker/`, `.github/`, `.githooks/`, agent scripts in `scripts/`, `public/_headers`, `public/_redirects`, Cloudflare zone configuration (via API with a token from the author, documented in `docs/infra-current-state.md`), security controls, cutover, incidents, limits monitoring.
-- Prepares GitHub repository settings, rulesets, and environments as exact commands or clicks; the author applies them (agents never hold admin rights).
+- Prepares GitHub repository settings, rulesets, and environments as exact commands or clicks in `human-task` issues; the author applies them (agents never hold admin rights).
 
 ### Upgrade Engineer
 - Keeps dependencies, Astro, Node, pnpm, and GitHub Actions versions current, and runs the monthly Retypeset upstream watch (`docs/operations.md`).
@@ -57,6 +57,10 @@ Each dispatched session takes exactly one role. The role determines what it may 
 | `docs/reports/` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Cloudflare zone/account settings | ❌ | ✅ (task-listed, with the author's token) | ❌ | ❌ | ❌ | ❌ |
 | GitHub repo settings, rulesets, environments, secrets | ❌ | prepares; the author applies | ❌ | ❌ | ❌ | ❌ |
+| GitHub issues: create task and human-task issues, assign the author | ❌ (report to the coordinator) | ❌ (report to the coordinator) | ❌ | ❌ | ❌ | ✅ |
+| GitHub issues: comment | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+Without a coordinator (a session the author started directly), the implementer raises its own human-task issues.
 
 One-time exception: T10 creates the empty `content/` skeleton (`.gitkeep` files, an empty `taxonomy/tags.yaml`, and `content/_templates/`). After that, the content rows apply without exception.
 

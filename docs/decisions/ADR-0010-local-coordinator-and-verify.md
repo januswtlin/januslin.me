@@ -1,5 +1,5 @@
 # ADR-0010: A local coordinator session dispatches subagents, and `pnpm verify` gates every task
-- Status: accepted
+- Status: accepted; where task state lives (`docs/tasks/`, `pnpm tasks`) is superseded by ADR-0014: tasks and human steps are GitHub issues
 - Date: 2026-10-29
 - Deciders: Janus, coordinator session
 
