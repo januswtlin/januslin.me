@@ -115,13 +115,17 @@ add() {
   sources="$new/.sources"
   : > "$sources"
   owner=
+  first_id=
   for role in $ROLES; do
     ask "$role App ID (App settings > General > App ID): "
     app_id=$answer
     case "$app_id" in ''|*[!0-9]*) die "an App ID is a number: '$app_id'." ;; esac
+    [ "$app_id" != "$first_id" ] || die "the implementer and the reviewer must be two different Apps (ADR-0009)."
+    first_id=${first_id:-$app_id}
     default=$(ls -t "$HOME"/Downloads/*.private-key.pem 2>/dev/null | head -n 1 || true)
     ask "$role private key file${default:+ [$default]}: "
     src=${answer:-$default}
+    case "$src" in "~/"*) src="$HOME/${src#"~/"}" ;; esac
     [ -n "$src" ] && [ -r "$src" ] || die "cannot read the key file '$src'."
     openssl rsa -in "$src" -check -noout >/dev/null 2>&1 || die "$src is not an RSA private key."
     cp "$src" "$new/$role.pem"
@@ -154,9 +158,15 @@ add() {
   trap - EXIT
   check_set "$dir" "$name"
   echo "januslin-keys: set '$name' saved in $dir. It is not active; januslin-keys use $name makes it so." >&2
-  ask "Delete the key files you gave (the set has its own copies)? [Y/n] "
-  if [ "$answer" != n ] && [ "$answer" != N ]; then
-    while IFS= read -r f; do rm -f "$f"; done < "$KEYS/.sources-$name"
+  # Only downloads are offered for deletion: a path given from a set (re-running
+  # add with the set's own keys) is that set's only copy.
+  if grep -q "^$HOME/Downloads/" "$KEYS/.sources-$name"; then
+    ask "Delete the downloaded key files in ~/Downloads (the set has its own copies)? [Y/n] "
+    if [ "$answer" != n ] && [ "$answer" != N ]; then
+      while IFS= read -r f; do
+        case "$f" in "$HOME"/Downloads/*) rm -f "$f" ;; esac
+      done < "$KEYS/.sources-$name"
+    fi
   fi
   rm -f "$KEYS/.sources-$name"
 }
@@ -170,8 +180,9 @@ use() {
   for f in apps.json $(jq -r '.apps[].key' "$dir/apps.json" | sort -u); do
     as_agent sh -c 'umask 077; cat > "$1"' sh "$AGENT_CONF/active.new/$f" < "$dir/$f"
   done
-  # Two renames: between them the broker sees no set for a moment, fails one
-  # mint, and tries again a minute later.
+  # Two renames. A broker check that falls between them sees no set: it revokes
+  # both tokens and mints from the new set at the next check, up to two minutes
+  # without tokens. A switch revokes the old tokens anyway.
   as_agent sh -c 'c=$1; rm -rf "$c/active.old"; if [ -e "$c/active" ]; then mv "$c/active" "$c/active.old"; fi
     mv "$c/active.new" "$c/active"; rm -rf "$c/active.old"' sh "$AGENT_CONF"
   echo "januslin-keys: '$name' is the active set. The broker switches within a minute (januslin-keys status)."

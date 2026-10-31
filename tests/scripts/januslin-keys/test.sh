@@ -91,6 +91,19 @@ answers n | sh "$tool" add second >/dev/null 2>&1
 [ -f "$keys/sets/second/apps.json" ] && [ -e "$HOME/Downloads/impl.private-key.pem" ]
 check "add: keeps the downloaded keys when told no" $?
 
+s="$keys/sets/janus"
+printf '%s\n' y 101 "$s/implementer.pem" 102 "$s/reviewer.pem" | sh "$tool" add janus >/dev/null 2>&1; rc=$?
+[ $rc -eq 0 ] && cmp -s "$s/implementer.pem" "$tmp/impl.pem" && cmp -s "$s/reviewer.pem" "$tmp/rev.pem"
+check "add: re-adding a set from its own key files keeps them (never deletes outside ~/Downloads)" $?
+
+printf '%s\n' 101 "$s/implementer.pem" 101 | sh "$tool" add dup >/dev/null 2>&1; rc=$?
+[ $rc -ne 0 ] && [ ! -e "$keys/sets/dup" ]
+check "add: refuses the same App for both roles" $?
+
+printf '%s\n' 101 "~/Downloads/impl.private-key.pem" 102 "~/Downloads/rev.private-key.pem" n | sh "$tool" add tilde >/dev/null 2>&1; rc=$?
+[ $rc -eq 0 ] && cmp -s "$keys/sets/tilde/implementer.pem" "$tmp/impl.pem"
+check "add: expands ~/ in a typed key path" $?
+
 # ---- use, off, status -----------------------------------------------------------
 sh "$tool" use janus >/dev/null 2>&1; rc=$?
 [ $rc -eq 0 ] && cmp -s "$agent_conf/active/apps.json" "$set_json" \

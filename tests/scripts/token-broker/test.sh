@@ -134,6 +134,14 @@ out=$( { sh "$broker" once loop; sh "$broker" once loop; } 2>&1)
 [ "$(printf '%s\n' "$out" | grep -c 'no active App set')" = 1 ]
 check "set removed: the loop says so once, not every minute" $?
 
+reset; sh "$broker" once >/dev/null 2>&1; good=$(tok januslin-agent)
+printf '{"version":1,"set":"broken"' > "$conf/active/apps.json"; : > "$FAKE_LOG"; rm -f "$state/broker/bad-set"
+out=$( { sh "$broker" once loop; sh "$broker" once loop; } 2>&1)
+[ "$(tok januslin-agent)" = "$good" ] && [ "$(revokes januslin-agent)" = 0 ] && [ "$(calls januslin-agent)" = 0 ] \
+  && [ "$(printf '%s\n' "$out" | grep -c 'not a valid App set')" = 1 ] \
+  && [ "$(jq -r .set "$conf/sandbox-config/identity.json")" = a ]
+check "broken apps.json: keeps the good tokens and identity, mints nothing, says so once" $?
+
 reset; sh "$broker" once >/dev/null 2>&1; set_apps c; : > "$FAKE_LOG"
 FAKE_REVOKE_FAIL=1 sh "$broker" once >/dev/null 2>&1
 [ "$(revokes januslin-agent)" = 1 ] && grep -qx 'set januslin-agent c' "$FAKE_LOG" && [ -z "$(ls -A "$state/broker" | grep retire)" ]

@@ -12,16 +12,15 @@ less ~/bin/januslin-keys
 `~/bin` must be on your `PATH` (`echo $PATH`).
 
 ## Move the current keys into the set `machine` (once, when this lands)
-The broker on `main` reads only `~/.config/januslin-agent/active/`, so do this before the next restart of the sandbox session:
+The broker on `main` reads only `~/.config/januslin-agent/active/`, and a running broker picks up the new code as soon as the host clone is updated, so do this before you next run `scripts/sandbox-session.sh start` (or otherwise update the host clone):
 ```sh
-cd / && sudo cat /Users/Agent/.config/januslin-agent/januslin-agent.pem > ~/Downloads/impl.private-key.pem
-cd / && sudo cat /Users/Agent/.config/januslin-agent/januslin-reviewer.pem > ~/Downloads/rev.private-key.pem
-chmod 600 ~/Downloads/impl.private-key.pem ~/Downloads/rev.private-key.pem
+cd / && (umask 077; sudo cat /Users/Agent/.config/januslin-agent/januslin-agent.pem > ~/Downloads/impl.private-key.pem)
+cd / && (umask 077; sudo cat /Users/Agent/.config/januslin-agent/januslin-reviewer.pem > ~/Downloads/rev.private-key.pem)
+cd / && sudo rm /Users/Agent/.config/januslin-agent/januslin-agent.pem /Users/Agent/.config/januslin-agent/januslin-reviewer.pem
 januslin-keys add machine     # implementer App ID 5506552, key ~/Downloads/impl.private-key.pem; reviewer 5506595, ~/Downloads/rev.private-key.pem
 januslin-keys use machine
-cd / && sudo rm /Users/Agent/.config/januslin-agent/januslin-agent.pem /Users/Agent/.config/januslin-agent/januslin-reviewer.pem
 ```
-`add` checks each key with GitHub, so it fails while GitHub refuses the machine account's Apps. Then set up a new pair (below), `use` it, and add `machine` once GitHub lifts the flag.
+`add` checks each key with GitHub, so it fails while GitHub refuses the machine account's Apps. Then the two copies stay in `~/Downloads` (mode `0600`) until `add machine` works; set up a new pair (below) and `use` it meanwhile. The old key files are out of the `agent` account either way.
 
 ## Set up a new pair of Apps (a new set)
 1. As the owner (for the fallback: `januswtlin`), GitHub → Settings → Developer settings → GitHub Apps → New GitHub App, twice:
@@ -33,7 +32,7 @@ cd / && sudo rm /Users/Agent/.config/januslin-agent/januslin-agent.pem /Users/Ag
    januslin-keys add <set>
    ```
    It asks for each App's ID (App settings → General) and key file, shows the bot it found, saves the set, and offers to delete the downloads.
-4. Send the coordinator, or put in a PR, the two bot names and IDs it printed, so the docs that name the bots can list them (`docs/security.md`, `docs/infra-current-state.md`).
+4. Send the coordinator, or put in a PR, the two bot names and IDs it printed, so `docs/security.md` and `docs/infra-current-state.md` can list the set.
 
 ## Switch to another set
 ```sh

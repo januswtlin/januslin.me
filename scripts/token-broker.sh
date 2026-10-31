@@ -59,6 +59,17 @@ safe_dir() {
   chmod 700 "$1"
 }
 
+# The checks agent-token.sh and januslin-keys make, for both roles at once, so a
+# broken apps.json is neither taken for a switch nor published.
+apps_valid() {
+  jq -e '
+    def id: type == "number" and . > 0 and floor == .;
+    .version == 1 and .repository == "januswtlin/januslin.me" and (.set | type == "string")
+    and ([.apps.implementer, .apps.reviewer] | all(. != null and (.app_id | id)
+         and (.installation_id | id) and (.bot_user_id | id) and (.slug | type == "string")
+         and (.key | type == "string" and test("^[a-z0-9-]+\\.pem$"))))' "$APPS" >/dev/null 2>&1
+}
+
 # $1 = app, $2 = reason. Takes the token out of the token directory first, then
 # revokes it from the broker's own directory; a token that cannot be revoked is
 # still removed and expires within the hour.
@@ -142,6 +153,14 @@ once() { # $1 = loop: say "no active App set" once per change, not every minute
     log "no active App set; nothing is minted until the author runs januslin-keys use <set>" >&2
     : > "$WORK/no-set"
   fi
+  if [ -f "$APPS" ] && ! apps_valid; then
+    if [ "${1:-}" != loop ] || [ ! -f "$WORK/bad-set" ]; then
+      log "$APPS is not a valid App set; keeping the current tokens until they expire" >&2
+      : > "$WORK/bad-set"
+    fi
+    return 1
+  fi
+  rm -f "$WORK/bad-set"
   rc=0
   refresh januslin-agent || rc=1
   refresh januslin-reviewer || rc=1
