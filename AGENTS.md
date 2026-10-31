@@ -26,7 +26,7 @@ Two hard constraints shape every decision:
 | CI/CD, Cloudflare, previews, rollback | `docs/deployment.md`, `docs/infra-current-state.md` |
 | Security, identities, tokens, the sandbox | `docs/security.md`, `docs/agents/sandbox.md` |
 | Runbooks and recurring maintenance | `docs/operations.md` |
-| Steps only the author can do | `human-task` issues (format in `docs/agents/workflow.md`); the procedures they share are in `docs/admin-guide.md` |
+| Steps only the author can do | `human-task` issues (format in `docs/agents/workflow.md`); their commands are runbooks in `docs/runbooks/`; the author's overview is `docs/admin-guide.md` |
 | Why something is the way it is | `docs/decisions/` (decision records) |
 | Future ideas | `docs/roadmap.md` |
 

@@ -20,6 +20,13 @@ All development already needs the network, so an offline task board buys nothing
 - **One plan issue** (label `plan`) lists the tasks as ordered sub-issues. Its order is the preference; dependencies are the constraint.
 - `docs/tasks/` is removed. Docs describe the system; issues describe work.
 
+### Commands live in runbooks on `main`
+- Every command or exact click path the author runs is a runbook: one short file per operation in `docs/runbooks/`, commands in code blocks, ending with a Check block whose output is the reply.
+- A human-task issue describes the step in plain language and links the runbook as `blob/main/docs/runbooks/<file>.md`. Issues and comments never contain commands, and nothing from an issue is pasted into a command.
+- A human task that needs a new or changed runbook waits for the runbook PR to merge.
+
+So the direction from agents to the author is protected by the same thing as code: the author's merge. The author does not need to check who last edited an issue before acting on it.
+
 ### Trust: issues are editable, so approval is checked
 Everyone with Write (the machine account, `januslin-agent[bot]`) can edit issue bodies and other people's comments. So:
 - A task is **startable** only if the author (id 2433928) added the `approved` label, nobody else edited its title or body after that, and every issue in `Depends on:` was closed as completed by the author (a merge by the author counts: GitHub records the merger as the closer; T08 confirms this in a test).
@@ -44,6 +51,7 @@ The coordinator still confirms every merge it acts on (`mergedBy` id 2433928). T
 ## Consequences
 - The author's queue is one query: open issues assigned to `januswtlin`, plus PRs requesting the author's review.
 - Every human task has a written definition of done, and its history (edits, comments, close) is on GitHub.
+- New author operations cost one extra small PR (the runbook) before the human task; in exchange, every command the author runs has been reviewed on `main`.
 - The author approves a task by labelling it, instead of merging a docs PR that adds a task file.
 - Approval and closing are security-relevant reads. Until `scripts/work-status.sh` (T08) exists, the coordinator runs the checks with the queries in `docs/agents/workflow.md`.
 - Issues are public, like everything in the repository; they never hold secrets or private data.

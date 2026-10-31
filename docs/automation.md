@@ -22,6 +22,7 @@ Everything else is agent work: writing and changing code, docs, tests, and task 
 How human tasks are kept small and clear (`docs/agents/workflow.md`, "Human tasks"):
 - **One sitting, one place.** Steps the author does together are one issue; steps on different days, devices, or after different agent work are separate issues.
 - **A written definition of done** and an exact "Reply with", so the author never has to ask what is expected.
+- **Commands in runbooks on `main`.** The issue explains in plain language; the exact commands and click paths are a short file in `docs/runbooks/` that reached `main` through the author's merge. The author never has to judge whether an issue's text was tampered with.
 - **Assigned only when actionable**, with every value filled in. Queued human tasks stay unassigned.
 - **Verified by the agent.** The agent checks the result itself where it can, and asks for command output only where it cannot read a setting. A reopened issue says exactly what is missing.
 - **Designed away where possible.** When a task would need many small author steps, look for a design that needs fewer: a single host script that prints one report (roadmap R23), a token with a one-day expiry instead of a manual revoke, or a check the agent can run with its own identity.

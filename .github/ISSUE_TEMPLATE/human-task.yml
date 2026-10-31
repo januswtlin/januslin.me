@@ -31,7 +31,7 @@ body:
     id: steps
     attributes:
       label: Steps
-      description: Numbered, with exact values. Link docs/admin-guide.md for shared procedures.
+      description: Plain language. Each step links a runbook on main (https://github.com/januswtlin/januslin.me/blob/main/docs/runbooks/<file>.md). No commands or values here.
       value: "1. "
     validations:
       required: true
@@ -46,6 +46,6 @@ body:
     id: reply-with
     attributes:
       label: Reply with
-      description: Exactly what the author comments before closing the issue. Names only, never secret values.
+      description: Usually the output of the runbook's Check block. Names only, never secret values.
     validations:
       required: true

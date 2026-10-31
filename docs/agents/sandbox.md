@@ -77,7 +77,7 @@ Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`)
 
 `sbx` stops listing the `default-deny-all` rule once other local rules exist, though the default deny still applies (`sbx diagnose`: "Global network policy — initialized"). Check the deny by behavior: `curl https://example.com` in the VM returns 403 "Approval required" and appears in `sbx policy approval ls`. The template's own start-up requests to `cli.github.com` and `download.docker.com` (its package sources, which the kit disables) can also appear there; dismiss them. The default filesystem rules (`read`/`write` allow `**`) govern which host paths `sbx` may mount; only the `agent` account runs `sbx create`, with the mounts above.
 
-**Adding a host:** the agent raises a `human-task` issue naming the blocked host (`sbx policy approval ls` on the host shows it) and why it is needed. The author decides and adds the rule (`docs/admin-guide.md`, "Allow a new host"); the same day a docs PR adds the row above. A rule without a row is a finding in the quarterly review. Never `allow-all` or `**`.
+**Adding a host:** the agent raises a `human-task` issue naming the blocked host (`sbx policy approval ls` on the host shows it) and why it is needed. The author decides and adds the rule (`docs/runbooks/allow-sandbox-host.md`); the same day a docs PR adds the row above. A rule without a row is a finding in the quarterly review. Never `allow-all` or `**`.
 
 ## Permissions inside the VM
 

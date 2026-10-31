@@ -34,27 +34,29 @@ Title `<ID>: <title>` for tasks carried over from the file-based board (T04, T06
 The coordinator (or an agent the author asks) creates task issues as sub-issues of the plan, at the right place in its order. The author approves a task by adding the `approved` label. Spec changes after approval are the author's own comments, or a body edit followed by the author re-approving (remove and add the label). An agent's comment never changes an approved spec.
 
 ### Human tasks
-The author's steps are issues, never bullets in a task or lines in a session. Each one is **one sitting in one place** (one device, one account, one stretch of time). Steps done together are one issue; steps on different days, devices, or after different agent work are separate issues.
+The author's steps are issues, never bullets in a task or lines in a session. The issue says in plain language why and when; the exact commands and click paths live in a **runbook on `main`** (`docs/runbooks/`, one file per operation), which the issue links as `https://github.com/januswtlin/januslin.me/blob/main/docs/runbooks/<file>.md`. Each human task is **one sitting in one place** (one device, one account, one stretch of time). Steps done together are one issue; steps on different days, devices, or after different agent work are separate issues.
 
 ```
 **For:** #<task> (<ID>) · **Where:** <device, account, shell> · **Time:** about <n> min · **When:** <what makes it actionable>
 **Blocked by:** #<n> | <event> | nothing
 
 ## Why          what this unblocks and why only the author can do it, in two or three sentences
-## Steps        numbered, with exact values (commands, scopes, names); procedures shared by several issues link to docs/admin-guide.md
+## Steps        plain language, each step linking the runbook on main to run; no commands, scopes, or values in the issue
 ## Done when    checkable conditions, preferably ones the agent can verify itself
-## Reply with   exactly what to comment (command output, a decision, "done"); names only, never secret values
+## Reply with   usually the output of the runbook's Check block; or a decision; names only, never secret values
 ```
 
 Every human-task issue ends with: never paste a secret, token, or private data (the repository is public); private data such as an email address goes to the coordinator in the session. The issue form `.github/ISSUE_TEMPLATE/human-task.yml` has the same fields.
 
 Life cycle:
-1. **Planned.** An agent creates it when it plans the task, unassigned (queued), with placeholders where values come later.
-2. **Actionable.** When its blockers are gone, the agent writes the exact values into the body (one edit), **assigns it to `januswtlin`**, and comments one line on what it unblocks. After assignment the body is not edited again; corrections are new comments. Commands the author runs in `agent-session` or with admin rights must match a procedure in `docs/admin-guide.md` on `main` or be in the task's PR, so the author can check them (`docs/admin-guide.md`, "Your queue"). The assignment is the notification (GitHub Mobile push). Nothing is assigned before it can be done.
+1. **Planned.** An agent creates it when it plans the task, unassigned (queued). If its runbook does not exist on `main` yet, the issue names the file and who adds it.
+2. **Actionable.** When its blockers are gone and its runbook is on `main` (an agent opens a runbook PR first when one is missing or needs task-specific values, and the human task waits for the merge), the agent **assigns it to `januswtlin`** and comments one line on what it unblocks. The assignment is the notification (GitHub Mobile push). Nothing is assigned before it can be done.
 3. **Done.** The author does the steps, comments the reply, and closes the issue. Only the author closes human tasks.
 4. **Checked.** The agent checks "Done when" against the reply and, where it can, against GitHub or the sandbox. If something is missing, it reopens the issue with a comment saying exactly what.
 
-Prefer evidence the agent can fetch itself over screenshots; ask for command output where the agent cannot read a setting (anything that needs admin rights or the host shell).
+Prefer evidence the agent can fetch itself over screenshots; a runbook's Check block covers what the agent cannot read (anything that needs admin rights or the host shell).
+
+Runbooks follow `docs/runbooks/README.md`: short, commands in code blocks, no values taken from issues, a Check block at the end. Agents write and change them through PRs like any doc; merging is the author's review of every command before it is run.
 
 ### Startable, and the author's words
 Anyone with Write (the machine account, the Apps) can edit issue bodies and other people's comments. So the coordinator checks, rather than trusts:

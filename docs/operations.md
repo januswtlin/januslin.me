@@ -10,7 +10,7 @@ Every item that needs the author is raised as a `human-task` issue assigned to t
 
 | Cadence | What | Who |
 |---|---|---|
-| Monthly | `sbx` release notes (early access): the author upgrades in the `agent` account (`docs/admin-guide.md`, "Upgrade `sbx`"), an agent re-runs the sandbox checks the release touches | Platform Engineer + author |
+| Monthly | `sbx` release notes (early access): the author upgrades in the `agent` account (`docs/runbooks/upgrade-sbx.md`), an agent re-runs the sandbox checks the release touches | Platform Engineer + author |
 | Monthly | Roadmap review (`docs/roadmap.md`) | Coordinator; the author decides |
 | Quarterly | Security review (below) | Platform Engineer + author |
 | Before expiry | Renew the repository interaction limit (collaborators only, six months). Current expiry: **2027-04-29** (the API's `expires_at` is 2027-04-30T01:42:28Z, recorded one day early on purpose; the UI shows no date); every renewal updates it. No App or workflow can read the limit (it needs Administration read), so this date is the source | Author (human-task issue) |
@@ -36,7 +36,7 @@ We vendor Retypeset and never merge upstream (ADR-0001). Once a month:
 Last reviewed upstream commit: `a636b6d393be714cab52d3fc4baddd3f3905f701` (2026-04-12), the vendoring base.
 
 ### Quarterly security review
-The agent opens a `human-task` issue with the checks below that only the author can do (the ones needing admin rights or the host shell), runs the rest itself, and records all results in `docs/reports/`.
+The agent opens a `human-task` issue linking `docs/runbooks/quarterly-host-checks.md` for the checks only the author can run (admin rights, the host shell, the browser profiles), runs the rest itself, and records all results in `docs/reports/`.
 - Interaction limit set to collaborators only, with its expiry more than a month away (author).
 - Both `main` rulesets unchanged (`gh api repos/januswtlin/januslin.me/rulesets` and the ruleset history); repository settings as in `docs/security.md`, auto-merge off; issue creation limited to collaborators (author, in the UI: the API returns `null` for it).
 - Collaborators (`GET /repos/januswtlin/januslin.me/collaborators?affiliation=direct`): the owner `januswtlin` (listed as `admin`) and the machine account `januslin-agent`, `write`; nobody else. Deploy keys: one per device in use. Environments: secrets and branch policies as in `docs/deployment.md`; no repository secrets or variables (author).

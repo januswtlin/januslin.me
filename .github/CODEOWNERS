@@ -1,5 +1,6 @@
 # The author reviews every change to what runs in CI and next to the deploy secrets,
-# and to the scripts the host `agent` account runs next to the App keys
+# to the scripts the host `agent` account runs next to the App keys, and to the runbooks
+# whose commands the author runs (docs/runbooks/README.md)
 # (docs/security.md, "Workflow changes"; docs/agents/sandbox.md, "Layers"). Informational: GitHub requests the review;
 # the rulesets already make the author the only one who can merge.
 /.github/        @januswtlin
@@ -14,3 +15,4 @@
 /.githooks/                    @januswtlin
 /sandbox/                      @januswtlin
 /.claude/settings.json         @januswtlin
+/docs/runbooks/                @januswtlin

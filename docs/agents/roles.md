@@ -54,6 +54,7 @@ Each dispatched session takes exactly one role. The role determines what it may 
 | `docs/` (general) | ⚠️ update docs for what you changed | same | same | same | ❌ | ✅ |
 | `automation/prompts/` | ❌ | ✅ | ⚠️ | ❌ | ❌ | ✅ |
 | `docs/decisions/` | propose (new ADR in PR) | propose | propose | propose | ❌ | ✅ |
+| `docs/runbooks/` (CODEOWNERS: the author reviews) | ⚠️ for the task's human tasks | ✅ | ⚠️ | ❌ | ❌ | ✅ |
 | `docs/reports/` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Cloudflare zone/account settings | ❌ | ✅ (task-listed, with the author's token) | ❌ | ❌ | ❌ | ❌ |
 | GitHub repo settings, rulesets, environments, secrets | ❌ | prepares; the author applies | ❌ | ❌ | ❌ | ❌ |
