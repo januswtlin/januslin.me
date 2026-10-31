@@ -81,7 +81,7 @@ Monthly, when the release notes show a new version (`sbx` is early access): [`up
 ## Keys and tokens
 
 - **App key sets** (ADR-0015): each set is an implementer and a reviewer App with their keys: `machine` (owned by the machine account) and a fallback owned by `januswtlin`. All sets live in your account, `~/.config/januslin-keys/sets/`; the `agent` account holds only the active one. `januslin-keys use <set>` switches within a minute, `januslin-keys off` stops every token, `januslin-keys add <set>` adds a set or rotates its keys: [`app-key-sets.md`](runbooks/app-key-sets.md).
-- **The token broker** (`scripts/token-broker.sh start|stop|once|status` in `agent-session`) mints the one-hour tokens the sandbox uses. It runs only while the sandbox is in use, from the host clone on `main`; [`start-coordinator.md`](runbooks/start-coordinator.md) starts and stops it.
+- **The token broker** (`scripts/token-broker.sh start|stop|once|status` in `agent-session`) mints the one-hour tokens the sandbox uses. It runs only while the sandbox is in use, from the host clone on `main`; `scripts/sandbox-session.sh start|restart|stop` starts and stops it together with the sandbox ([`start-coordinator.md`](runbooks/start-coordinator.md)). It is never a cron job or LaunchAgent: started by you, no live token exists while no session runs.
 
 ## Tool logins
 

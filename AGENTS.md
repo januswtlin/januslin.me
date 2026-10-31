@@ -51,7 +51,7 @@ What exists today:
 ```
 drafts/             Author's local-only drafts. Gitignored except README.md; never read or commit it.
 sandbox/kit/        The sbx kit the local AI sandbox is created from (docs/agents/sandbox.md)
-scripts/            Agent scripts: token broker, token minting, agent-gh, git credential helper
+scripts/            Agent scripts: token broker, token minting, agent-gh, git credential helper, sandbox-session
 tools/author/       Tools the author runs in their own account (januslin-keys: App key sets, ADR-0015)
 tests/scripts/      Shell tests for the scripts (sh tests/scripts/run.sh)
 .github/            PR template, issue forms, CODEOWNERS

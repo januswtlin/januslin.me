@@ -13,7 +13,7 @@ Claude Code's subscription quota alone is not enough, so Codex runs too, on the 
 ## Decision
 
 ### Local agents: the `agent` macOS account
-- A dedicated **standard** (non-admin) macOS account, `agent` (short name `Agent`). The operating system keeps the author's files, Keychain, and processes out of reach; the author's home is `chmod 700`. No shared folders, File Sharing and Remote Login off, no cron jobs or LaunchAgents.
+- A dedicated **standard** (non-admin) macOS account, `agent` (short name `Agent`). The operating system keeps the author's files, Keychain, and processes out of reach; the author's home is `chmod 700`. No shared folders, File Sharing and Remote Login off, no cron jobs or LaunchAgents. The token broker is no exception: the author starts it with each session (`scripts/sandbox-session.sh`), so no live App token exists while no session runs, the host only runs code the author has just fast-forwarded to `main`, and any scheduled job in the account is a finding by definition.
 - Sessions open from the author's Terminal with `sudo -iu agent` and end with `sudo pkill -u Agent`.
 - **The account holds the keys but runs no AI.** Claude Code and Codex run only inside a Docker Sandbox started from this account, which never sees a key (ADR-0013).
 - Nothing written by an agent runs in the author's account: the author never runs `pnpm install`, scripts, hooks, or editor tasks from the agent's working tree.
