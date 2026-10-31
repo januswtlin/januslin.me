@@ -58,7 +58,7 @@ Each dispatched session takes exactly one role. The role determines what it may 
 | Cloudflare zone/account settings | ❌ | ✅ (task-listed, with the author's token) | ❌ | ❌ | ❌ | ❌ |
 | GitHub repo settings, rulesets, environments, secrets | ❌ | prepares; the author applies | ❌ | ❌ | ❌ | ❌ |
 | GitHub issues: create task and human-task issues, assign the author | ❌ (report to the coordinator) | ❌ (report to the coordinator) | ❌ | ❌ | ❌ | ✅ |
-| GitHub issues: comment | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| GitHub issues: comment | ✅ | ✅ | ✅ | ✅ | ❌ (`januslin-reviewer` has Issues read; it comments on PRs) | ✅ |
 
 Without a coordinator (a session the author started directly), the implementer raises its own human-task issues.
 

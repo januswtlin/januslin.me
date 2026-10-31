@@ -14,7 +14,7 @@ A public repository gets all of those protections on the Free plan, unlimited st
 - **Strangers cannot write anything here:** no comments, issues, or PRs from non-collaborators (reactions too, if the limit covers them; V4 checks). PR and issue creation are limited to collaborators (GitHub settings added in February and June 2026), and the repository interaction limit is set to collaborators only, which also covers comments. Interaction limits expire after at most six months, so renewing it is on the operations calendar; if GitHub offers a permanent equivalent, that replaces it. Workflow runs from outside contributors need approval.
 - Unfinished writing stays in the local, gitignored `drafts/` folder and is never committed. `draft: true` entries are public in the repository.
 - Accepted as public: internal details (docs, ADRs, task specs, App IDs, the Cloudflare account ID, workflow design), content history, and the content itself in Markdown (the site is public anyway and `ai-train=yes`; reuse is still not licensed, `LICENSE-CONTENT.md`).
-- Not public: secrets (environment secrets only), account IDs of third-party services, anything in `drafts/`, and personal data the author has not published.
+- Not public: secrets (environment secrets only), anything in `drafts/`, and personal data the author has not published.
 
 ## Alternatives considered
 - Stay private on Free with compensating controls: the risks above, and the most complex code in the pipeline.

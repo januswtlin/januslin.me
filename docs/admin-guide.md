@@ -11,6 +11,7 @@ For the author, the only human in this project: everything done by hand, in one 
 - **Approving a task:** read the task issue and add the `approved` label. The coordinator starts only tasks you approved, and only if nobody but you edited them since. If an agent changes an approved spec, approve again (remove and add the label).
 - **Ordering:** drag the sub-issues of the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11).
 - **Merging a PR:** read the final diff, open the `ci` run link the coordinator gives (it must be the `ci.yml` run for the PR's head commit, once CI exists), then merge with "Merge without waiting for requirements to be met (bypass rules)". The `main-restrict-updates` ruleset blocks every update except yours, so the merge box always says "Merging is blocked" until you choose the bypass; `main-protect` still applies.
+- **Before you run a command from an issue:** issue bodies and comments can be edited by any Write identity (the agents included), and GitHub marks edits with "edited" (click it for the history). Run a command only if it is in the issue body or in a comment by an agent identity (`januslin-agent[bot]` or the machine account) that nobody else edited since. Commands for `agent-session` or for your admin `gh` must also match a procedure in this guide on `main`, or appear in a reviewed PR (the task's PR); read-only listings (`ls`, `sbx secret ls`, `gh secret list`) are fine. Anything else: ask for it in a PR first.
 - **Instructions:** what you type in the coordinator's session or send through Remote Control, and your own comments, labels, and closes on GitHub. A comment of yours that someone else edited no longer counts as yours.
 - **`needs-human`:** answer in the PR or issue thread.
 
@@ -79,7 +80,7 @@ git config --local user.email '349177542+januslin-agent[bot]@users.noreply.githu
 
 The empty `credential.helper` resets the list first (the system gitconfig sets `osxkeychain`); `useHttpPath` makes the helper answer only for `januswtlin/januslin.me`. `core.hooksPath` stays unset on the host.
 
-## Start and stop the coordinator
+## Start the coordinator
 
 The coordinator is the long-running Claude Code session that runs the task loop (`docs/agents/workflow.md`, "Coordinator loop"). It runs only inside the sandbox; Claude Code is not installed on the host, so never run `claude` in `agent-session`.
 
@@ -216,6 +217,8 @@ sudo chmod 644 "/Library/Application Support/ClaudeCode/managed-settings.json"
 ```
 
 As `agent`, `touch` on the file must fail.
+
+Verified with Claude Code 2.1.312: `disableBypassPermissionsMode: "disable"` blocks `--permission-mode bypassPermissions` and `--dangerously-skip-permissions`, interactively and with `-p`; the connector deny leaves `/mcp` empty; the cron tools are unavailable. No managed key blocks cloud sessions per device; only you starting them is the rule (ADR-0009). Re-check these after a major Claude Code upgrade.
 
 ## Mobile publishing: Working Copy on a new device
 
