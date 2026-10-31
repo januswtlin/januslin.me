@@ -52,6 +52,7 @@ What exists today:
 drafts/             Author's local-only drafts. Gitignored except README.md; never read or commit it.
 sandbox/kit/        The sbx kit the local AI sandbox is created from (docs/agents/sandbox.md)
 scripts/            Agent scripts: token broker, token minting, agent-gh, git credential helper
+tools/author/       Tools the author runs in their own account (januslin-keys: App key sets, ADR-0015)
 tests/scripts/      Shell tests for the scripts (sh tests/scripts/run.sh)
 .github/            PR template, issue forms, CODEOWNERS
 .githooks/          prepare-commit-msg (adds the Agent: trailer in agent clones)
@@ -72,7 +73,7 @@ Added by the tasks in the plan issue: `content/` (author-owned Markdown, images,
 
 ### Identity
 - **AI tools never run directly in the host `agent` shell, only inside the sandbox** (`docs/agents/sandbox.md`). The host account holds the App keys; the sandbox never sees them. Never ask the author to install or start an AI tool on the host.
-- Local agents act as `januslin-agent[bot]` through `scripts/agent-gh` and the agent git credential helper. Reviewer work uses `januslin-reviewer[bot]`.
+- Local agents act as `januslin-agent[bot]` through `scripts/agent-gh` and the agent git credential helper. Reviewer work uses `januslin-reviewer[bot]`. Those are the bots of the App set `machine`; the author can switch to another set (ADR-0015), and the active bots are in `sandbox-config/identity.json`.
 - Inside the sandbox, Docker places a generic agent guide (`/Users/Agent/CLAUDE.md` in the VM). Where it conflicts with this file, this file wins. In particular: never ask the author to run `sbx secret set github` or to add a token from their own `gh` (use `scripts/agent-gh` and the credential helper, which read the broker's tokens); never suggest `sbx policy allow network "**"` or any host not justified as in `docs/agents/sandbox.md` ("Adding a host"); and never `git add -A`.
 - Cloud sessions (Claude Code cloud, Codex cloud) and scheduled tasks act as the machine account `januslin-agent` (user id 349746030). That is not the App `januslin-agent` (`januslin-agent[bot]`, user id 349177542). Always say which.
 - Only the author starts cloud or scheduled sessions. Local sessions never do (`claude --cloud`, Codex cloud tasks, `/schedule`).
@@ -83,7 +84,7 @@ Added by the tasks in the plan issue: `content/` (author-owned Markdown, images,
 ### `main` and merging
 - Never push to `main` and never force-push. Always branch and open a PR. The `main` rulesets refuse direct pushes and merges by anyone but the author anyway; do not look for a way around them.
 - **Never merge a PR**, including your own, and never enable auto-merge (it is off in the repository settings). Only the author merges, after reading the final diff.
-- Changes to `.github/workflows/**` are in the Platform role's write scope only. The author owns them in `.github/CODEOWNERS`, together with `wrangler.jsonc`, `worker/`, the smoke-test script, and the scripts the host `agent` account runs next to the App keys (the token broker, `agent-token.sh`, `agent-gh`, the git credential helper, any Codex launcher), and reviews every such diff; reviewers give them extra scrutiny. They can never reach a secret from a branch: deploy tokens are environment secrets limited to `main`.
+- Changes to `.github/workflows/**` are in the Platform role's write scope only. The author owns them in `.github/CODEOWNERS`, together with `wrangler.jsonc`, `worker/`, the smoke-test script, and the scripts the host `agent` account runs next to the App keys (the token broker, `agent-token.sh`, `agent-gh`, the git credential helper, any Codex launcher, and the author's tools in `tools/author/`), and reviews every such diff; reviewers give them extra scrutiny. They can never reach a secret from a branch: deploy tokens are environment secrets limited to `main`.
 - Never run destructive Cloudflare or GitHub operations (delete a project, a DNS record, a repo, a ruleset; rotate tokens) unless your task issue lists the operation; record it in the PR description.
 - Do not add third-party scripts, trackers, fonts from external CDNs, or runtime dependencies that call external services. The site makes no external requests except Cloudflare Web Analytics.
 

@@ -21,10 +21,16 @@ fail() { echo "FAIL - $1"; fails=$((fails + 1)); }
 check() { if [ "$2" = 0 ]; then pass "$1"; else fail "$1"; fi; }
 reset() { : > "$FAKE_LOG"; rm -rf "$JANUSLIN_AGENT_STATE_DIR"; }
 
-mkdir -p "$JANUSLIN_AGENT_CONFIG_DIR"
-(umask 077; openssl genrsa -out "$JANUSLIN_AGENT_CONFIG_DIR/januslin-agent.pem" 2048 2>/dev/null)
-cp "$JANUSLIN_AGENT_CONFIG_DIR/januslin-agent.pem" "$JANUSLIN_AGENT_CONFIG_DIR/januslin-reviewer.pem"
-key_line=$(sed -n 2p "$JANUSLIN_AGENT_CONFIG_DIR/januslin-agent.pem")
+# The active App set, as tools/author/januslin-keys writes it.
+active="$JANUSLIN_AGENT_CONFIG_DIR/active"
+mkdir -p "$active"
+(umask 077; openssl genrsa -out "$active/implementer.pem" 2048 2>/dev/null)
+cp "$active/implementer.pem" "$active/reviewer.pem"
+key_line=$(sed -n 2p "$active/implementer.pem")
+apps_ok='{"version":1,"set":"t","owner":"o","repository":"januswtlin/januslin.me","apps":{
+  "implementer":{"app_id":7001,"installation_id":8001,"slug":"i","bot_user_id":1,"key":"implementer.pem"},
+  "reviewer":{"app_id":7002,"installation_id":8002,"slug":"r","bot_user_id":2,"key":"reviewer.pem"}}}'
+printf '%s\n' "$apps_ok" > "$active/apps.json"
 
 write_token() { # $1 = app, $2 = expiry
   mkdir -p "$JANUSLIN_AGENT_STATE_DIR"
@@ -125,6 +131,39 @@ for app in januslin-agent januslin-reviewer; do
   check "agent-token: $app sends the JWT on stdin and restricts to januslin.me" $?
 done
 
+reset; sh "$root/scripts/agent-token.sh" januslin-reviewer >/dev/null 2>&1
+jwt=$(sed -n 's/^stdin: header = "Authorization: Bearer \(.*\)"$/\1/p' "$FAKE_LOG" | head -n 1)
+payload=$(printf '%s' "$jwt" | cut -d. -f2 | tr -- '-_' '+/')
+while [ $(( ${#payload} % 4 )) -ne 0 ]; do payload="$payload="; done
+[ "$(printf '%s' "$payload" | openssl base64 -d -A | jq -r .iss)" = 7002 ] \
+  && grep -qx 'argv: https://api.github.com/app/installations/8002/access_tokens' "$FAKE_LOG"
+check "agent-token: takes the role's App ID and installation ID from the active set" $?
+
+for bad in \
+  "$(printf '%s' "$apps_ok" | jq -c '.repository = "someone/else"')" \
+  "$(printf '%s' "$apps_ok" | jq -c '.version = 2')" \
+  "$(printf '%s' "$apps_ok" | jq -c '.apps.implementer.app_id = "7001"')" \
+  "$(printf '%s' "$apps_ok" | jq -c '.apps.implementer.installation_id = 1.5')" \
+  "$(printf '%s' "$apps_ok" | jq -c '.apps.implementer.key = "../../januslin-agent.pem"')" \
+  "$(printf '%s' "$apps_ok" | jq -c 'del(.apps.implementer)')" \
+  'not json'; do
+  reset; printf '%s\n' "$bad" > "$active/apps.json"
+  sh "$root/scripts/agent-token.sh" januslin-agent >/dev/null 2>&1; rc=$?
+  [ $rc -ne 0 ] && [ ! -s "$FAKE_LOG" ]
+  check "agent-token: refuses apps.json without calling curl: $(printf '%s' "$bad" | cut -c1-60)" $?
+done
+printf '%s\n' "$apps_ok" > "$active/apps.json"
+
+reset; mv "$active" "$active.off"
+out=$(sh "$root/scripts/agent-token.sh" januslin-agent 2>&1); rc=$?
+[ $rc -ne 0 ] && [ ! -s "$FAKE_LOG" ] && printf '%s' "$out" | grep -q 'no active App set'
+check "agent-token: refuses to mint without an active set" $?
+write_token januslin-agent 2099-01-01T00:00:00Z
+sh "$root/scripts/agent-token.sh" --revoke januslin-agent >/dev/null 2>&1; rc=$?
+[ $rc -eq 0 ] && [ ! -e "$JANUSLIN_AGENT_STATE_DIR/januslin-agent.token" ]
+check "agent-token: --revoke works without an active set" $?
+mv "$active.off" "$active"
+
 reset; write_token januslin-agent 2099-01-01T00:00:00Z
 out=$(sh "$root/scripts/agent-token.sh" --revoke januslin-agent 2>&1); rc=$?
 [ $rc -eq 0 ] && [ ! -e "$JANUSLIN_AGENT_STATE_DIR/januslin-agent.token" ] \
@@ -132,11 +171,11 @@ out=$(sh "$root/scripts/agent-token.sh" --revoke januslin-agent 2>&1); rc=$?
   && ! printf '%s' "$out" | grep -q "$FAKE_TOKEN"
 check "agent-token: --revoke sends the token on stdin only and deletes the file" $?
 
-reset; chmod 644 "$JANUSLIN_AGENT_CONFIG_DIR/januslin-agent.pem"
+reset; chmod 644 "$active/implementer.pem"
 sh "$root/scripts/agent-token.sh" januslin-agent >/dev/null 2>&1; rc=$?
 [ $rc -ne 0 ] && [ ! -s "$FAKE_LOG" ]
 check "agent-token: refuses a key that is not 0600" $?
-chmod 600 "$JANUSLIN_AGENT_CONFIG_DIR/januslin-agent.pem"
+chmod 600 "$active/implementer.pem"
 
 # ---- prepare-commit-msg ---------------------------------------------------
 repo="$tmp/repo"

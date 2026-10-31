@@ -16,12 +16,13 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 | [0006](ADR-0006-ai-access-policy.md) | Open AI access policy | accepted |
 | [0007](ADR-0007-information-architecture.md) | Posts, topics, and tags, with topic-based URLs | accepted |
 | [0008](ADR-0008-event-driven-automation.md) | Event-driven automation with Renovate, GitHub Actions, and scheduled agent tasks | accepted |
-| [0009](ADR-0009-agent-identity.md) | Agent identity: an isolated macOS account, two role Apps, and a machine account | accepted |
+| [0009](ADR-0009-agent-identity.md) | Agent identity: an isolated macOS account, two role Apps, and a machine account | accepted; App ownership and key storage amended by ADR-0015 |
 | [0010](ADR-0010-local-coordinator-and-verify.md) | A local coordinator session dispatches subagents, and `pnpm verify` gates every task | accepted; task-board state superseded by ADR-0014 |
 | 0011 | How the coordinator reaches the author (file removed; see git history) | superseded by ADR-0014 |
 | [0012](ADR-0012-public-repository.md) | The repository is public | accepted |
 | [0013](ADR-0013-local-ai-in-docker-sandboxes.md) | Local AI runs only inside a Docker Sandbox | accepted |
 | [0014](ADR-0014-github-issues-for-work-and-the-author.md) | GitHub issues carry the work and reach the author | proposed |
+| [0015](ADR-0015-app-key-sets.md) | App key sets, kept in the author's account, one active on the host | proposed |
 
 ## Template
 

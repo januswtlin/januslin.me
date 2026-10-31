@@ -11,6 +11,7 @@
 /scripts/agent-token.sh        @januswtlin
 /scripts/agent-gh              @januswtlin
 /scripts/agent-git-credential  @januswtlin
+/tools/author/                 @januswtlin
 /scripts/codex-launch*         @januswtlin
 /.githooks/                    @januswtlin
 /sandbox/                      @januswtlin

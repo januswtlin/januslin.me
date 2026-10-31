@@ -4,9 +4,12 @@
 #   scripts/agent-token.sh <app>            mint a token, write it to the token file
 #   scripts/agent-token.sh --revoke <app>   revoke the current token, delete the file
 #
-# <app> is januslin-agent or januslin-reviewer.
+# <app> is januslin-agent (the implementer role) or januslin-reviewer (the reviewer
+# role). Which GitHub App serves each role comes from the active App set, which the
+# author puts into this account with tools/author/januslin-keys (ADR-0015):
 #
-# Key:   ~/.config/januslin-agent/<app>.pem   (0600)
+# Set:   ~/.config/januslin-agent/active/apps.json   App IDs, installation IDs, key file names
+# Key:   ~/.config/januslin-agent/active/<role>.pem  (0600)
 # Token: ~/.local/state/januslin-agent/<app>.token (0600)
 #        line 1 = token, line 2 = expiry (UTC, ISO 8601). Read it with agent-gh or
 #        the git credential helper; never copy it into an environment variable.
@@ -35,15 +38,12 @@ fi
 [ $# -eq 1 ] || usage
 app=$1
 
-# App IDs are the JWT `iss`; installation IDs are public identifiers. Unchanged by
-# the transfer to the machine account (V5, T02).
 case "$app" in
-  januslin-agent)    app_id=5506552; installation_id=176078591 ;;
-  januslin-reviewer) app_id=5506595; installation_id=176079192 ;;
+  januslin-agent)    role=implementer ;;
+  januslin-reviewer) role=reviewer ;;
   *) usage ;;
 esac
 
-key="$CONF_DIR/$app.pem"
 token_file="$STATE_DIR/$app.token"
 
 mkdir -p "$STATE_DIR"
@@ -83,6 +83,24 @@ if [ "$revoke" -eq 1 ]; then
   rm -f "$token_file"
   exit 0
 fi
+
+# The broker passes a snapshot of apps.json (JANUSLIN_AGENT_APPS) so it can tell
+# which set a token came from; keys are always read from active/.
+active="$CONF_DIR/active"
+apps="${JANUSLIN_AGENT_APPS:-$active/apps.json}"
+[ -r "$apps" ] || { echo "agent-token: no active App set in $active; the author runs januslin-keys use <set>." >&2; exit 1; }
+# App IDs are the JWT `iss`; installation IDs and App IDs are public identifiers.
+entry=$(jq -er --arg role "$role" '
+  def id: type == "number" and . > 0 and floor == .;
+  select(.version == 1 and .repository == "januswtlin/januslin.me") | .apps[$role]
+  | select((.app_id | id) and (.installation_id | id)
+           and (.key | type == "string" and test("^[a-z0-9-]+\\.pem$")))
+  | "\(.app_id) \(.installation_id) \(.key)"' "$apps" 2>/dev/null) \
+  || { echo "agent-token: $apps has no valid $role entry." >&2; exit 1; }
+app_id=${entry%% *}
+entry=${entry#* }
+installation_id=${entry%% *}
+key="$active/${entry#* }"
 
 [ -r "$key" ] || { echo "agent-token: cannot read key for $app." >&2; exit 1; }
 # GNU stat first: on Linux, `stat -f` succeeds with file-system output instead.
