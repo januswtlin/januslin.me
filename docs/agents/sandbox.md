@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-10-31 · Decision: ADR-0013
 
-How local AI runs, for agents and reviewers. The author's procedures (creating the sandbox, starting it, changing its policy and secrets) are in `docs/admin-guide.md`.
+How local AI runs, for agents and reviewers. The author's procedures (creating the sandbox, starting it, changing its policy and secrets) are runbooks in `docs/runbooks/`, explained in `docs/admin-guide.md`.
 
 macOS (the author's Mac) → the standard macOS account `agent` (keys, token broker, `sbx`, no AI) → one Docker Sandbox microVM, `januslin` (Claude Code, the coordinator and its subagents, `pnpm verify`). `sbx` version and the open questions about it: `docs/infra-current-state.md`.
 
@@ -107,6 +107,6 @@ The quarterly review (`docs/operations.md`) re-runs the canary (no key or host f
 ## Planned changes
 
 - **Codex** (T06, [#14](https://github.com/januswtlin/januslin.me/issues/14)): the Codex CLI installed in this sandbox and saved as a template; its ChatGPT login through `sbx secret set openai --oauth`, kept on the host; `codex exec --sandbox workspace-write --approve-for-me` with automatic review, never full bypass; OpenAI hosts added to the allowlist. The issue holds the design and the fallback.
-- **Cloudflare ops token** (T14, [#18](https://github.com/januswtlin/januslin.me/issues/18); also T15, T17): while a Cloudflare task runs, the author lends a short-lived token that the proxy injects for `api.cloudflare.com` as `CLOUDFLARE_API_TOKEN`, with a temporary rule for that host (`docs/admin-guide.md`). V25 checks that wrangler works with the placeholder.
+- **Cloudflare ops token** (T14, [#18](https://github.com/januswtlin/januslin.me/issues/18); also T15, T17): while a Cloudflare task runs, the author lends a short-lived token that the proxy injects for `api.cloudflare.com` as `CLOUDFLARE_API_TOKEN`, with a temporary rule for that host (`docs/runbooks/lend-cloudflare-token.md`). V25 checks that wrangler works with the placeholder.
 - **Narrow implementer token** (decided trigger, T16, [#23](https://github.com/januswtlin/januslin.me/issues/23)): if a branch workflow can post a passing `ci` check on another PR's head commit, the broker mints the everyday token without `workflows`, and the author enables it per workflow task with `scripts/token-broker.sh workflows on|off`.
 - **`main` watch** (T04, [#13](https://github.com/januswtlin/januslin.me/issues/13)): `scripts/main-watch.sh` keeps its state in `~/.local/state/januslin-agent/main-watch.state` in the VM.

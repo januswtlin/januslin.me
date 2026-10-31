@@ -4,7 +4,7 @@ Where: the browser profile of the machine account `januslin-agent`, your own Ter
 For `januslin-agent`, then `januslin-reviewer`:
 1. GitHub → Settings → Developer settings → GitHub Apps → the App → Private keys → Generate a private key.
 2. Put it into the `agent` account: `hand-over-app-key.md`.
-3. In `agent-session`, confirm it mints a token, then revoke the test token:
+3. In `agent-session`, confirm it mints a token (compare the permissions it prints with ADR-0009), then revoke the test token:
    ```sh
    scripts/agent-token.sh januslin-agent && scripts/agent-token.sh --revoke januslin-agent
    scripts/agent-token.sh januslin-reviewer && scripts/agent-token.sh --revoke januslin-reviewer

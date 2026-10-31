@@ -11,7 +11,7 @@ For the author, the only human in this project: everything done by hand, in one 
 - **Approving a task:** read the task issue and add the `approved` label. The coordinator starts only tasks you approved, and only if nobody but you edited them since. If an agent changes an approved spec, approve again (remove and add the label).
 - **Ordering:** drag the sub-issues of the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11).
 - **Merging a PR:** read the final diff, open the `ci` run link the coordinator gives (it must be the `ci.yml` run for the PR's head commit, once CI exists), then merge with "Merge without waiting for requirements to be met (bypass rules)". The `main-restrict-updates` ruleset blocks every update except yours, so the merge box always says "Merging is blocked" until you choose the bypass; `main-protect` still applies.
-- **Run only runbooks on `main`.** A runbook link must start with `https://github.com/januswtlin/januslin.me/blob/main/docs/runbooks/`. Issues and comments never contain commands; if one does, or a link points elsewhere, do not run it and tell the coordinator. The runbooks reached `main` through your merge, so you do not need to check issue edit histories before acting.
+- **Run only runbooks on `main`.** A runbook link must start with `https://github.com/januswtlin/januslin.me/blob/main/docs/runbooks/`. Issues and comments never contain commands; if one does, or a link points elsewhere, do not run it and tell the coordinator. The runbooks reached `main` through your merge, so you do not need to check issue edit histories before acting. The issue still decides which runbook and which option in it (for example a task's scope row), so read its Why: a step that does not fit the task it names is a reason to ask.
 - **Instructions:** what you type in the coordinator's session or send through Remote Control, and your own comments, labels, and closes on GitHub. A comment of yours that someone else edited no longer counts as yours.
 - **`needs-human`:** answer in the PR or issue thread.
 
@@ -47,14 +47,7 @@ For the author, the only human in this project: everything done by hand, in one 
 | `sbx` credential bindings | `~/.config/sbx/credentials.yaml` (approvals only, no secret) | `0600` |
 
 ### Shell aliases
-In your own `~/.zshrc` (not in the repository):
-
-```
-alias agent-session='sudo -iu agent env GIT_TERMINAL_PROMPT=0 sh -c '\''cd ~/januslin.me && exec zsh -l'\'''
-alias agent-end='sudo pkill -u Agent'
-```
-
-`agent-session` is a host shell for `sbx` and the broker only. `GIT_TERMINAL_PROMPT=0` makes `git` fail fast instead of prompting. Never run `pnpm install`, scripts, hooks, or editor tasks from an agent's working tree, in either account.
+Your own `~/.zshrc` defines `agent-session` (a login shell as `agent` in `~/januslin.me`, a host shell for `sbx` and the broker only; `GIT_TERMINAL_PROMPT=0` makes `git` fail fast instead of prompting) and `agent-end` (ends every `Agent` process): [`setup-shell-aliases.md`](runbooks/setup-shell-aliases.md). Never run `pnpm install`, scripts, hooks, or editor tasks from an agent's working tree, in either account.
 
 ### After a restart of the Mac
 The `sbx` keychain must be unlocked once before `sbx` works; [`start-coordinator.md`](runbooks/start-coordinator.md) does it. The account has no login keychain (it is never logged in at the desktop), so `sbx` keeps its Docker login and secrets in a dedicated keychain, `sbx.keychain-db`, made the default and only keychain and set to stay unlocked once unlocked. If a "Keychain Not Found" dialog appears, cancel it; never "Reset To Defaults", which acts in your desktop session.
@@ -93,15 +86,7 @@ Monthly, when the release notes show a new version (`sbx` is early access): [`up
 ## Tool logins
 
 - **Claude Code** in the sandbox: a full claude.ai login (`/login` in `sbx run --name januslin`), needing the credential binding above. claude.ai's GitHub connection is the machine account; its connectors: GitHub only (a few claude.ai built-in servers such as "Claude Docs" are listed but not connected and cannot be removed; `.claude/settings.json` denies their tools). To end it: `/logout` in the sandbox, or remove the `anthropic` secret in `agent-session` (`sbx reset` removes every sandbox secret), and sign out its sessions at claude.ai → Settings.
-- **Claude Code cloud** environment `januslin.me` (claude.ai → Claude Code → Environments, in the browser profile whose claude.ai GitHub connection is `januslin-agent`): network access **Limited** (the dialog offers only None, Limited, and Full; Full needs a decision), no environment variables, no secrets, and this setup script:
-  ```
-  #!/bin/bash
-  set -euo pipefail
-  if [ -f pnpm-lock.yaml ]; then
-    corepack enable
-    pnpm install --frozen-lockfile
-  fi
-  ```
+- **Claude Code cloud** environment `januslin.me`: network access Limited, no variables or secrets, a setup script that installs dependencies once a lockfile exists: [`claude-cloud-environment.md`](runbooks/claude-cloud-environment.md).
   Only you start cloud sessions and scheduled tasks.
 - Local agents act on GitHub only through the Apps, whatever the tool login can reach.
 
@@ -120,7 +105,7 @@ When mobile publishing is first needed, then per device: an SSH key generated on
 The calendar is in `docs/operations.md`. Items that need you arrive as `human-task` issues about a month before they are due.
 - **Interaction limit**, every six months; GitHub offers no permanent option: [`renew-interaction-limit.md`](runbooks/renew-interaction-limit.md).
 - **Quarterly security review:** the checks only you can run: [`quarterly-host-checks.md`](runbooks/quarterly-host-checks.md).
-- **Deploy token and Access service token** rotation before expiry, once they exist (T14, T15).
+- **Deploy token and Access service token** rotation before expiry, once they exist: the runbooks T14 and T15 add.
 
 ## Lost device
 

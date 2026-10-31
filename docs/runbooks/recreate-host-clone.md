@@ -1,7 +1,13 @@
 # Re-create the host clone
-Where: `agent-session` · Time: about 5 min
+Where: your own Terminal (not `agent-session`, which needs the clone to exist) · Time: about 5 min
 
-1. ```sh
+1. Open a shell as `agent` without the clone:
+   ```sh
+   sudo -iu agent env GIT_TERMINAL_PROMPT=0 zsh -l
+   ```
+2. Move any old clone aside, then clone and configure:
+   ```sh
+   [ -e ~/januslin.me ] && mv ~/januslin.me ~/januslin.me.old-$(date +%F)
    git clone https://github.com/januswtlin/januslin.me.git ~/januslin.me
    cd ~/januslin.me
    git config --local credential.helper ''
@@ -10,7 +16,7 @@ Where: `agent-session` · Time: about 5 min
    git config --local user.name 'januslin-agent[bot]'
    git config --local user.email '349177542+januslin-agent[bot]@users.noreply.github.com'
    ```
-2. Never set `core.hooksPath`, fetch `sandbox-januslin`, or check out an agent branch here.
+3. Never set `core.hooksPath`, fetch `sandbox-januslin`, or check out an agent branch here. Delete the `.old-` copy once the new clone works.
 
 ## Check
 ```sh

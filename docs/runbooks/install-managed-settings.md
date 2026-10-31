@@ -3,6 +3,7 @@ Where: your own Terminal · Time: about 2 min
 
 1. Writes the reviewed content below to the root-owned file:
    ```sh
+   sudo mkdir -p "/Library/Application Support/ClaudeCode"
    sudo tee "/Library/Application Support/ClaudeCode/managed-settings.json" >/dev/null <<'JSON'
    {
      "disableClaudeAiConnectors": true,

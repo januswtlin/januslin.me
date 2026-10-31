@@ -13,7 +13,7 @@ Where: your own Terminal, then `agent-session` · Time: about 5 min
 3. Update the host clone and start the token broker:
    ```sh
    cd ~/januslin.me && git checkout main && git fetch origin && git merge --ff-only origin/main
-   scripts/token-broker.sh start && scripts/token-broker.sh status
+   scripts/token-broker.sh start; scripts/token-broker.sh status
    ```
 4. In a second Terminal, in your own account, keep the Mac awake (Ctrl-C when you stop):
    ```sh
@@ -30,15 +30,25 @@ Where: your own Terminal, then `agent-session` · Time: about 5 min
 1. Tell it to stop, then type `/exit`.
 2. In `agent-session`:
    ```sh
-   sbx stop januslin && scripts/token-broker.sh stop
+   sbx stop januslin; scripts/token-broker.sh stop
    exit
    ```
 3. In your own Terminal: `agent-end`, and Ctrl-C the `caffeinate`.
 
-## Restart (new prompt on `main`)
-Stop steps 1 only (`/exit`), then Start steps 3, 5, 6, 7.
+## Restart
+After a merge that changes the prompt or a host script, or after an `sbx` upgrade. Starts in the coordinator session; `caffeinate` keeps running.
+1. Type `/exit` in the coordinator.
+2. In `agent-session` (stops the VM and the broker, so both start from `main`):
+   ```sh
+   sbx stop januslin; scripts/token-broker.sh stop
+   cd ~/januslin.me && git checkout main && git fetch origin && git merge --ff-only origin/main
+   scripts/token-broker.sh start; scripts/token-broker.sh status
+   sbx run --name januslin
+   ```
+3. Start steps 6 and 7.
 
 ## Check
+In `agent-session`:
 ```sh
 scripts/token-broker.sh status; sbx ls
 ```

@@ -5,7 +5,7 @@ Where: `agent-session` · Time: about 2 min
    ```sh
    sbx policy approval ls
    ```
-2. If the issue's reason convinces you, allow that host on port 443 (type it from step 1):
+2. If the issue's reason convinces you, allow that host on port 443 (type it from step 1). Narrower is better: `sbx policy allow network --help` shows `--method` and `--path`, which the issue may suggest.
    ```sh
    sbx policy allow network <host from step 1>:443
    ```

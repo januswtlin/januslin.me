@@ -7,7 +7,7 @@ Exact steps the author runs: one file per operation, short descriptions, command
 - **Run only runbooks on `main`.** An issue links a runbook as `https://github.com/januswtlin/januslin.me/blob/main/docs/runbooks/<file>.md`. A link to another branch, a commit, or any other path is not a runbook; ask the coordinator instead. Issue bodies and comments never contain commands.
 - **Reviewed like code.** Runbooks change only through PRs that the author merges; `.github/CODEOWNERS` requests the author's review. Merging is the check, so the author does not need to inspect issue edit histories before acting.
 - **No values from issues.** A value that varies is computed in the command (`date +%F`), chosen from a list in the runbook (for example scopes per task or one of the two App names), or read from a trusted local source the runbook names (for example `sbx policy approval ls`). Nothing from an issue or comment is pasted into a command.
-- **Check block.** Each runbook ends with read-only commands whose output (names only, never secret values) is the reply to the human-task issue.
+- **Check block.** Each runbook ends with a Check: read-only commands whose output (names only, never secret values) is the reply, or, where nothing can be queried (pure click paths), exactly what to look at.
 - **A new operation needs its runbook first.** If a human task needs a command that no runbook on `main` has, an agent opens a runbook PR and the human task waits for its merge.
 
 ## Format
@@ -38,6 +38,8 @@ Expected: <what the output shows>
 | [lend-cloudflare-token.md](lend-cloudflare-token.md) | Lend a one-day Cloudflare token to the sandbox |
 | [take-back-cloudflare-token.md](take-back-cloudflare-token.md) | Revoke it and remove it from the sandbox |
 | [upgrade-sbx.md](upgrade-sbx.md) | Upgrade `sbx` |
+| [setup-shell-aliases.md](setup-shell-aliases.md) | The `agent-session` and `agent-end` aliases |
+| [claude-cloud-environment.md](claude-cloud-environment.md) | The Claude Code cloud environment `januslin.me` |
 | [hand-over-app-key.md](hand-over-app-key.md) | Put an App private key into the `agent` account |
 | [rotate-app-keys.md](rotate-app-keys.md) | Rotate both App keys, with the fingerprint check |
 | [recreate-host-clone.md](recreate-host-clone.md) | Re-create the host clone in the `agent` account |
@@ -58,4 +60,4 @@ Expected: <what the output shows>
 | [install-renovate.md](install-renovate.md) | Install the Renovate App (T19) |
 | [archive-hugo-repo.md](archive-hugo-repo.md) | Archive the old Hugo repository (T17) |
 
-Runbooks that depend on what a task builds or finds are added by that task, in its PR or in a small runbook PR before the human task: the Codex cloud environment and probe (T06, `codex-cloud.md`), requiring `ci` and the forced rollback (T16, `require-ci-check.md`, `forced-rollback.md`), the search consoles (T17, `search-consoles.md`), the audit screenshots (T18, `audit-screenshots.md`), and the scheduled tasks (T20, `create-scheduled-tasks.md`).
+Runbooks that depend on what a task builds or finds are added by that task, in its PR or in a small runbook PR before the human task: the Codex cloud environment and probe (T06, `codex-cloud.md`), the photo Shortcut (T12, `photo-shortcut.md`), requiring `ci` and the forced rollback (T16, `require-ci-check.md`, `forced-rollback.md`), rotating the deploy token and the Access service token (T14, T15, `rotate-deploy-token.md`, `rotate-smoke-token.md`), the manual production rollback (T16, `rollback-production.md`), the search consoles (T17, `search-consoles.md`), the audit screenshots (T18, `audit-screenshots.md`), and the scheduled tasks (T20, `create-scheduled-tasks.md`).

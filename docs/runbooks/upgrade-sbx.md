@@ -5,7 +5,7 @@ Where: your own Terminal, then `agent-session` · Time: about 10 min
    ```sh
    brew upgrade docker/tap/sbx
    ```
-2. In `agent-session`, restart the sandbox: `start-coordinator.md` ("Restart").
+2. Restart the coordinator, which also restarts the VM: `start-coordinator.md` ("Restart").
 3. Ask the coordinator to re-run the sandbox checks the release notes touch (canary, allowlist, login).
 
 ## Check

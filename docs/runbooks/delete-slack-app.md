@@ -7,7 +7,11 @@ Where: Slack in the browser, then `agent-session` · Time: about 10 min
    ```sh
    rm -f ~/.config/januslin-agent/slack-bot-token ~/.config/januslin-agent/sandbox-config/coordinator-channel.conf
    ```
-4. Only if the Check below lists a Slack secret or rule: remove the rule with `sbx policy rm network --resource slack.com`, and a secret with `sbx secret rm` (check `sbx secret rm --help` first).
+4. Only if the Check below lists a Slack rule:
+   ```sh
+   sbx policy rm network --resource slack.com
+   ```
+   If it lists a Slack secret, stop and reply with the Check; an agent adds the exact removal command here by PR.
 
 ## Check
 ```sh

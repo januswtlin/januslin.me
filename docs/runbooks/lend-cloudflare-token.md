@@ -20,9 +20,10 @@ Where: Cloudflare dashboard, your own Terminal, `agent-session` · Time: about 1
    sbx secret set-custom --sandbox januslin --host api.cloudflare.com --env CLOUDFLARE_API_TOKEN --command 'cat /Users/Agent/.local/state/januslin-agent/cloudflare-ops.token'
    sbx policy allow network --sandbox januslin api.cloudflare.com
    ```
+   `set-custom` stores the command, not the value, and replays it from a temporary directory, so the path must be absolute.
 
 ## Check
 ```sh
-sbx secret ls --sandbox januslin; sbx policy ls januslin --wide | grep cloudflare
+sbx secret ls --sandbox januslin; sbx policy ls januslin --wide | grep cloudflare; sbx secret rm --help
 ```
-Expected: a custom secret for `api.cloudflare.com` and the `api.cloudflare.com` rule.
+Expected: a custom secret for `api.cloudflare.com` and the `api.cloudflare.com` rule. The help text lets an agent write the exact removal command into `take-back-cloudflare-token.md` before you need it.

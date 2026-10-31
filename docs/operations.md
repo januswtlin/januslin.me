@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-10-31
 
-The recurring maintenance calendar and the agents' runbooks. The author's own procedures (lost device, key rotation, the sandbox) are in `docs/admin-guide.md`.
+The recurring maintenance calendar and the agents' runbooks. The author's own procedures are runbooks in `docs/runbooks/`, explained in `docs/admin-guide.md`.
 
 ## Maintenance calendar
 
@@ -40,10 +40,10 @@ The agent opens a `human-task` issue linking `docs/runbooks/quarterly-host-check
 - Interaction limit set to collaborators only, with its expiry more than a month away (author).
 - Both `main` rulesets unchanged (`gh api repos/januswtlin/januslin.me/rulesets` and the ruleset history); repository settings as in `docs/security.md`, auto-merge off; issue creation limited to collaborators (author, in the UI: the API returns `null` for it).
 - Collaborators (`GET /repos/januswtlin/januslin.me/collaborators?affiliation=direct`): the owner `januswtlin` (listed as `admin`) and the machine account `januslin-agent`, `write`; nobody else. Deploy keys: one per device in use. Environments: secrets and branch policies as in `docs/deployment.md`; no repository secrets or variables (author).
-- Each of the two Apps has exactly one installation (`GET /app/installations` with the App's JWT) on `januswtlin`, with this repository only, and one private key (author: the fingerprint check in `docs/admin-guide.md`). The Claude GitHub App is installed on this repository only, with the permissions recorded in `docs/infra-current-state.md`; claude.ai is connected to GitHub as the machine account and `januswtlin` does not authorize it; claude.ai connectors unchanged (GitHub only). The Claude Code cloud environment unchanged (`docs/admin-guide.md`). In the sandbox, `/permissions` still lists the repository denies.
+- Each of the two Apps has exactly one installation (`GET /app/installations` with the App's JWT) on `januswtlin`, with this repository only, and one private key (author: the Check in `docs/runbooks/rotate-app-keys.md`). The Claude GitHub App is installed on this repository only, with the permissions recorded in `docs/infra-current-state.md`; claude.ai is connected to GitHub as the machine account and `januswtlin` does not authorize it; claude.ai connectors unchanged (GitHub only). The Claude Code cloud environment unchanged (`docs/runbooks/claude-cloud-environment.md`). In the sandbox, `/permissions` still lists the repository denies.
 - The machine account: no SSH keys, PATs, or OAuth apps; passkey or 2FA on; recent sessions only from the author's browser (author).
 - The sandbox: re-run the canary (no key or host file outside the read-only mounts is readable from the VM); `sbx policy ls januslin --wide` equals the allowlist in `docs/agents/sandbox.md`, and `curl https://example.com` from the VM returns 403; `sbx settings get ssh.agentForwardingEnabled` is `false`; `sbx secret ls` lists only the expected secrets; `sbx version` recorded (author, in `agent-session`, for the `sbx` commands).
-- The `agent` macOS account: still standard, no AI tool on its `PATH` (`command -v claude codex` prints nothing), no cron jobs or LaunchAgents, File Sharing and Remote Login off, no `cloudflare-ops.token` file left in its state directory, managed settings match `docs/admin-guide.md`, the author's home is `chmod 700` (author).
+- The `agent` macOS account: still standard, no AI tool on its `PATH` (`command -v claude codex` prints nothing), no cron jobs or LaunchAgents, File Sharing and Remote Login off, no `cloudflare-ops.token` file left in its state directory, managed settings match `docs/runbooks/install-managed-settings.md`, the author's home is `chmod 700` (author).
 - ADR-0014's rules on the real issues: approved tasks were labelled by the author and not edited since; closed human tasks were closed by the author.
 - Once they exist: tokens near expiry (deploy token, `ci-smoke-test`), CSP unchanged, Access policies unchanged.
 
@@ -60,12 +60,12 @@ The agent opens a `human-task` issue linking `docs/runbooks/quarterly-host-check
 4. Write an incident note in `docs/reports/incident-YYYY-MM-DD.md`.
 
 ### Roll back production (Platform Engineer, once T16 has deployed)
-1. From the author's account with a short-lived Cloudflare token (never in the `agent` account): `npx wrangler@<pinned version> versions list --name januslin-me`, find the last good version.
-2. `npx wrangler@<pinned version> rollback <version-id> --name januslin-me --message "<reason>"`.
+1. Automatic rollback runs in the deploy job when the smoke test fails.
+2. A manual rollback is the author's, with a short-lived Cloudflare token in the author's own account (never the `agent` account): the runbook `docs/runbooks/rollback-production.md`, which T16 adds. The agent names the version to roll back to in a `human-task` issue; the runbook lists versions so the author picks it from Cloudflare's own output.
 3. Open an issue labelled `incident`; fix forward with a PR, and say in it that production was rolled back.
 
 ### Rotate deploy token (author + Platform Engineer, once T14 has created it)
-1. The author creates a new token with the same scopes (`docs/security.md`), updates `CLOUDFLARE_API_TOKEN` in both environments, and revokes the old token.
+1. The author runs `docs/runbooks/rotate-deploy-token.md` (T14 adds it): a new token with the same scopes, stored in both environments, the old one revoked.
 2. The Platform Engineer asks the author to run `ci` with `workflow_dispatch` on `main`; the deploy job redeploys the current version with the new token.
 
 ### Dependency upgrade (Upgrade Engineer)
