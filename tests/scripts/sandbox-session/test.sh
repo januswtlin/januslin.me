@@ -46,11 +46,11 @@ run start; rc=$?
 check "start: updates main once, restarts the broker, mints, then sbx run, in that order" $?
 
 FAKE_FAIL="git merge" run start; rc=$?
-[ $rc -ne 0 ] && ! grep -q '^token-broker\|^sbx' "$FAKE_LOG"
+[ $rc -ne 0 ] && ! grep -Eq '^(token-broker|sbx)' "$FAKE_LOG"
 check "start: stops before the broker and sbx when main cannot be fast-forwarded" $?
 
 FAKE_FAIL="token-broker once" run start; rc=$?
-[ $rc -ne 0 ] && ! grep -q '^token-broker start\|^sbx' "$FAKE_LOG"
+[ $rc -ne 0 ] && ! grep -Eq '^(token-broker start|sbx)' "$FAKE_LOG"
 check "start: does not start the broker loop or the sandbox when minting fails" $?
 
 FAKE_REWRITE="$script" run start; rc=$?
@@ -65,6 +65,14 @@ run start --unlock-keychain; rc=$?
 [ $rc -eq 0 ] && grep -qx "security unlock-keychain $HOME/Library/Keychains/sbx.keychain-db" "$FAKE_LOG" \
   && [ "$(grep -n '^security' "$FAKE_LOG" | cut -d: -f1)" -lt "$(grep -n '^token-broker once' "$FAKE_LOG" | cut -d: -f1)" ]
 check "start --unlock-keychain: unlocks the sbx keychain before minting" $?
+
+FAKE_FAIL="security unlock-keychain" run start --unlock-keychain; rc=$?
+[ $rc -ne 0 ] && ! grep -Eq '^(token-broker|sbx)' "$FAKE_LOG"
+check "start --unlock-keychain: stops before the broker when the unlock fails" $?
+
+FAKE_FAIL="sbx run" run start; rc=$?
+[ $rc -ne 0 ] && [ "$(tail -n 2 "$FAKE_LOG" | tr '\n' '|')" = "sbx run --name januslin|token-broker stop|" ]
+check "start: stops the broker again when sbx run fails" $?
 
 run start --bogus; rc=$?
 [ $rc -eq 2 ] && [ ! -s "$FAKE_LOG" ]

@@ -10,9 +10,11 @@
 # updated file, so the broker and this script always run reviewed code from main.
 # It then restarts the broker, mints both tokens in the foreground (stops here if
 # that fails), starts the background refresh, and hands the terminal to
-# `sbx run --name januslin`. Leaving the session (/exit) leaves the VM and the
-# broker running; `stop` ends both. --unlock-keychain is for the first start
-# after a restart of the Mac; it asks for the sbx keychain password.
+# `sbx run --name januslin`; if that fails, it stops the broker again. Leaving the
+# session (/exit) leaves the VM and the broker running; `stop` ends both. The
+# broker belongs to this terminal: closing the agent-session window ends it.
+# --unlock-keychain is for the first start after a restart of the Mac; it asks
+# for the sbx keychain password.
 #
 # Nothing runs this on a schedule: the broker, and with it every live token,
 # exists only while the author has started a session (ADR-0009).
@@ -37,7 +39,7 @@ update_main() {
 start_broker() {
   sh "$here/token-broker.sh" stop >/dev/null
   sh "$here/token-broker.sh" once \
-    || { echo "sandbox-session: minting the App tokens failed; see the message above. The sandbox was not started." >&2; exit 1; }
+    || { echo "sandbox-session: minting the App tokens failed; see the message above. sbx run was not opened." >&2; exit 1; }
   sh "$here/token-broker.sh" start
   sh "$here/token-broker.sh" status
 }
@@ -57,7 +59,12 @@ start() {
   [ "$unlock" -eq 0 ] || security unlock-keychain "$KEYCHAIN"
   start_broker
   echo "sandbox-session: keep the Mac awake from your own account (caffeinate -ims); then paste the coordinator prompt and type /remote-control."
-  exec sbx run --name "$SANDBOX"
+  sbx run --name "$SANDBOX" || {
+    rc=$?
+    echo "sandbox-session: sbx run failed (exit $rc); stopping the broker so no token stays live." >&2
+    sh "$here/token-broker.sh" stop
+    exit "$rc"
+  }
 }
 
 stop() {
