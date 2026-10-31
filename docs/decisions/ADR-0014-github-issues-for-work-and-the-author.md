@@ -44,6 +44,7 @@ The coordinator still confirms every merge it acts on (`mergedBy` id 2433928). T
 
 ## Alternatives considered
 - **Keep task files, track only status in issues:** specs stay author-reviewed through merges, but state stays split across two systems, which is the problem being fixed.
+- **GitHub's native issue dependencies ("blocked by") instead of the `Depends on:` line:** considered and declined by the author (2026-10-31). Write identities can add or remove the relations outside the approval check that protects the body, and the GitHub tools of cloud sessions cannot set them. The `Depends on:` line in the body stays the only dependency record.
 - **GitHub Projects:** a view over issues; adds nothing the plan issue and labels do not, and Projects are off in the repository settings.
 - **A chat-app bot for notifications:** a token on the host, a polling script, an egress rule, and a second account to protect, for what GitHub notifications already deliver.
 - **Email:** no structure and no state.
