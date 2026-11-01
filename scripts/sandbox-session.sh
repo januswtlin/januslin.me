@@ -3,7 +3,7 @@
 # Runs in the `agent` macOS account (agent-session), never inside the sandbox.
 #
 #   scripts/sandbox-session.sh start [--unlock-keychain]    update main, start the broker, sbx run
-#   scripts/sandbox-session.sh restart                      stop the VM, then start
+#   scripts/sandbox-session.sh restart [--unlock-keychain]  update main, stop the VM, then start
 #   scripts/sandbox-session.sh stop                         stop the VM and the broker
 #
 # start: fast-forwards the host clone to origin/main and re-runs itself from the
@@ -16,8 +16,9 @@
 # --unlock-keychain is for the first start after a restart of the Mac; it asks
 # for the sbx keychain password.
 #
-# Nothing runs this on a schedule: the broker, and with it every live token,
-# exists only while the author has started a session (ADR-0009).
+# Nothing runs this on a schedule: the broker refreshes tokens only while the
+# author has started a session (ADR-0009). Stopping it revokes nothing; the last
+# tokens expire within the hour.
 set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
@@ -26,7 +27,7 @@ SANDBOX=januslin
 KEYCHAIN="$HOME/Library/Keychains/sbx.keychain-db"
 
 usage() {
-  echo "usage: $0 start [--unlock-keychain] | restart | stop" >&2
+  echo "usage: $0 start [--unlock-keychain] | restart [--unlock-keychain] | stop" >&2
   exit 2
 }
 
@@ -61,7 +62,7 @@ start() {
   echo "sandbox-session: keep the Mac awake from your own account (caffeinate -ims); then paste the coordinator prompt and type /remote-control."
   sbx run --name "$SANDBOX" || {
     rc=$?
-    echo "sandbox-session: sbx run failed (exit $rc); stopping the broker so no token stays live." >&2
+    echo "sandbox-session: sbx run failed (exit $rc); stopping the broker; its current tokens expire within the hour." >&2
     sh "$here/token-broker.sh" stop
     exit "$rc"
   }
@@ -78,9 +79,14 @@ main() {
   case "$cmd" in
     start) start "$@" ;;
     restart)
-      [ $# -eq 0 ] || usage
+      # Update first, so a failed fast-forward leaves the VM running.
+      if [ -z "${SANDBOX_SESSION_UPDATED:-}" ]; then
+        for arg in "$@"; do [ "$arg" = --unlock-keychain ] || usage; done
+        update_main
+        SANDBOX_SESSION_UPDATED=1 exec sh "$here/sandbox-session.sh" restart "$@"
+      fi
       sbx stop "$SANDBOX" || true
-      start
+      start "$@"
       ;;
     stop) [ $# -eq 0 ] || usage; stop ;;
     *) usage ;;

@@ -80,8 +80,17 @@ check "start: refuses an unknown option before doing anything" $?
 
 # ---- restart ----------------------------------------------------------------
 run restart; rc=$?
-[ $rc -eq 0 ] && [ "$(log)" = "sbx stop januslin|$start_calls" ]
-check "restart: stops the VM, then runs start" $?
+update="git checkout -q main|git fetch -q origin|git merge -q --ff-only origin/main|"
+[ $rc -eq 0 ] && [ "$(log)" = "${update}sbx stop januslin|${start_calls#"$update"}" ]
+check "restart: updates main, then stops the VM, then starts without updating again" $?
+
+FAKE_FAIL="git merge" run restart; rc=$?
+[ $rc -ne 0 ] && ! grep -Eq '^(sbx|token-broker)' "$FAKE_LOG"
+check "restart: leaves the VM and broker alone when main cannot be fast-forwarded" $?
+
+run restart --unlock-keychain; rc=$?
+[ $rc -eq 0 ] && grep -q '^security unlock-keychain' "$FAKE_LOG"
+check "restart --unlock-keychain: passes the option to start" $?
 
 FAKE_FAIL="sbx stop" run restart; rc=$?
 [ $rc -eq 0 ] && grep -q '^sbx run' "$FAKE_LOG"
