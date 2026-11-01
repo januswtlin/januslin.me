@@ -19,7 +19,7 @@ content/
   posts/
     <slug>/
       index.zh-tw.md        # required: the original
-      index.en.md           # optional: English version, written by the author
+      index.en.md           # optional: English version, written by the entry's writer
       cover.jpg             # optional: co-located images, any name
   topics/
     <topic-id>/

@@ -1,6 +1,6 @@
 # januslin.me
 
-Personal website of Janus Lin. Writing on tech, AI, travel, coffee, and life, in Traditional Chinese, with English versions written by the author.
+Personal website of Janus Lin. Writing on tech, AI, travel, coffee, and life, in Traditional Chinese, with English versions written by each entry's writer.
 
 - Framework: Astro 7 with the Retypeset theme (vendored)
 - Hosting: Cloudflare Workers static assets

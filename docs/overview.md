@@ -12,11 +12,11 @@ The site should read like a well-typeset book: typography-first, calm, fast, and
 
 ## Goals
 
-1. **Author focus.** The author writes; agents do everything else (engineering, operations, upgrades, SEO).
+1. **Author focus.** People write (the author, and developers through PRs the author merges, ADR-0016); agents do everything else (engineering, operations, upgrades, SEO).
 2. **Write anywhere.** Laptop (iA Writer, Obsidian) and, when needed, mobile (iA Writer and Working Copy on iOS). Plain Markdown and Git on every device; no CMS (ADR-0004).
 3. **Preview before release.** Every PR gets a protected preview URL; the author's merge to `main` is the release.
 4. **Readable by humans and machines.** Static HTML, structured data, sitemap, RSS, a Markdown version of every published page, and a permissive AI access policy (ADR-0006).
-5. **Bilingual.** `zh-TW` first; `en` versions written by the author. A deterministic check opens an issue for each missing English version (`docs/i18n-and-translation.md`).
+5. **Bilingual.** `zh-TW` first; `en` versions written by each entry's writer. A deterministic check opens an issue for each missing English version (`docs/i18n-and-translation.md`).
 6. **Near-zero cost.** Free tiers only.
 
 ## Non-goals (for now)
@@ -27,7 +27,7 @@ The site should read like a well-typeset book: typography-first, calm, fast, and
 
 ## People and roles
 
-- **Janus (author):** writes content, sets direction, approves tasks, reviews and merges every PR, and does the steps that need the author's credentials, raised as `human-task` issues (`docs/admin-guide.md`).
+- **Janus (author, the only editor):** writes content, sets direction, approves tasks, reviews and merges every PR, and does the steps that need the author's credentials, raised as `human-task` issues (`docs/admin-guide.md`).
 - **Agents:** `docs/agents/roles.md`. A coordinator session runs the task loop (ADR-0010).
 
 ## Limits to keep in mind

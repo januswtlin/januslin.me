@@ -14,7 +14,7 @@ A developer is any collaborator other than you (ADR-0016): Write access, no merg
 
 ## A developer's App set (optional)
 For the developer's own agents, and usable as a backup set in your `agent` account.
-1. The developer creates two Apps under their own account as in `app-key-sets.md` ("Set up a new pair of Apps"), with one difference: "Where can this GitHub App be installed?" → **Any account** (public). GitHub installs a private App only on its owner's account.
+1. The developer creates two Apps under their own account as in `app-key-sets.md` ("Set up a new pair of Apps"), with two differences: "Where can this GitHub App be installed?" → **Any account** (public), because GitHub installs a private App only on its owner's account; and the developer skips "Install App" in that runbook's step 2, which you do in the next step.
 2. You install each App: `https://github.com/apps/<slug>/installations/new` → `januswtlin` → Only select repositories → `januslin.me` → Install. Check that the permissions it asks for are exactly the ones in `docs/security.md`.
 3. Only if you want it as a backup set: the developer generates one extra key per App and sends you both over an end-to-end encrypted channel (AirDrop, Signal), then deletes their copies of those two keys. In your own Terminal:
    ```sh
