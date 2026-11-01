@@ -6,7 +6,7 @@ def issue($n;$body): {__typename:"Issue",id:("I"+($n|tostring)),number:$n,title:
 {repo:{issues:conn([{id:"I54",number:54},{id:"I55",number:55},{id:"I56",number:56},{id:"I59",number:59}]),pullRequests:conn([]),refs:conn([])},nodes:{}}
 | .nodes.I53=issue(53;"plan")
 | .nodes.I53.subIssues=conn([{number:54},{number:55},{number:56}])
-| .nodes.I54=issue(54;"**Depends on:** none")
+| .nodes.I54=issue(54;"**Branch:** `agent/platform/T08-work-status`\n**Depends on:** none")
 | .nodes.I55=issue(55;"**Depends on:** #57, #58")
 | .nodes.I56=issue(56;"**Depends on:** none")
 | .nodes.I56.assignees=conn([actor(9988)])
