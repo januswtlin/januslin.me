@@ -66,9 +66,13 @@ was not changed. Full POSIX gate using `/bin/dash` and a temporary PATH-local
 that the default command is green or that Linux/microVM acceptance ran.
 
 Shellcheck passed for the new shell entry points; Python AST parsing, JSON syntax,
-and `git diff --check` passed. A TOML parser was unavailable in the macOS system
-Python, so no parser-based TOML check is claimed; effective Codex configuration
-remains a live V8/V29 check. `pnpm verify` does not exist on this base.
+and `git diff --check` passed. The macOS system Python lacked `tomllib`; the
+coordinator then used the existing pyenv Python 3.11.2 stdlib `tomllib` to parse
+both `.codex/config.toml` and `sandbox/codex-proxy/config.toml` successfully and
+assert workspace-write/on-request/auto_review plus the absence of model and
+reasoning-effort overrides. This is configuration syntax/value evidence only;
+effective Codex configuration remains a live V8/V29 check. `pnpm verify` does not
+exist on this base.
 
 ## Review and remaining handoff
 
