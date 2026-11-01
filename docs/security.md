@@ -64,8 +64,8 @@ Every other App set (ADR-0015) has one implementer and one reviewer App with exa
 
 ## Controls added by planned tasks
 
-- **`ci` required** on `main-protect` (T16, [#23](https://github.com/januswtlin/januslin.me/issues/23)): no red PR merges, the author's included. T16 also verifies that a branch workflow cannot read the environment secrets, and runs gitleaks on every PR next to GitHub's push protection. Never commit `.env*` except `.env.example`.
-- **Cloudflare credentials** (T14, T15, [#18](https://github.com/januswtlin/januslin.me/issues/18), [#20](https://github.com/januswtlin/januslin.me/issues/20)):
+- **`ci` required** on `main-protect` (T16, [#65](https://github.com/januswtlin/januslin.me/issues/65)): no red PR merges, the author's included. T16 also verifies that a branch workflow cannot read the environment secrets, and runs gitleaks on every PR next to GitHub's push protection. Never commit `.env*` except `.env.example`.
+- **Cloudflare credentials** (T14, T15, [#60](https://github.com/januswtlin/januslin.me/issues/60), [#62](https://github.com/januswtlin/januslin.me/issues/62)):
 
   | Token | Stored | Scope (T14 verifies the minimum) | Used by |
   |---|---|---|---|

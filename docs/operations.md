@@ -6,7 +6,7 @@ The recurring maintenance calendar and the agents' runbooks. The author's own pr
 
 ## Maintenance calendar
 
-Every item that needs the author is raised as a `human-task` issue assigned to the author about a month before it is due (ADR-0014). Today the coordinator raises them; once T19 ([#26](https://github.com/januswtlin/januslin.me/issues/26)) merges, a monthly workflow does.
+Every item that needs the author is raised as a `human-task` issue assigned to the author about a month before it is due (ADR-0014). Today the coordinator raises them; once T19 ([#68](https://github.com/januswtlin/januslin.me/issues/68)) merges, a monthly workflow does.
 
 | Cadence | What | Who |
 |---|---|---|

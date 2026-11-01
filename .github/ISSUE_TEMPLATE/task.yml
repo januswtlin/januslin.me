@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Add this issue as a sub-issue of the plan issue #11, at the right place in its order. The coordinator starts it only after the author adds the `approved` label.
+        Add this issue as a sub-issue of the plan issue #53, at the right place in its order. The coordinator starts it only after the author adds the `approved` label.
   - type: input
     id: header
     attributes:
@@ -18,7 +18,7 @@ body:
     attributes:
       label: Depends on
       description: Issue numbers, or "none". May name human-task issues.
-      placeholder: "#12, #13"
+      placeholder: "#54, #55"
     validations:
       required: true
   - type: textarea

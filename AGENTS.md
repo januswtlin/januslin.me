@@ -18,7 +18,7 @@ Two hard constraints shape every decision:
 | If you are doing... | Read |
 |---|---|
 | Anything | `docs/overview.md`, `docs/agents/roles.md`, `docs/agents/workflow.md` |
-| A dispatched task | your task issue and the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11); "Work items" in `docs/agents/workflow.md` |
+| A dispatched task | your task issue and the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53); "Work items" in `docs/agents/workflow.md` |
 | Content schema, topics, tags, images, URLs | `docs/content-model.md` |
 | Scheduled agents, Renovate, event triggers | `docs/automation.md` |
 | Locales, URLs, translation | `docs/i18n-and-translation.md` |
