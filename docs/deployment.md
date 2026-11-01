@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-10-29 · Decisions: ADR-0002 (Workers), ADR-0003 (Actions, ruleset, environments)
 
-**Status: design, not built yet.** Nothing in this file runs today. T14 ([#18](https://github.com/januswtlin/januslin.me/issues/18), Worker), T15 ([#20](https://github.com/januswtlin/januslin.me/issues/20), Access), T16 ([#23](https://github.com/januswtlin/januslin.me/issues/23), CI/CD), and T17 ([#24](https://github.com/januswtlin/januslin.me/issues/24), cutover) build it, and each corrects this file to what it built. What exists today: `docs/infra-current-state.md`.
+**Status: design, not built yet.** Nothing in this file runs today. T14 ([#60](https://github.com/januswtlin/januslin.me/issues/60), Worker), T15 ([#62](https://github.com/januswtlin/januslin.me/issues/62), Access), T16 ([#65](https://github.com/januswtlin/januslin.me/issues/65), CI/CD), and T17 ([#66](https://github.com/januswtlin/januslin.me/issues/66), cutover) build it, and each corrects this file to what it built. What exists today: `docs/infra-current-state.md`.
 
 ## Overview
 

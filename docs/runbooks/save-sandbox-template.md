@@ -7,9 +7,9 @@ Where: `agent-session` · Time: about 5 min, plus restarting the coordinator
    sbx template save januslin "januslin:codex-$(date +%F)"
    ```
 2. Never push the template to a registry.
-3. Start it again in `agent-session`, then Start steps 6 and 7 in `start-coordinator.md`:
+3. Start it again in `agent-session`, then Start steps 4 and 5 in `start-coordinator.md`:
    ```sh
-   sbx run --name januslin
+   scripts/sandbox-session.sh start
    ```
 
 ## Check

@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-10-31
 
-**What exists today:** the repository, its rules and settings, the agent identities, and the local AI sandbox with its coordinator (`docs/infra-current-state.md`). The site, the Worker, CI/CD, and the automation described below are the **target architecture**, built by the tasks in the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11); the old site still serves `januslin.me` until cutover (T17).
+**What exists today:** the repository, its rules and settings, the agent identities, and the local AI sandbox with its coordinator (`docs/infra-current-state.md`). The site, the Worker, CI/CD, and the automation described below are the **target architecture**, built by the tasks in the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53); the old site still serves `januslin.me` until cutover (T17).
 
 ## Purpose
 
@@ -121,7 +121,7 @@ Entries with `draft: true` are committed and therefore public in the repository;
 ## Where things are decided
 
 - Technology and process choices: [`docs/decisions/`](decisions/README.md) (ADRs).
-- Work to do now: the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11) and its task and human-task sub-issues (ADR-0014).
+- Work to do now: the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53) and its task and human-task sub-issues (ADR-0014).
 - Steps for the author: [`docs/admin-guide.md`](admin-guide.md).
 - Ideas and future work: [`docs/roadmap.md`](roadmap.md).
 - Writing and publishing: [`docs/authoring-guide.md`](authoring-guide.md).

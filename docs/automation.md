@@ -43,7 +43,7 @@ Agents do not watch the repository on their own. **Events and the coordinator tr
 
 ## Planned
 
-### Renovate (T19, [#26](https://github.com/januswtlin/januslin.me/issues/26))
+### Renovate (T19, [#68](https://github.com/januswtlin/januslin.me/issues/68))
 - GitHub App, free, installed on this repository only (a human task under T19). Config in `renovate.json`.
 - Covers npm packages, the Node version in `.nvmrc` and `engines`, pnpm, and GitHub Actions (SHA-pinned).
 - Grouped PRs on a weekly schedule; majors separate. Never automerges.
@@ -58,7 +58,7 @@ Scheduled tasks can be triggered by GitHub pull request, issue, and release even
 | `english-versions.yml` | push to `main` touching `content/**`; weekly schedule | Deterministic, no agent: for each published zh-TW entry with no `index.en.md`, open an issue `english: <collection>/<slug>` labelled `translation-needed` (no duplicates, never reopens one the author closed); close it when the English version lands (`docs/i18n-and-translation.md`). |
 | `monthly-maintenance.yml` | schedule, 1st of the month | Open a "Monthly maintenance" issue with the checklist from `docs/operations.md`, including the Retypeset upstream watch, label `maintenance`; and open a `human-task` issue assigned to the author for each calendar item due within 35 days. Takes over from the coordinator. |
 
-### Claude Code cloud scheduled tasks (T20, [#27](https://github.com/januswtlin/januslin.me/issues/27))
+### Claude Code cloud scheduled tasks (T20, [#69](https://github.com/januswtlin/januslin.me/issues/69))
 - Run on Anthropic's infrastructure; the author's laptop can be closed. Only the author creates them (ADR-0009).
 - Triggers: schedule (hourly at most), GitHub events (PR, issue, release, with filters), or API. Research preview: behavior and limits may change.
 - They act as the machine account `januslin-agent`, not the author and not `januslin-agent[bot]`. Every comment starts with the task's role in bold. The `main` ruleset and the environment branch policies apply to them like to any collaborator.

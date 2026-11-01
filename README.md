@@ -18,7 +18,7 @@ Start here:
 
 ## For the author
 
-Everything done by hand, from starting the coordinator to answering a human task: [`docs/admin-guide.md`](docs/admin-guide.md). Work in progress: the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11) and the issues assigned to you.
+Everything done by hand, from starting the coordinator to answering a human task: [`docs/admin-guide.md`](docs/admin-guide.md). Work in progress: the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53) and the issues assigned to you.
 
 ## Contributing
 

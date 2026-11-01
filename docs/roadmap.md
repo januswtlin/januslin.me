@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-10-31 · Next review: first week of each month (see `docs/operations.md`)
 
-This is where ideas wait until we decide to do them or not. Nothing here is committed work; committed work is a task issue under the plan issue [#11](https://github.com/januswtlin/januslin.me/issues/11). An item becomes a task only after it is `accepted` at a review.
+This is where ideas wait until we decide to do them or not. Nothing here is committed work; committed work is a task issue under the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53). An item becomes a task only after it is `accepted` at a review.
 
 ## How items are evaluated
 
