@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""Deliberately noisy fake: the dispatcher must never replay its output."""
+import json
+import os
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+prompt = sys.stdin.read()
+Path(os.environ['FAKE_ARGV']).write_text(json.dumps(args))
+Path(os.environ['FAKE_PROMPT']).write_text(prompt)
+Path(os.environ['FAKE_ENV']).write_text(json.dumps({
+    key: os.environ.get(key) for key in ('AGENT_TOOL', 'JANUSLIN_GITHUB_APP', 'GH_TOKEN', 'GITHUB_TOKEN')
+}))
+sid = '11111111-2222-4333-8444-555555555555'
+mode = os.environ.get('FAKE_MODE', 'ok')
+print(json.dumps({'type': 'thread.started', 'thread_id': sid}), flush=True)
+print(json.dumps({'type': 'item.completed', 'item': {'text': prompt}}), flush=True)
+print('SECRET_FINDING SECRET_TOKEN', file=sys.stderr)
+if mode in ('interrupt', 'quota', 'login'):
+    print(json.dumps({'type': 'error', 'message': {'interrupt': 'interrupted', 'quota': 'quota exceeded', 'login': 'authentication login expired'}[mode]}))
+    sys.exit(9)
+result = {
+    'pr_url': 'https://github.com/januswtlin/januslin.me/pull/123',
+    'verify_summary': {'status': 'passed', 'summary': 'fake verification only'},
+    'handoff': {'summary': 'SECRET_FINDING', 'tests': ['fake'], 'risks': [], 'author_actions': []},
+    'blockers': [], 'review_verdict': None,
+}
+if mode == 'bad-schema':
+    result['verify_summary']['status'] = 'anything'
+if mode == 'unknown-field':
+    result['identity_verified'] = True
+if mode == 'wrong-repo':
+    result['pr_url'] = 'https://github.com/attacker/repo/pull/123'
+output = Path(args[args.index('-o') + 1])
+if mode == 'symlink-output':
+    output.unlink()
+    output.symlink_to(os.environ['FAKE_VICTIM'])
+elif mode != 'missing-result':
+    output.write_text(json.dumps(result))
+if mode != 'incomplete':
+    print(json.dumps({'type': 'turn.completed'}), flush=True)
