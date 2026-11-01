@@ -27,6 +27,12 @@ class DispatchTests(unittest.TestCase):
         self.repo = self.base / 'repo'
         (self.repo / 'scripts').mkdir(parents=True)
         subprocess.run(['git', 'init', '-q', str(self.repo)], check=True)
+        subprocess.run(['git', '-C', str(self.repo), '-c', 'user.name=Fake', '-c',
+                        'user.email=fake@example.invalid', '-c', 'commit.gpgsign=false',
+                        'commit', '-q', '--allow-empty', '-m', 'fixture'], check=True)
+        subprocess.run(['git', '-C', str(self.repo), 'update-ref', 'refs/remotes/origin/main', 'HEAD'], check=True)
+        self.worktree = self.base / 'worktree'
+        subprocess.run(['git', '-C', str(self.repo), 'worktree', 'add', '-q', '--detach', str(self.worktree), 'HEAD'], check=True)
         shutil.copy(SOURCE / 'scripts/codex-result.schema.json', self.repo / 'scripts')
         self.state = self.base / 'state'
         self.env = dict(os.environ, PATH=str(HERE / 'bin') + os.pathsep + os.environ['PATH'],
@@ -37,13 +43,16 @@ class DispatchTests(unittest.TestCase):
         self.task = {'number': 56, 'state': 'startable', 'lastEditedAt': None,
                      'title': 'T06: test', 'body': '**Role:** Platform Engineer · **Branch:** `agent/platform/T06-test`\nSECRET_SPEC'}
         self.write_gate()
-        self.executable('agent-gh', "#!/bin/sh\nprintf '%s\\n' '{\"number\":123,\"state\":\"OPEN\",\"headRefOid\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"headRefName\":\"agent/platform/test\",\"url\":\"https://github.com/januswtlin/januslin.me/pull/123\"}'\n")
+        head = subprocess.check_output(['git', '-C', str(self.repo), 'rev-parse', 'HEAD'], text=True).strip()
+        pr = {'number': 123, 'state': 'OPEN', 'headRefOid': head, 'headRefName': 'agent/platform/test',
+              'url': 'https://github.com/januswtlin/januslin.me/pull/123'}
+        self.executable('agent-gh', "#!/bin/sh\nprintf '%s\\n' '" + json.dumps(pr) + "'\n")
         self.addCleanup(patch.stopall)
         patch.object(DISPATCH, 'ROOT', self.repo).start()
         patch.object(DISPATCH, 'require_vm').start()
         patch.dict(os.environ, self.env, clear=True).start()
         self.old_cwd = Path.cwd()
-        os.chdir(self.repo)
+        os.chdir(self.worktree)
         self.addCleanup(os.chdir, self.old_cwd)
 
     def executable(self, name, text):
@@ -52,7 +61,9 @@ class DispatchTests(unittest.TestCase):
         path.chmod(0o755)
 
     def write_gate(self, status=0):
-        self.executable('work-status.sh', '#!/bin/sh\ncat <<\'JSON\'\n' + json.dumps(self.task) + '\nJSON\nexit ' + str(status) + '\n')
+        reasons = getattr(self, 'reasons', ['agent branch exists'] if self.task['state'] == 'in-progress' else [])
+        lines = [self.task] + [{'number': 56, 'reason': reason} for reason in reasons]
+        self.executable('work-status.sh', '#!/bin/sh\ncat <<\'JSON\'\n' + '\n'.join(json.dumps(line) for line in lines) + '\nJSON\nexit ' + str(status) + '\n')
 
     def call(self, *args):
         out, err = io.StringIO(), io.StringIO()
@@ -159,6 +170,7 @@ class DispatchTests(unittest.TestCase):
         self.assertEqual(self.start()[0], 1)
         self.state.unlink()
         self.state.mkdir(mode=0o755)
+        self.state.chmod(0o755)  # The dispatcher's restrictive umask persists in-process.
         self.assertEqual(self.start()[0], 1)
         self.state.chmod(0o700)
         findings = self.base / 'f'
@@ -169,6 +181,58 @@ class DispatchTests(unittest.TestCase):
         for args in [('start', '0', 'platform'), ('review', '--last'), ('resume', '../bad', 'f'), ('start', '56', 'reviewer')]:
             self.assertEqual(self.call(*args)[0], 2)
         self.assertFalse((self.base / 'argv').exists())
+
+    def test_requires_isolated_clean_worktree_root(self):
+        for target in (self.repo, self.base):
+            os.chdir(target)
+            self.assertEqual(self.start()[0], 1)
+        child = self.worktree / 'child'
+        child.mkdir()
+        os.chdir(child)
+        self.assertEqual(self.start()[0], 1)
+        os.chdir(self.worktree)
+        subprocess.run(['git', 'switch', '-q', '-c', 'main'], check=True)
+        self.assertEqual(self.start()[0], 1)
+        subprocess.run(['git', 'switch', '-q', '--detach'], check=True)
+        (self.worktree / 'untracked').write_text('dirty')
+        self.assertEqual(self.start()[0], 1)
+        self.assertFalse((self.base / 'argv').exists())
+
+    def test_resume_rejects_symlinked_findings_parent(self):
+        self.start()
+        actual = self.base / 'actual'
+        actual.mkdir()
+        (actual / 'f').write_text('SECRET_FINDING')
+        alias = self.base / 'alias'
+        alias.symlink_to(actual, target_is_directory=True)
+        self.assertEqual(self.call('resume', SID, str(alias / 'f'))[0], 1)
+
+    def test_resume_refuses_changed_task_snapshot(self):
+        self.start()
+        findings = self.base / 'f'
+        findings.write_text('SECRET_FINDING')
+        self.task['body'] += '\nchanged after dispatch'
+        self.task['state'] = 'in-progress'
+        self.write_gate(3)
+        self.assertEqual(self.call('resume', SID, str(findings))[0], 1)
+
+    def test_resume_review_refuses_changed_head(self):
+        self.assertEqual(self.call('review', '123')[0], 0)
+        findings = self.base / 'f'
+        findings.write_text('SECRET_FINDING')
+        self.executable('agent-gh', "#!/bin/sh\nprintf '%s\\n' '{\"number\":123,\"state\":\"OPEN\",\"headRefOid\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"url\":\"https://github.com/januswtlin/januslin.me/pull/123\"}'\n")
+        self.assertEqual(self.call('resume', SID, str(findings))[0], 1)
+
+    def test_resume_rejects_lost_authorization_hidden_by_claim(self):
+        self.start()
+        findings = self.base / 'f'
+        findings.write_text('SECRET_FINDING')
+        self.task['state'] = 'in-progress'
+        for reason in ('no label', 'dependency #55 is not completed by author',
+                       'assigned to another developer', 'unknown future reason'):
+            self.reasons = ['agent branch exists', reason]
+            self.write_gate(3)
+            self.assertEqual(self.call('resume', SID, str(findings))[0], 1)
 
 
 if __name__ == '__main__':

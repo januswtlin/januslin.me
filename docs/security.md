@@ -56,6 +56,27 @@ Every other App set (ADR-0015) has one implementer and one reviewer App with exa
 - Nothing an agent writes runs in the author's account or in a host working tree: the sandbox works on its own clone, the author never runs `pnpm install`, scripts, or hooks from it, and no folder is shared between the macOS accounts.
 - Reviewer and implementer identities are both reachable in the sandbox, so the split between them is advisory; an approval is not a security control here (only the author merges).
 
+### Prepared Codex defaults (not live-verified controls)
+
+The T06 candidate runs only in the existing VM, with workspace-write/on-request/
+auto_review on start and resume. The wrapper refuses the primary checkout and
+`main`, requires the approved-task T08 gate for new implementation, records session
+IDs from CLI events, and schema-validates reports. A model report cannot grant
+authorization, prove the GitHub actor, or close a task. Private result files may
+contain sensitive output even though prompts/findings are absent from argv and
+raw CLI output is suppressed. Inspect and redact before publishing evidence.
+Both role tokens remain reachable in the VM; reviewers must use the reviewer
+helper and the coordinator must check the posted numeric actor against the active
+identity configuration. No `github` proxy secret may replace the explicit token.
+
+Project config disables apps/plugins and Docker's MCP gateway as defaults.
+Personal-account managed requirements, proxy OAuth, sandbox behavior, and the
+selected model's automatic review are still V8/V22/V28/V29 questions. Do not call
+the config files proven controls or substitute full access when a probe fails.
+The candidate mixin has no passthrough/API-key path or egress allow rules; author
+approval and reviewed-main runbooks precede any host binding/policy/kit changes.
+See [the contract and acceptance ledger](agents/codex.md).
+
 ### Cloud agents and tool logins (ADR-0009)
 - Claude Code cloud sessions and the claude.ai login used in the sandbox reach GitHub only as the machine account. Ceiling: the Claude GitHub App's permissions intersected with Write on this repository. The rulesets and environments apply to it like to any collaborator.
 - Only the author starts cloud sessions and scheduled tasks. The cloud environment holds no secrets.

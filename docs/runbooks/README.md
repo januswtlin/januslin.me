@@ -52,6 +52,8 @@ Expected: <what the output shows>
 | [delete-slack-app.md](delete-slack-app.md) | Delete the unused Slack app and its token |
 | [connect-chatgpt-github.md](connect-chatgpt-github.md) | Connect ChatGPT to GitHub as the machine account (T06) |
 | [codex-login.md](codex-login.md) | Codex login through `sbx` (T06) |
+| [codex-runtime.md](codex-runtime.md) | Candidate same-VM Codex install/proxy setup; live acceptance pending (T06) |
+| [codex-cloud.md](codex-cloud.md) | Author-created Codex cloud environment and phone/identity probes (T06) |
 | [save-sandbox-template.md](save-sandbox-template.md) | Save the sandbox as a template after the Codex install (T06) |
 | [enable-zero-trust.md](enable-zero-trust.md) | Turn on Cloudflare Zero Trust (T15) |
 | [store-deploy-token.md](store-deploy-token.md) | Create and store the Cloudflare deploy token (T14) |
@@ -60,4 +62,4 @@ Expected: <what the output shows>
 | [install-renovate.md](install-renovate.md) | Install the Renovate App (T19) |
 | [archive-hugo-repo.md](archive-hugo-repo.md) | Archive the old Hugo repository (T17) |
 
-Runbooks that depend on what a task builds or finds are added by that task, in its PR or in a small runbook PR before the human task: the Codex cloud environment and probe (T06, `codex-cloud.md`), the photo Shortcut (T12, `photo-shortcut.md`), requiring `ci` and the forced rollback (T16, `require-ci-check.md`, `forced-rollback.md`), rotating the deploy token and the Access service token (T14, T15, `rotate-deploy-token.md`, `rotate-smoke-token.md`), the manual production rollback (T16, `rollback-production.md`), the search consoles (T17, `search-consoles.md`), the audit screenshots (T18, `audit-screenshots.md`), and the scheduled tasks (T20, `create-scheduled-tasks.md`).
+Runbooks that depend on what a task builds or finds are added by that task, in its PR or in a small runbook PR before the human task: the photo Shortcut (T12, `photo-shortcut.md`), requiring `ci` and the forced rollback (T16, `require-ci-check.md`, `forced-rollback.md`), rotating the deploy token and the Access service token (T14, T15, `rotate-deploy-token.md`, `rotate-smoke-token.md`), the manual production rollback (T16, `rollback-production.md`), the search consoles (T17, `search-consoles.md`), the audit screenshots (T18, `audit-screenshots.md`), and the scheduled tasks (T20, `create-scheduled-tasks.md`).

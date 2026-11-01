@@ -12,6 +12,11 @@ sandbox:
   entrypoint: [claude, "--permission-mode", "auto"]
 setup:
   install:
+    - description: Python stdlib prerequisite for Codex dispatch and its fake tests
+      user: "0"
+      command: |
+        set -eu
+        python3 -c 'import sys; assert sys.version_info >= (3, 11), "Python 3.11+ required for dispatch"'
     - description: Claude Code managed settings (auto mode by default, bypass mode disabled)
       user: "0"
       command: |

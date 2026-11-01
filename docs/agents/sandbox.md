@@ -101,13 +101,47 @@ The repository's `.claude/settings.json` denies the claude.ai connector tools (`
 
 `pnpm verify`, Playwright, and visual snapshots run on Linux in the VM, the same platform as CI, so one set of baselines serves both. Dev servers started by agents bind inside the VM; a port is published to the host (`sbx ports januslin --publish <port>`) only when the author asks to see something.
 
+## Codex candidate (T06, live acceptance pending)
+
+`scripts/codex-dispatch.sh` is a VM-only wrapper for the coordinator, with Python
+3.11+ as a checked kit prerequisite. It dispatches in separate linked worktrees,
+uses stdin prompts, private claims/results, explicit session resume, and the role
+Apps. Its fake tests do not establish OAuth, Linux sandbox support, actual GitHub
+identity, or the cross-tool review/resume loop. Setup, contract, recovery, source
+comparison, and the pending V8/V10/V22/V28/V29/V30 ledger:
+[codex.md](codex.md).
+
+The candidate project `.codex/config.toml` selects workspace-write/on-request/
+auto_review, network access through the existing VM proxy, and disables apps,
+plugins, and the template's MCP gateway. The wrapper uses `--approve-for-me`
+without an explicit `--sandbox` (those flags conflict), also on exact-session
+resume. No model override or full-access fallback is passed. These are defaults;
+V8 and V29 must measure their effect before unattended use.
+
+Installing the binary alone in the Claude kit does not declare OpenAI OAuth.
+`sandbox/codex-proxy/` is an uninstalled candidate v2 mixin plus a VM user-config
+example for ChatGPT-backed proxy transport. The author adds it only after the
+new runbook reaches reviewed `main`; no host kit or policy change was performed
+in local preparation. Proposed additions, not applied allowlist entries:
+
+| Host | Proposed rule | Reason / acceptance |
+|---|---|---|
+| `auth.openai.com` | `:443` | Host-managed OAuth refresh endpoint, V22/V28 |
+| `chatgpt.com` | `:443` | ChatGPT subscription-backed inference through proxy, V28/V29 |
+
+Do not add broad OpenAI/CDN wildcards in anticipation of a failure. Use blocked
+host evidence and the existing adding-a-host procedure for any extra destination.
+V22 must check the installed sbx version's OAuth scoping; 0.50.1 says global only.
+The second-sandbox launcher remains conditional on documented V28/V29 failure and
+the author's decision; this candidate has not selected it. The author's commands
+are in [codex-runtime.md](../runbooks/codex-runtime.md).
+
 ## Checks
 
 The quarterly review (`docs/operations.md`) re-runs the canary (no key or host file outside the read-only mounts is readable from the VM) and compares `sbx policy ls januslin --wide` with the allowlist above.
 
 ## Planned changes
 
-- **Codex** (T06, [#56](https://github.com/januswtlin/januslin.me/issues/56)): the Codex CLI installed in this sandbox and saved as a template; its ChatGPT login through `sbx secret set openai --oauth`, kept on the host; `codex exec --sandbox workspace-write --approve-for-me` with automatic review, never full bypass; OpenAI hosts added to the allowlist. The issue holds the design and the fallback.
 - **Cloudflare ops token** (T14, [#60](https://github.com/januswtlin/januslin.me/issues/60); also T15, T17): while a Cloudflare task runs, the author lends a short-lived token that the proxy injects for `api.cloudflare.com` as `CLOUDFLARE_API_TOKEN`, with a temporary rule for that host (`docs/runbooks/lend-cloudflare-token.md`). V25 checks that wrangler works with the placeholder.
 - **Narrow implementer token** (decided trigger, T16, [#65](https://github.com/januswtlin/januslin.me/issues/65)): if a branch workflow can post a passing `ci` check on another PR's head commit, the broker mints the everyday token without `workflows`, and the author enables it per workflow task with `scripts/token-broker.sh workflows on|off`.
 - **`main` watch** (T04, [#55](https://github.com/januswtlin/januslin.me/issues/55)): `scripts/main-watch.sh` keeps its state in `~/.local/state/januslin-agent/main-watch.state` in the VM.

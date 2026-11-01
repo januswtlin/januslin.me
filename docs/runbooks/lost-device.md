@@ -8,12 +8,18 @@ Where: a trusted device's browser (and the Mac, if it is not the lost one) · Ti
 ## A laptop other than the Mac
 3. The phone steps, plus, for both `januswtlin` and the machine account: GitHub → Settings → Sessions → sign out; Settings → Applications → Authorized OAuth Apps → GitHub CLI → Revoke; Settings → SSH and GPG keys → delete the laptop's keys. Change the machine account's password.
 4. claude.ai → Settings → sign out everywhere (ends Remote Control and cloud sessions).
+   If T06 has been enabled, also sign out ChatGPT/Codex sessions on that device,
+   revoke its ChatGPT GitHub authorization, and review active cloud tasks. A local
+   Codex session ID or template is not a credential revocation mechanism.
 
 ## The Mac
 The App keys, the `agent` account, and the sandbox are on it.
 5. Steps 3 and 4.
 6. On another device, as each set's owner (the machine account's browser profile for `machine`, `januswtlin` for the fallback): for every App of every set, GitHub → Settings → Developer settings → GitHub Apps → the App → Private keys → delete **every** key. The Mac held every set (ADR-0015). Local agents stop working until a new Mac is set up (`app-key-sets.md`, "Rotate a set's keys", then generates new keys).
 7. Docker Hub → Account settings → sign out all sessions (the `sbx` login).
+   If another trusted Mac remains, remove its `openai` sandbox secret too when the
+   affected ChatGPT login should no longer be usable; otherwise revoke the account
+   sessions remotely first. Do not copy an auth cache from the lost device.
 8. Rotate the deploy token and `ci-smoke-test`, once they exist.
 9. Optional: Cloudflare Zero Trust → revoke the device's Access sessions.
 

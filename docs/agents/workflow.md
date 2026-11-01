@@ -164,6 +164,38 @@ You never implement, never merge, never push to main, never start cloud sessions
 - State lives in issues, PRs, and their threads, never only in the session. A new session started with the same prompt resumes from step 1.
 - Implementers start servers on free ports inside the sandbox and stop them before reporting; parallel subagents share the VM.
 
+## Cross-tool routing and Codex dispatch (T06 candidate)
+
+Default to cross-tool independent review: Codex implements and a fresh Claude
+subagent reviews, or Claude implements and a fresh Codex session reviews. When
+Claude's quota runs low, route new implementers to Codex; when Codex exhausts its
+quota, route back to Claude or wait. Tool choice never changes the GitHub identity:
+implementer and reviewer use their respective active role Apps.
+
+The candidate wrapper is `scripts/codex-dispatch.sh`: `start <issue> <role>`,
+`resume <session-uuid> <findings-file>`, and `review <pr-number>`. The coordinator
+prepares a separate clean linked worktree at detached `origin/main` for a new
+implementation, or at the exact PR head for a review, then runs the wrapper from
+that root. It refuses the primary checkout, `main`, a subdirectory, a different
+repository, a dirty fresh worktree, missing T08, and tasks that are not startable.
+Never run it in the coordinator's checkout. Keep the same VM-local private state
+directory across worktrees so duplicate claims are visible.
+
+Record the wrapper's observed UUID in the PR handoff. Its `reported` envelope is
+only a transport result: read and verify the private JSON report, PR actor,
+verification evidence, review actor/verdict, and exact-head CI run independently.
+Send blocking findings through a local file and resume that exact UUID in its
+original worktree. Do not dispatch a second task because T08 now says in-progress,
+and never resume `--last`. A reviewer claim is per PR/head, separate from the
+implementation claim. Login/quota/interruption recovery, supported roles, and
+artifact handling: [codex.md](codex.md).
+
+This routing is prepared, not live-accepted: V22/V28/V29/V30 and the reverse review
+remain pending. The author's 2026-11-01 exception permits local preparation before
+#55 is completed; it does not change runtime approval/dependency gates. New host
+procedures require a runbook-first merge before execution. Do not start cloud
+sessions, scheduled tasks, or a second sandbox from the local coordinator.
+
 ## Verification and self-repair (ADR-0010)
 
 - `pnpm verify` is the single gate before review: `check`, `lint`, `validate` (from T10), `build` (from T09), and `test` (unit, script, dist, and Playwright tests). T07 creates it; each task extends it as its "Automated verification" section says. Until it exists, `sh tests/scripts/run.sh` is the gate for script changes. The CI task's `ci` runs the same checks.

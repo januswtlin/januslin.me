@@ -91,6 +91,25 @@ Monthly, when the release notes show a new version (`sbx` is early access): [`up
   Only you start cloud sessions and scheduled tasks.
 - Local agents act on GitHub only through the Apps, whatever the tool login can reach.
 
+### Codex preparation (pending T06 acceptance)
+
+The prepared runtime uses the existing `januslin` VM and the ChatGPT subscription;
+Codex is never installed or started in `agent-session`. Do the connection review
+first ([connect-chatgpt-github.md](runbooks/connect-chatgpt-github.md)), then host
+OAuth ([codex-login.md](runbooks/codex-login.md)). The additional proxy mixin and
+VM-only install are a candidate: [codex-runtime.md](runbooks/codex-runtime.md).
+New runbook commands wait for reviewed `main`, completed #55, and approved #56.
+The local preparation exception does not authorize executing an unmerged host kit.
+
+Save a template only after the initial OAuth/inference/sandbox checks pass
+([save-sandbox-template.md](runbooks/save-sandbox-template.md)); it does not by
+itself preserve credentials, kit bindings, network policy, or every user-config
+path. Re-creation completes V28's persistence checks separately
+([recreate-sandbox.md](runbooks/recreate-sandbox.md)). The cloud environment and
+phone probe are a separate sitting, [codex-cloud.md](runbooks/codex-cloud.md),
+started only by you. Full acceptance is still pending in
+[the ledger](agents/codex.md#acceptance-ledger-all-live-rows-pending).
+
 ## Host managed settings
 
 A root-owned file, `/Library/Application Support/ClaudeCode/managed-settings.json`, applies to every macOS account on the Mac, yours included, but not inside the sandbox. It is a backstop against running Claude Code on the host by mistake: it disables claude.ai connectors, Remote Control, and bypass-permissions mode, and denies the cron and scheduled-task tools. Content and installation: [`install-managed-settings.md`](runbooks/install-managed-settings.md). As `agent`, `touch` on the file must fail.
@@ -114,7 +133,6 @@ Revoke everything the device could use: deploy keys and sessions for a phone; fo
 
 ## Planned changes
 
-- **Codex** (T06, [#56](https://github.com/januswtlin/januslin.me/issues/56)): ChatGPT's GitHub connection as the machine account, your ChatGPT login through `sbx`, and a saved sandbox template ([`connect-chatgpt-github.md`](runbooks/connect-chatgpt-github.md), [`codex-login.md`](runbooks/codex-login.md), [`save-sandbox-template.md`](runbooks/save-sandbox-template.md)). T06 then updates [`recreate-sandbox.md`](runbooks/recreate-sandbox.md) and [`lost-device.md`](runbooks/lost-device.md).
 - **Cloudflare** (T14, T15, [#60](https://github.com/januswtlin/januslin.me/issues/60), [#62](https://github.com/januswtlin/januslin.me/issues/62)): the deploy token in the `production` and `preview` environments and the Access service token `ci-smoke-test` in `smoke`, with their expiry dates in the calendar ([`enable-zero-trust.md`](runbooks/enable-zero-trust.md), [`store-deploy-token.md`](runbooks/store-deploy-token.md), [`store-smoke-token.md`](runbooks/store-smoke-token.md)).
 - **Renovate** (T19, [#68](https://github.com/januswtlin/januslin.me/issues/68)): you merge its PRs; a monthly workflow raises the calendar items as issues.
 - **Scheduled tasks** (T20, [#69](https://github.com/januswtlin/januslin.me/issues/69)): created in your claude.ai account from the table T20 provides.

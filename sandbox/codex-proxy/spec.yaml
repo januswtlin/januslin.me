@@ -1,0 +1,19 @@
+# Candidate v2 mixin, NOT installed or live-verified. See docs/agents/codex.md.
+# Only the author adds this from reviewed main; it restarts the existing VM.
+schemaVersion: "2"
+kind: mixin
+name: januslin-codex-proxy
+requires:
+  agent: claude
+credentials:
+  - service: openai
+    oauth:
+      tokenEndpoint:
+        host: auth.openai.com
+        path: /oauth/token
+      resourceHosts: [chatgpt.com]
+      sentinels:
+        accessToken: oai-oat01-proxy-managed
+        refreshToken: oai-ort01-proxy-managed
+# No apiKey mechanism, passthrough, MCP gateway, installer, or egress rules.
+# The author adds exact hosts via the existing allow-host runbook after review.

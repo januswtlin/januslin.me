@@ -1,0 +1,14 @@
+# VM defaults, pending V8/V29. No model override; inherit the user's model.
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+
+[sandbox_workspace_write]
+network_access = true
+
+[features]
+apps = false
+plugins = false
+
+[mcp_servers.mcp-gateway]
+enabled = false

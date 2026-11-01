@@ -46,6 +46,12 @@ The agent opens a `human-task` issue linking `docs/runbooks/quarterly-host-check
 - The sandbox: re-run the canary (no key or host file outside the read-only mounts is readable from the VM); `sbx policy ls januslin --wide` equals the allowlist in `docs/agents/sandbox.md`, and `curl https://example.com` from the VM returns 403; `sbx settings get ssh.agentForwardingEnabled` is `false`; `sbx secret ls` lists only the expected secrets; `sbx version` recorded (author, in `agent-session`, for the `sbx` commands).
 - The `agent` macOS account: still standard, no AI tool on its `PATH` (`command -v claude codex` prints nothing), no cron jobs or LaunchAgents, File Sharing and Remote Login off, no `cloudflare-ops.token` file left in its state directory, managed settings match `docs/runbooks/install-managed-settings.md`, the author's home is `chmod 700` (author).
 - ADR-0014's rules on the real issues: approved tasks were labelled by the author and not edited since; closed human tasks were closed by the author.
+- Once T06 is live: record stable Codex/Python/sbx versions; recheck start and
+  exact-session resume permissions, the disabled apps/plugins/gateway tool list,
+  proxy sentinel isolation, role actor IDs, and the cross-tool routing/recovery
+  behavior in `docs/agents/codex.md`. Compare actual OpenAI hosts and OAuth binding
+  domains with the accepted ledger; inspect private claim/result retention locally,
+  never upload raw auth/session/result files. The host still has no Codex binary.
 - Once they exist: tokens near expiry (deploy token, `ci-smoke-test`), CSP unchanged, Access policies unchanged.
 
 ## Runbooks

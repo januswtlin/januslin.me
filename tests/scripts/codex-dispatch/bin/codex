@@ -24,7 +24,7 @@ result = {
     'pr_url': 'https://github.com/januswtlin/januslin.me/pull/123',
     'verify_summary': {'status': 'passed', 'summary': 'fake verification only'},
     'handoff': {'summary': 'SECRET_FINDING', 'tests': ['fake'], 'risks': [], 'author_actions': []},
-    'blockers': [], 'review_verdict': None,
+    'blockers': [], 'review_verdict': 'approve' if os.environ.get('JANUSLIN_GITHUB_APP') == 'januslin-reviewer' else None,
 }
 if mode == 'bad-schema':
     result['verify_summary']['status'] = 'anything'
