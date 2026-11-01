@@ -80,7 +80,7 @@ assignees() { pages Issue "$1" Assignees assignees 'databaseId' '(.databaseId //
 timeline() { pages "$1" "$2" Timeline timelineItems "__typename ... on LabeledEvent{createdAt actor{$actor} label{id}} ... on UnlabeledEvent{createdAt actor{$actor} label{id}} ... on RenamedTitleEvent{createdAt actor{$actor}} ... on ClosedEvent{createdAt actor{$actor}} ... on ReopenedEvent{createdAt actor{$actor}}" 'select(.__typename=="LabeledEvent" or .__typename=="UnlabeledEvent" or .__typename=="RenamedTitleEvent" or .__typename=="ClosedEvent" or .__typename=="ReopenedEvent") | [.__typename,.createdAt,((.actor.databaseId // 0)|tostring),(.label.id // "-")]|join("\t")'; }
 edits() { pages "$1" "$2" Edits userContentEdits "editedAt deletedAt editor{$actor}" '[(.editedAt // "unknown"),((.editor.databaseId // 0)|tostring),(.deletedAt // "-")]|join("\t")'; }
 done_issue() (
-  n=$1; metadata "$n"; m="$tmp/meta-$n"
+  n=$1; metadata "$n" || exit 1; m="$tmp/meta-$n"
   [ "$(get "$m" state)" = CLOSED ] && [ "$(get "$m" reason)" = COMPLETED ] || exit 3
   timeline Issue "$(get "$m" id)" > "$tmp/close-$n" || exit 1
   closer=$(awk -F '\t' '$1=="ClosedEvent" {a=$3} END{print a}' "$tmp/close-$n")
@@ -90,7 +90,7 @@ done_issue() (
 claims() (
   [ ! -f "$tmp/claims" ] || exit 0
   pages Repository repo Refs 'refs(refPrefix:"refs/heads/",' 'name' '.name|select(startswith("agent/"))|tojson' > "$tmp/branches"
-  pages Repository repo PullRequests 'pullRequests(states:OPEN,' 'id number title body headRefName' 'if (.id|type)!="string" or (.number|type)!="number" then error("invalid PR") else . end | [.id,(.number|tostring),(.headRefName|tojson),([(.title+"\n"+.body)|scan("(?:^|[^A-Za-z0-9_/])#([1-9][0-9]*)")|if type=="array" then .[0] else . end]|join(","))]|join("\t")' > "$tmp/prs"
+  pages Repository repo PullRequests 'pullRequests(states:OPEN,' 'id number title body headRefName' 'if (.id|type)!="string" or (.number|type)!="number" then error("invalid PR") else . end | [.id,(.number|tostring),(.headRefName|tojson),([(.title+"\n"+.body|ascii_downcase)| (scan("(?:^|[^A-Za-z0-9_/])#([1-9][0-9]*)")|.[0]), (scan("(?:^|[^A-Za-z0-9_/])januswtlin/januslin[.]me#([1-9][0-9]*)")|.[0]), (scan("https?://github[.]com/januswtlin/januslin[.]me/issues/([1-9][0-9]*)")|.[0])]|unique|join(","))]|join("\t")' > "$tmp/prs"
   : > "$tmp/claims-building"
   while IFS="$(printf '\t')" read -r pid pn head mentions; do
     [ -n "$pid" ] || continue
