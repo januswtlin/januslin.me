@@ -10,14 +10,14 @@ body:
     id: for
     attributes:
       label: For, where, time, when
-      placeholder: "#13 (T04) · agent-session on the Mac · about 10 min · after T04's PR is merged"
+      placeholder: "#55 (T04) · agent-session on the Mac · about 10 min · after T04's PR is merged"
     validations:
       required: true
   - type: input
     id: blocked-by
     attributes:
       label: Blocked by
-      placeholder: "#30, or an event, or nothing"
+      placeholder: "#72, or an event, or nothing"
     validations:
       required: true
   - type: textarea

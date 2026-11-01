@@ -10,7 +10,7 @@ Without coordination the author is the slowest part of the loop: pasting a dispa
 
 ### Coordinator session in the local sandbox
 - One long-running Claude Code session in the sandbox started from the `agent` account (ADR-0013) runs the loop in `docs/agents/workflow.md` ("Coordinator loop"): pick startable tasks (derived from `main`), start one implementer subagent per task (fresh context, the task's role, its own git worktree from an up-to-date `main`), start a separate reviewer subagent on each PR (`januslin-reviewer[bot]`), pass blocking findings back, and report to the author when a PR is ready to merge.
-- Implementers and reviewers can be Claude Code subagents or Codex sessions in the same sandbox, dispatched by the coordinator with `codex exec`; reviews are cross-tool by default, and implementers move to Codex when Claude's quota runs low (T06, issue #14).
+- Implementers and reviewers can be Claude Code subagents or Codex sessions in the same sandbox, dispatched by the coordinator with `codex exec`; reviews are cross-tool by default, and implementers move to Codex when Claude's quota runs low (T06, issue #56).
 - The coordinator writes only `docs/` and never implements. It never starts cloud sessions or scheduled tasks (ADR-0009).
 
 ### Merge cadence
