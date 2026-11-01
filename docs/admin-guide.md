@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-10-31
 
-For the author, the only human in this project: everything done by hand, in one place. Agents do everything else (`docs/automation.md`, "Who does what"). Steps that belong to a task arrive as `human-task` issues assigned to you. The exact commands and click paths are in [runbooks](runbooks/README.md) on `main`; this guide explains what each part is and when you need it. Why things are this way: the ADRs (ADR-0009, ADR-0013, ADR-0014).
+For the author, the project's only editor and admin (other people are developers, ADR-0016): everything done by hand, in one place. Agents do everything else (`docs/automation.md`, "Who does what"). Steps that belong to a task arrive as `human-task` issues assigned to you. The exact commands and click paths are in [runbooks](runbooks/README.md) on `main`; this guide explains what each part is and when you need it. Why things are this way: the ADRs (ADR-0009, ADR-0013, ADR-0014).
 
 ## Your queue
 

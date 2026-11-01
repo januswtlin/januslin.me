@@ -43,8 +43,8 @@ Each dispatched session takes exactly one role. The role determines what it may 
 
 | Path | Site | Platform | Upgrade | SEO/AEO | Reviewer | Coordinator |
 |---|---|---|---|---|---|---|
-| `content/**/*.zh-tw.md`, images, `content/taxonomy/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ (author only) |
-| `content/**/*.en.md` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ (author only) |
+| `content/**/*.zh-tw.md`, images, `content/taxonomy/` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ (people only: the author, or a developer through a PR) |
+| `content/**/*.en.md` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ (people only, as above) |
 | `content/_templates/` | ⚠️ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | `drafts/` (untracked; never read it either; `drafts/README.md` is the Coordinator's) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ (author only) |
 | `src/`, `scripts/`, `tests/` | ✅ | ⚠️ | ✅ | ⚠️ (`seo` paths ✅) | ❌ | ❌ |

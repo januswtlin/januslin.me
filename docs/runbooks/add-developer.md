@@ -6,10 +6,10 @@ A developer is any collaborator other than you (ADR-0016): Write access, no merg
 ## Add
 1. GitHub → this repository → Settings → Collaborators → Add people → the developer's login → Add. (Personal-account repositories have one collaborator role, Write.)
 2. The developer accepts the invitation (email or https://github.com/januswtlin/januslin.me/invitations).
-3. Ask the developer to read `AGENTS.md` and `docs/agents/workflow.md`, and to claim a task by assigning the task issue to themselves before working on it.
+3. Ask the developer to read `AGENTS.md` and `docs/agents/workflow.md`, to claim a task by assigning the task issue to themselves before working on it, and never to close, edit, or relabel an `incident` issue. If they will write: their entries name them in `author`, stay under `LICENSE-CONTENT.md`, and are published under the site's Content Signals (`search=yes, ai-input=yes, ai-train=yes`, ADR-0006); ask them to agree to that before their first entry.
 4. Look up their numeric id and send it to the coordinator, or put it in a PR, for the identities table in `docs/security.md`:
    ```sh
-   curl -s https://api.github.com/users/<login> | jq '{login, id}'
+   gh api users/<login> --jq '{login, id}'
    ```
 
 ## A developer's App set (optional)
@@ -25,14 +25,14 @@ For the developer's own agents, and usable as a backup set in your `agent` accou
 ## Remove
 Each step takes effect at once:
 1. If their set is your active set: `januslin-keys off`, or `januslin-keys use <another set>`.
-2. GitHub → Settings → Applications → Installed GitHub Apps → each of their Apps → Configure → Uninstall.
-3. Settings → Collaborators → Remove.
+2. Your account's Settings (not the repository's) → Applications → Installed GitHub Apps → each of their Apps → Configure → Uninstall.
+3. The repository's Settings → Collaborators → Remove.
 4. Close or take over their open PRs; reassign their task issues.
 5. If their set was in your account: remove `~/.config/januslin-keys/sets/<set>/`.
 
 ## Check
 ```sh
 gh api repos/januswtlin/januslin.me/collaborators --jq '.[] | [.login, .id, .role_name] | @tsv'
-gh api user/installations --jq '.installations[] | [.app_slug, .account.login] | @tsv'
+gh api repos/januswtlin/januslin.me/invitations --jq '.[] | [.invitee.login, .created_at] | @tsv'
 ```
-Expected: the collaborators and Apps listed in `docs/security.md`, nobody else.
+Expected: the collaborators in `docs/security.md`, plus anyone invited and not yet accepted; nobody else. Then the repository → Settings → GitHub Apps (or your account's Settings → Applications → Installed GitHub Apps): exactly the Apps in `docs/security.md`, each with this repository only.

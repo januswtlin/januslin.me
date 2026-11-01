@@ -59,7 +59,7 @@ Prefer evidence the agent can fetch itself over screenshots; a runbook's Check b
 Runbooks follow `docs/runbooks/README.md`: short, commands in code blocks, no values taken from issues, a Check block at the end. Agents write and change them through PRs like any doc; merging is the author's review of every command before it is run.
 
 ### Startable, and the author's words
-Anyone with Write (the machine account, the Apps) can edit issue bodies and other people's comments. So the coordinator checks, rather than trusts:
+Anyone with Write (the machine account, developers, the Apps) can edit issue bodies and other people's comments. So the coordinator checks, rather than trusts:
 - **Approved:** the latest `approved` label event is by `januswtlin` (id 2433928), the label is still there, and nobody else edited the title or body after it.
 - **Done:** an issue in `Depends on:` is closed as completed, and the latest close is by `januswtlin` (a PR merge by the author records the author as closer).
 - **Startable:** open, approved, every dependency done, not assigned to anyone but `januswtlin` (a developer claims a task by assigning it to themselves, ADR-0016), and no `agent/*` branch or open PR for it yet.

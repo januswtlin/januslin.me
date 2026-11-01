@@ -59,7 +59,7 @@ Each item is verified by CI (`tests/seo/`) against the built `dist/` unless mark
 - [ ] hreflang `<link rel="alternate">` for existing pairs plus `x-default`.
 - [ ] Open Graph and Twitter card tags; OG image generated per entry at build (CJK-capable font).
 - [ ] JSON-LD:
-  - Entries: `BlogPosting` with `headline`, `description`, `datePublished`, `dateModified`, `inLanguage`, `author` (reference to the Person), `copyrightHolder` (the Person), `license` (URL, only when the entry sets `license`), `image`, `keywords` (tag labels), `mainEntityOfPage`, and `translationOfWork` / `workTranslation` linking language pairs.
+  - Entries: `BlogPosting` with `headline`, `description`, `datePublished`, `dateModified`, `inLanguage`, `author` (reference to the Person; for an entry whose `author` names another writer, a `Person` with that name), `copyrightHolder` (the same Person as `author`), `license` (URL, only when the entry sets `license`), `image`, `keywords` (tag labels), `mainEntityOfPage`, and `translationOfWork` / `workTranslation` linking language pairs.
   - Site: `WebSite` + `Person` (Janus Lin) with `sameAs` links (GitHub, LinkedIn, etc., from site config), on the home and About pages.
   - Breadcrumbs: `BreadcrumbList` on posts (Home › Topic › Post) and hubs (Home › Topic), matching the visible breadcrumb.
   - Topic hubs: `CollectionPage` with `about` set to the topic.

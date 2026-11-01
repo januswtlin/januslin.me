@@ -7,7 +7,7 @@ Last reviewed: 2026-10-29
 | Locale | Filename suffix | URL prefix | `lang` / hreflang | Role |
 |---|---|---|---|---|
 | Traditional Chinese (Taiwan) | `zh-tw` | none (root) | `zh-TW` | Default, source language |
-| English | `en` | `/en/` | `en` | English versions, written by the author |
+| English | `en` | `/en/` | `en` | English versions, written by the entry's writer |
 
 Adding a locale requires an ADR.
 
@@ -28,7 +28,7 @@ Adding a locale requires an ADR.
 
 ## English versions
 
-The author writes every English version, in their own words. No machine or agent translation, and no agent edits `index.en.md` (`docs/agents/roles.md`).
+The writer of an entry (the author, or the developer named in its `author`, ADR-0016) writes its English version, in their own words. No machine or agent translation, and no agent edits `index.en.md` (`docs/agents/roles.md`).
 
 - An English version is `index.en.md` next to `index.zh-tw.md`, with the same frontmatter fields as the zh-TW file. It inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them (`docs/content-model.md`).
 - Reader-facing note on English pages: "Originally written in Traditional Chinese." The string lives in `src/i18n/` and the author may change it.
