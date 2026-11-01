@@ -173,7 +173,16 @@ activity() (
 )
 # Buffer every command until all reads succeed: API failure never yields a task.
 case "$command" in
-  check) assess "$number" > "$tmp/output"; cat "$tmp/output"; [ "$(cat "$tmp/state-$number")" = startable ] || exit 3 ;;
+  check)
+    assess "$number" > "$tmp/output"
+    state=$(cat "$tmp/state-$number")
+    if [ "$state" != startable ]; then
+      while IFS= read -r reason; do
+        printf '{"number":%s,"reason":%s}\n' "$number" "$reason" >> "$tmp/output"
+      done < "$tmp/reasons-$number"
+    fi
+    cat "$tmp/output"
+    [ "$state" = startable ] || exit 3 ;;
   next)
     # Resolve the plan node rather than relying on any numeric-node convention.
     metadata "$plan"; pages Issue "$(get "$tmp/meta-$plan" id)" SubIssues subIssues number '.number|tostring' > "$tmp/plan"
