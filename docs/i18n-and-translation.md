@@ -7,7 +7,7 @@ Last reviewed: 2026-10-29
 | Locale | Filename suffix | URL prefix | `lang` / hreflang | Role |
 |---|---|---|---|---|
 | Traditional Chinese (Taiwan) | `zh-tw` | none (root) | `zh-TW` | Default, source language |
-| English | `en` | `/en/` | `en` | English versions, written by the author |
+| English | `en` | `/en/` | `en` | English versions, written by the entry's writer |
 
 Adding a locale requires an ADR.
 
@@ -28,7 +28,7 @@ Adding a locale requires an ADR.
 
 ## English versions
 
-The author writes every English version, in their own words. No machine or agent translation, and no agent edits `index.en.md` (`docs/agents/roles.md`).
+The writer of an entry (the author, or the developer named in its `author`, ADR-0016) writes its English version, in their own words. No machine or agent translation, and no agent edits `index.en.md` (`docs/agents/roles.md`).
 
 - An English version is `index.en.md` next to `index.zh-tw.md`, with the same frontmatter fields as the zh-TW file. It inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them (`docs/content-model.md`).
 - Reader-facing note on English pages: "Originally written in Traditional Chinese." The string lives in `src/i18n/` and the author may change it.
@@ -40,4 +40,4 @@ A deterministic check, not an agent: no model, no subscription usage, and it nev
 - `scripts/english-versions.ts` lists every published zh-TW entry (posts, topic hubs, pages) that has no `index.en.md`.
 - `.github/workflows/english-versions.yml` runs it on push to `main` that touches `content/**` and weekly on a schedule. For each missing English version it opens an issue `english: <collection>/<slug>` labelled `translation-needed`, or leaves the existing one alone; never a duplicate (one run at a time; existing issues matched by exact title through the list-issues API). When the English version lands, it closes the issue with a comment naming the commit; when an entry is deleted, turned into a draft, or renamed, it closes that entry's open issue too.
 - It never reopens an issue the author closed. Closing an issue without adding an English version is how the author says "this entry stays zh-TW only".
-- Issues are the to-do list. The author writes the English on their own schedule, in the same PR flow as any content.
+- Issues are the to-do list. The entry's writer writes the English on their own schedule, in the same PR flow as any content, and the author merges it.

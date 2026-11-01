@@ -89,7 +89,7 @@ Open verification V11: triggers can filter on PR author.
 ### Example: a new post without an English version
 1. The author merges a zh-TW post.
 2. `english-versions.yml` opens `english: posts/<slug>` labelled `translation-needed`.
-3. The author writes `index.en.md` when they choose and merges it; the next run closes the issue. Or the author closes the issue to keep the post zh-TW only.
+3. The entry's writer writes `index.en.md` when they choose and the author merges it; the next run closes the issue. Or the author closes the issue to keep the post zh-TW only.
 
 ## Guardrails
 

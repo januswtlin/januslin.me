@@ -40,6 +40,7 @@ Expected: <what the output shows>
 | [upgrade-sbx.md](upgrade-sbx.md) | Upgrade `sbx` |
 | [setup-shell-aliases.md](setup-shell-aliases.md) | The `agent-session` and `agent-end` aliases |
 | [claude-cloud-environment.md](claude-cloud-environment.md) | The Claude Code cloud environment `januslin.me` |
+| [add-developer.md](add-developer.md) | Add or remove a developer (collaborator), and their App set |
 | [app-key-sets.md](app-key-sets.md) | App key sets: install `januslin-keys`, add a set, switch, turn off, rotate keys, fingerprint check |
 | [recreate-host-clone.md](recreate-host-clone.md) | Re-create the host clone in the `agent` account |
 | [install-managed-settings.md](install-managed-settings.md) | Install the host Claude Code managed settings |
