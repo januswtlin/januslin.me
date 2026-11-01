@@ -11,7 +11,7 @@ macOS (the author's Mac) → the standard macOS account `agent` (keys, token bro
 | Layer | Holds | Runs | Can reach |
 |---|---|---|---|
 | The author's macOS account | Own GitHub login, SSH keys, Keychain | The author's tools | Everything the author can |
-| macOS account `agent` (host) | The active App set's keys (`~/.config/januslin-agent/active/`, put there by the author, ADR-0015), `sbx` and its keychain secrets, the token broker | `sbx`, `scripts/token-broker.sh`, `git` for the host clone. **Never an AI tool.** | GitHub as the Apps (through the broker), Docker login |
+| macOS account `agent` (host) | The active App set's keys (`~/.config/januslin-agent/active/`, put there by the author, ADR-0015), `sbx` and its keychain secrets, the token broker | `sbx`, `scripts/sandbox-session.sh`, `scripts/token-broker.sh`, `git` for the host clone. **Never an AI tool.** | GitHub as the Apps (through the broker), Docker login |
 | Sandbox `januslin` (microVM, Linux) | A private clone of the repository; the one-hour tokens of both Apps in a read-only directory; never a key | Claude Code, the coordinator and subagents, `pnpm`, Playwright | Only the hosts on the allowlist below; credentials injected by the host proxy |
 
 The sandbox never sees a `.pem`, the author's files, or the `agent` account's home outside its mounts. The host runs only reviewed code from `main` (the broker and the other host scripts are CODEOWNERS paths, `.github/CODEOWNERS`), never a branch the sandbox pushed.

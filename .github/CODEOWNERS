@@ -12,6 +12,7 @@
 /scripts/agent-gh              @januswtlin
 /scripts/agent-git-credential  @januswtlin
 /tools/author/                 @januswtlin
+/scripts/sandbox-session.sh    @januswtlin
 /scripts/codex-launch*         @januswtlin
 /.githooks/                    @januswtlin
 /sandbox/                      @januswtlin
