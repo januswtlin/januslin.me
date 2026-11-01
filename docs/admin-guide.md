@@ -21,6 +21,7 @@ For the author, the only human in this project: everything done by hand, in one 
 |---|---|---|
 | GitHub `januswtlin` (id 2433928) | Your browser, GitHub Mobile, your own `gh` | Owner, admin. The only identity that merges. Passkey or 2FA |
 | Machine account `januslin-agent` (id 349746030) | A separate browser profile, only on your Mac | Write collaborator; owns the two Apps; claude.ai's GitHub connection. No SSH keys, PATs, or OAuth apps |
+| Developers, such as `isweichen` (id 350907673) | Their own devices | Write collaborators (ADR-0016). You stay the only editor. Add or remove one: [`add-developer.md`](runbooks/add-developer.md) |
 | Apps `januslin-agent`, `januslin-reviewer` (the set `machine`), and each other App set | `machine` is owned by the machine account, a fallback set by `januswtlin`; all installed on this repository only | Keys of every set in your account (`~/.config/januslin-keys/`); only the active set in the `agent` account (ADR-0015) |
 | macOS account `agent` | Your Mac | Keys, token broker, `sbx`; never AI |
 | Docker account | Signed in by `sbx` in the `agent` account | Needed by `sbx` |

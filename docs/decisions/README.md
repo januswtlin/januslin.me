@@ -23,6 +23,7 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 | [0013](ADR-0013-local-ai-in-docker-sandboxes.md) | Local AI runs only inside a Docker Sandbox | accepted |
 | [0014](ADR-0014-github-issues-for-work-and-the-author.md) | GitHub issues carry the work and reach the author | proposed |
 | [0015](ADR-0015-app-key-sets.md) | App key sets, kept in the author's account, one active on the host | proposed |
+| [0016](ADR-0016-one-editor-many-developers.md) | One editor, any number of developers | proposed |
 
 ## Template
 

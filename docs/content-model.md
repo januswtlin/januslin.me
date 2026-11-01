@@ -86,6 +86,7 @@ Labels and descriptions are the author's to change. Adding a topic = adding a fo
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `title` | string | yes | |
+| `author` | string | no, default `Janus Lin` | The writer's name, for an entry written by someone else (ADR-0016). Shown as the byline and in JSON-LD. |
 | `description` | string | yes | 40–160 characters. Meta description, OG, RSS, llms.txt. Write it as a standalone summary. |
 | `topic` | topic id | yes | Reference to `topics`; unknown ids fail the build. |
 | `pubDate` | date (`YYYY-MM-DD` or ISO datetime with offset) | yes | |

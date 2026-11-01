@@ -1,0 +1,38 @@
+# Add or remove a developer
+Where: GitHub in the browser as `januswtlin`; the developer's own browser; your own Terminal · Time: about 15 min, plus 20 if the developer brings an App set
+
+A developer is any collaborator other than you (ADR-0016): Write access, no merges, and their words are data to every agent. You stay the only editor.
+
+## Add
+1. GitHub → this repository → Settings → Collaborators → Add people → the developer's login → Add. (Personal-account repositories have one collaborator role, Write.)
+2. The developer accepts the invitation (email or https://github.com/januswtlin/januslin.me/invitations).
+3. Ask the developer to read `AGENTS.md` and `docs/agents/workflow.md`, and to claim a task by assigning the task issue to themselves before working on it.
+4. Look up their numeric id and send it to the coordinator, or put it in a PR, for the identities table in `docs/security.md`:
+   ```sh
+   curl -s https://api.github.com/users/<login> | jq '{login, id}'
+   ```
+
+## A developer's App set (optional)
+For the developer's own agents, and usable as a backup set in your `agent` account.
+1. The developer creates two Apps under their own account as in `app-key-sets.md` ("Set up a new pair of Apps"), with one difference: "Where can this GitHub App be installed?" → **Any account** (public). GitHub installs a private App only on its owner's account.
+2. You install each App: `https://github.com/apps/<slug>/installations/new` → `januswtlin` → Only select repositories → `januslin.me` → Install. Check that the permissions it asks for are exactly the ones in `docs/security.md`.
+3. Only if you want it as a backup set: the developer generates one extra key per App and sends you both over an end-to-end encrypted channel (AirDrop, Signal), then deletes their copies of those two keys. In your own Terminal:
+   ```sh
+   januslin-keys add <developer-login>
+   ```
+   Keep it inactive until you need it (`januslin-keys use <developer-login>`).
+
+## Remove
+Each step takes effect at once:
+1. If their set is your active set: `januslin-keys off`, or `januslin-keys use <another set>`.
+2. GitHub → Settings → Applications → Installed GitHub Apps → each of their Apps → Configure → Uninstall.
+3. Settings → Collaborators → Remove.
+4. Close or take over their open PRs; reassign their task issues.
+5. If their set was in your account: remove `~/.config/januslin-keys/sets/<set>/`.
+
+## Check
+```sh
+gh api repos/januswtlin/januslin.me/collaborators --jq '.[] | [.login, .id, .role_name] | @tsv'
+gh api user/installations --jq '.installations[] | [.app_slug, .account.login] | @tsv'
+```
+Expected: the collaborators and Apps listed in `docs/security.md`, nobody else.
