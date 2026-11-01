@@ -36,7 +36,7 @@ Two hard constraints shape every decision:
 - **Package manager / runtime:** pnpm, Node.js active LTS (24.x), pinned in `package.json` (`packageManager`, `engines`) and `.nvmrc`.
 - **Hosting:** Cloudflare Workers with static assets plus a minimal Worker script, configured in `wrangler.jsonc`. The script runs only for HTML entry paths, because script invocations count against the free plan's daily limit.
 - **CI/CD:** GitHub Actions. A `main` ruleset lets only the author merge; the Cloudflare token is an environment secret limited to `main`, so no branch workflow can read it.
-- **Content:** one repo, author-owned `content/`, published with Git only. No CMS: GitHub cannot limit a credential to `content/`, so a CMS credential would be a full write credential.
+- **Content:** one repo, `content/` written by people and merged only by the author (ADR-0016), published with Git only. No CMS: GitHub cannot limit a credential to `content/`, so a CMS credential would be a full write credential.
 - **i18n:** `zh-TW` at the root, `en` under `/en/`, with shared ASCII slugs. English versions are written by the entry's writer; an entry without one has no `/en/` URL.
 - **AI access:** all AI crawler categories allowed; Content Signals `search=yes, ai-input=yes, ai-train=yes`. Blocking AI training at the edge would also block major search crawlers.
 - **Information architecture:** one `posts` collection, curated topics, tags as attributes; URLs `/<topic>/<slug>/`. Published URLs are permanent; a move needs a 301 redirect.
