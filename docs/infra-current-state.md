@@ -64,14 +64,20 @@ The isolated live test for #55 / PR #102 started at the confirmed root `422517b8
 
 | SHA | Resolution |
 |---|---|
-| `dbb73f6e3daec0a64156c527f12356ab70436dbe` | Explicit author-approved acceptance exception |
-| `8f47de99b693fa27dfa5b61568486037315a6b95` | Explicit author-approved acceptance exception |
+| `dbb73f6e3daec0a64156c527f12356ab70436dbe` | Author-confirmed merge; historical acceptance entry (chronology below) |
+| `8f47de99b693fa27dfa5b61568486037315a6b95` | Author-confirmed merge; historical acceptance entry (chronology below) |
 
 The author answered the coordinator's exact-SHA question in the session: "I merged both; authorize those two exceptions". The coordinator recorded that direct-session authorization in [#55's evidence comment](https://github.com/januswtlin/januslin.me/issues/55#issuecomment-6569139951). The comment is an audit record; the direct author statement was the authority.
 
-The implementer ran `accept` for only those two SHAs in the existing private temporary test state, then `check`. Both accept commands and the final check returned exit 0. The final baseline was `cfb6c3481571101c2e68884ec2bcadb66b729684`; its acceptance journal contained exactly those two SHAs and no pending records. The original failing report is preserved in PR #102 alongside the subsequent successful output. No default coordinator state was initialized or changed, and the script has no hardcoded exceptions.
+Under that original authorization, the implementer ran `accept` for only those two SHAs in the existing private temporary test state, then `check`. Both accept commands and the final check returned exit 0. The final baseline was `cfb6c3481571101c2e68884ec2bcadb66b729684`; its acceptance journal contained exactly those two SHAs and no pending records. The original failing report is preserved in PR #102 alongside the subsequent successful output. No default coordinator state was initialized or changed, and the script has no hardcoded exceptions.
 
-This is a documented adjustment to the live acceptance evidence: the two historical commits were accepted by author instruction, not verified through PR metadata. [Incident #103](https://github.com/januswtlin/januslin.me/issues/103) remains open for the author alone to close; it no longer blocks this live check after the explicit authorization and successful result. Fresh-state initialization and exception handling remain author-controlled ([startup runbook](runbooks/start-coordinator.md#initialize-a-missing-main-watcher-state)). #70/#71 and V27/V33 remain pending after-merge work.
+The author then withdrew the earlier statement: "I need to revert what I said. I can't verify #5 and #6." The [withdrawal record](https://github.com/januswtlin/januslin.me/pull/102#issuecomment-6569673911), posted 2026-11-02T05:17:18Z, superseded the earlier readiness notice. The existing temporary journal was preserved as historical evidence; no new acceptance or permanent-state initialization followed the withdrawal.
+
+Subsequently the author checked the PRs while logged in as machine account `januslin-agent`. The author reports that GitHub spam-blocked that account and that PR #5/#6 are visible there but unavailable when logged in as `januswtlin`; agents did not independently verify this account-visibility explanation or access that account. The author initially said the two PRs were closed, then clarified "merged" when asked whether that meant author-merged. [The subsequent evidence record](https://github.com/januswtlin/januslin.me/issues/55#issuecomment-6569779487) documents this direct merger confirmation. This resolves the author's stated inability to verify those historical merges; it is not a new statement authorizing acceptance commands or initialization.
+
+After that clarification, the implementer ran only `check` against the same private temporary journal: exit 0, no new commit reports, baseline still `cfb6c3481571101c2e68884ec2bcadb66b729684`, and exactly the same two accepted entries. No new `accept` or `init` ran. The two merges are now author-confirmed but remain API-unverified; the original `no-pr` reports, original authorization, withdrawal, and later clarification are all retained as the live evidence adjustment. This successful incremental check does not independently reverify already accepted historical commits.
+
+[Incident #103](https://github.com/januswtlin/januslin.me/issues/103) remains open for the author alone to close. Fresh-state initialization and exception handling remain author-controlled ([startup runbook](runbooks/start-coordinator.md#initialize-a-missing-main-watcher-state)); the historical test journal grants no permission to initialize permanent state or replay acceptance. #70 remains open and independently actionable; #71 becomes actionable after merge, with V27/V33 still pending.
 
 ## Planned state
 
