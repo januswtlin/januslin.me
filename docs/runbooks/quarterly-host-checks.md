@@ -22,7 +22,7 @@ Where: your own Terminal (your own `gh`), the browser as `januswtlin` and as the
    command -v claude codex; echo "ai exit=$?"
    crontab -l 2>&1 | head -3; ls ~/Library/LaunchAgents 2>/dev/null; echo "launchagents exit=$?"
    ls ~/.local/state/januslin-agent/ ~/.config/januslin-agent/ ~/.config/januslin-agent/active/
-   sbx version; sbx settings get ssh.agentForwardingEnabled; sbx secret ls; sbx policy ls januslin --wide
+   sbx version; sbx settings get ssh.agentForwardingEnabled; sbx secret ls; sbx policy ls agent-vm --wide
    ```
 5. Run the Check in `app-key-sets.md` and compare with each App's page (exactly one key each); the `agent` account holds only the active set.
 
