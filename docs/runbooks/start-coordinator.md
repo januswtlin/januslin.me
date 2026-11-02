@@ -17,7 +17,7 @@ Where: your own Terminal, then `agent-session` · Time: about 5 min
    ```sh
    caffeinate -ims
    ```
-4. Paste the coordinator prompt from `docs/agents/workflow.md` ("Coordinator loop") verbatim.
+4. Paste the coordinator prompt from [`docs/agents/coordinator.md`](../agents/coordinator.md) verbatim.
 5. For the phone: type `/remote-control` and open the link.
 
 ## Stop

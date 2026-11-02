@@ -58,7 +58,7 @@ The `sbx` keychain must be unlocked once before `sbx` works; [`start-coordinator
 
 ## Start the coordinator
 
-The coordinator is the long-running Claude Code session that runs the task loop (`docs/agents/workflow.md`, "Coordinator loop"). It runs only inside the sandbox; Claude Code is not installed on the host, so never run `claude` in `agent-session`. Start it after a restart of the Mac or whenever it has stopped; restart it after a merge that changes its prompt. It cannot keep the Mac awake from the VM, so `caffeinate` runs in your own account. A new coordinator resumes from GitHub. Start, stop, and restart: [`start-coordinator.md`](runbooks/start-coordinator.md).
+The coordinator is the long-running Claude Code session that runs the task loop ([coordinator procedure](agents/coordinator.md)). It runs only inside the sandbox; Claude Code is not installed on the host, so never run `claude` in `agent-session`. Start it after a restart of the Mac or whenever it has stopped; restart it after a merge that changes its prompt. It cannot keep the Mac awake from the VM, so `caffeinate` runs in your own account. A new coordinator resumes from GitHub. Start, stop, and restart: [`start-coordinator.md`](runbooks/start-coordinator.md).
 
 ## The sandbox
 
