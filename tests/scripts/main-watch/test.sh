@@ -28,10 +28,13 @@ done
 label='sticky after rewritten suspect disappears'; reset; change '.details["1"].merged_by.id=999'; run check; expect 3; change '.commits[0].sha="'$b'" | .pulls["'$b'"]=[2] | .details["2"]=(.details["1"]|.number=2|.merged_by.id=2433928|.merge_commit_sha="'$b'")'; run check; expect 3; assert grep -q "$a" "$tmp/out"
 label='history rewritten author accept'; reset; change '.status="diverged"'; run check; expect 3; assert jq -e '.sha=="'$a'" and .reason=="history-rewritten"' "$tmp/out"; run check; expect 3; run accept "$a"; expect 0; run check; expect 0
 label='wait max'; reset; run check; expect 0; run wait --interval 0 --max 2; expect 2; assert test ! -s "$tmp/out"
-label='API error preserves all state and stdout'; reset; cp "$MAIN_WATCH_STATE" "$tmp/saved"; export FAKE_API_FAILURE="repos/januswtlin/januslin.me/pulls/1"; run check; expect 1; assert cmp "$MAIN_WATCH_STATE" "$tmp/saved"; assert test ! -s "$tmp/out"; unset FAKE_API_FAILURE
+label='API error preserves all state and stdout'; reset; cp "$MAIN_WATCH_STATE" "$tmp/saved"; export FAKE_API_FAILURE="repos/januswtlin/januslin.me/pulls/1"; run check; expect 1; assert cmp "$MAIN_WATCH_STATE" "$tmp/saved"; assert test ! -s "$tmp/out"; if cat "$tmp/out" "$tmp/err" "$FAKE_GH_LOG" | grep -q fake-main-watch-secret; then echo "FAIL $label: leaked credential"; exit 1; fi; unset FAKE_API_FAILURE
 label='hostile titles and credential isolation'; reset; run check; expect 0; assert test ! -e /tmp/main-watch-injected; assert test "$(wc -l < "$tmp/out")" = 1; assert jq -e 'keys==["merged_by_id","pr","reason","sha","suspicious"]' "$tmp/out"; if cat "$tmp/out" "$tmp/err" "$FAKE_GH_LOG" | grep -q fake-main-watch-secret; then echo "FAIL $label"; exit 1; fi
 label='malformed state fail closed'; printf 'baseline invalid\n' > "$MAIN_WATCH_STATE"; cp "$MAIN_WATCH_STATE" "$tmp/saved"; run check; expect 1; assert cmp "$MAIN_WATCH_STATE" "$tmp/saved"
 label='state symlink rejected'; rm "$MAIN_WATCH_STATE"; ln -s "$tmp/saved" "$MAIN_WATCH_STATE"; run check; expect 1; assert cmp "$tmp/saved" "$MAIN_WATCH_STATE"
+label='lock collision preserves state'; reset; cp "$MAIN_WATCH_STATE" "$tmp/saved"; mkdir "$MAIN_WATCH_STATE.lock"; run check; expect 1; assert cmp "$MAIN_WATCH_STATE" "$tmp/saved"; rmdir "$MAIN_WATCH_STATE.lock"
+label='accept unknown rejects'; run accept "$b"; expect 1; assert cmp "$MAIN_WATCH_STATE" "$tmp/saved"
+label='private permissions fail closed'; chmod 644 "$MAIN_WATCH_STATE"; run check; expect 1; chmod 600 "$MAIN_WATCH_STATE"
 label='invalid commands'; run init --baseline bad; expect 2; run wait --max nope; expect 2; run accept main; expect 2
 label='multiple compare and associated PR pages'; reset
 jq -n --arg root 422517b80a52ae51d849080ab01c5b6a60b22b91 '
