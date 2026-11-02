@@ -58,6 +58,21 @@ Permissions of the Claude GitHub App on this repository (V6; from the author's s
 - Environment for this repository, created by the author on 2026-10-30 (T05; screenshot kept private by the author): name `januslin.me`; network access **Limited**; no environment variables and no secrets; setup script as in `docs/admin-guide.md` ("Tool logins"), which runs `corepack enable` and `pnpm install --frozen-lockfile` only once `pnpm-lock.yaml` exists.
 - The environment dialog offers only None, Limited, and Full. The docs (code.claude.com/docs/en/cloud-environments, read 2026-10-30) still list None, Trusted, Full, and Custom; Limited is the dialog's name for the default allowlist, which the docs call Trusted. The dialog has no Custom level, so hosts cannot be added one by one: if `pnpm install` needs a host beyond the default allowlist, T07 revisits this, and Full needs the author's decision.
 
+## Main watcher acceptance evidence (T04, 2026-11-02)
+
+The isolated live test for #55 / PR #102 started at the confirmed root `422517b80a52ae51d849080ab01c5b6a60b22b91`. Its first complete check returned exit 3: 13 commits were verified through the API as author merges, and two historical commits returned `no-pr`. Their subjects reference PR #5 and #6, whose endpoints return 404 through the App. They remain API-unverified:
+
+| SHA | Resolution |
+|---|---|
+| `dbb73f6e3daec0a64156c527f12356ab70436dbe` | Explicit author-approved acceptance exception |
+| `8f47de99b693fa27dfa5b61568486037315a6b95` | Explicit author-approved acceptance exception |
+
+The author answered the coordinator's exact-SHA question in the session: "I merged both; authorize those two exceptions". The coordinator recorded that direct-session authorization in [#55's evidence comment](https://github.com/januswtlin/januslin.me/issues/55#issuecomment-6569139951). The comment is an audit record; the direct author statement was the authority.
+
+The implementer ran `accept` for only those two SHAs in the existing private temporary test state, then `check`. Both accept commands and the final check returned exit 0. The final baseline was `cfb6c3481571101c2e68884ec2bcadb66b729684`; its acceptance journal contained exactly those two SHAs and no pending records. The original failing report is preserved in PR #102 alongside the subsequent successful output. No default coordinator state was initialized or changed, and the script has no hardcoded exceptions.
+
+This is a documented adjustment to the live acceptance evidence: the two historical commits were accepted by author instruction, not verified through PR metadata. [Incident #103](https://github.com/januswtlin/januslin.me/issues/103) remains open for the author alone to close; it no longer blocks this live check after the explicit authorization and successful result. Fresh-state initialization and exception handling remain author-controlled ([startup runbook](runbooks/start-coordinator.md#initialize-a-missing-main-watcher-state)). #70/#71 and V27/V33 remain pending after-merge work.
+
 ## Planned state
 
 Settings that planned tasks change. A row moves into "Current state" when its task merges.
