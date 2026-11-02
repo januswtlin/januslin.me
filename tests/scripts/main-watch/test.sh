@@ -49,3 +49,5 @@ run check; expect 0; assert test "$(wc -l < "$tmp/out")" = 102; assert grep -q '
 label='late page API failure leaves state'; reset; change '.commits += [{sha:"'$b'",parents:[{sha:"'$a'"}]}] | .pulls["'$b'"]=[2] | .details["2"]=(.details["1"]|.number=2|.merge_commit_sha="'$b'")'; cp "$MAIN_WATCH_STATE" "$tmp/saved"; export FAKE_API_FAILURE="repos/januswtlin/januslin.me/pulls/2"; run check; expect 1; assert cmp "$MAIN_WATCH_STATE" "$tmp/saved"; assert test ! -s "$tmp/out"; unset FAKE_API_FAILURE
 label='nonlinear or incomplete compare fails closed'; reset; change '.commits[0].parents=[]'; cp "$MAIN_WATCH_STATE" "$tmp/saved"; run check; expect 1; assert cmp "$MAIN_WATCH_STATE" "$tmp/saved"
 echo 'PASS main-watch: author, suspicious reasons, sticky restart/accept, rewrite, wait, pagination, API atomicity, private state, hostile data, credentials, validation'
+
+sh "$here/regressions.sh"
