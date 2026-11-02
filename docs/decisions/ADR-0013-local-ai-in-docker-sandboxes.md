@@ -3,6 +3,8 @@
 - Date: 2026-10-29
 - Deciders: Janus, coordinator session
 
+Current sandbox name: `agent-vm`, running both Claude Code and Codex (author confirmation, 2026-11-02). The original sandbox name in this accepted record and its T03 outcome is historical; use the current runbooks for commands. The isolation and credential decisions are unchanged.
+
 ## Context
 ADR-0009 puts local agents in the standard macOS account `agent`, away from the author's credentials. But that account also holds the App private keys (`januslin-agent.pem`, `januslin-reviewer.pem`). Any AI process in it can read a key, mint installation tokens without limit, act as the reviewer, or copy a key off the machine. One-hour tokens mean little while the key that mints them is readable. The account also has no egress control: an injected agent can send anything anywhere.
 

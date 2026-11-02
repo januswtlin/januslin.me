@@ -33,7 +33,7 @@ Expected: <what the output shows>
 | Runbook | What |
 |---|---|
 | [start-coordinator.md](start-coordinator.md) | Start, stop, or restart the coordinator in the sandbox |
-| [recreate-sandbox.md](recreate-sandbox.md) | Create or re-create the sandbox `januslin` |
+| [recreate-sandbox.md](recreate-sandbox.md) | Create or re-create the sandbox `agent-vm` |
 | [allow-sandbox-host.md](allow-sandbox-host.md) | Add a host to the sandbox allowlist |
 | [lend-cloudflare-token.md](lend-cloudflare-token.md) | Lend a one-day Cloudflare token to the sandbox |
 | [take-back-cloudflare-token.md](take-back-cloudflare-token.md) | Revoke it and remove it from the sandbox |

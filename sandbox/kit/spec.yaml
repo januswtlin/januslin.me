@@ -1,11 +1,11 @@
-# Sandbox kit for the local AI sandbox `januslin` (ADR-0013, T03).
-#   sbx create --clone --name januslin ./sandbox/kit ~/januslin.me \
+# Sandbox kit for the local AI sandbox `agent-vm` (ADR-0013, T03).
+#   sbx create --clone --name agent-vm ./sandbox/kit ~/januslin.me \
 #     ~/.local/state/januslin-agent/sandbox-tokens:ro ~/.config/januslin-agent/sandbox-config:ro
 # Runs inside the VM at creation; needs the global allowlist in docs/agents/sandbox.md.
 # A CODEOWNERS path: it decides how Claude Code starts and what the VM installs.
 schemaVersion: "2"
 kind: sandbox
-name: januslin
+name: agent-vm
 extends: claude
 sandbox:
   # Auto mode, not the template's --dangerously-skip-permissions (docs/agents/sandbox.md).
