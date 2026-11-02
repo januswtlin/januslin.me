@@ -93,7 +93,7 @@ Monthly, when the release notes show a new version (`sbx` is early access): [`up
 
 ### Codex preparation (pending T06 acceptance)
 
-The prepared runtime uses the existing `januslin` VM and the ChatGPT subscription;
+The prepared runtime uses the existing `agent-vm` VM and the ChatGPT subscription;
 Codex is never installed or started in `agent-session`. Do the connection review
 first ([connect-chatgpt-github.md](runbooks/connect-chatgpt-github.md)), then host
 OAuth ([codex-login.md](runbooks/codex-login.md)). The additional proxy mixin and
