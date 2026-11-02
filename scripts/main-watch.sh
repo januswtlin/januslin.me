@@ -69,7 +69,8 @@ save() {
 }
 report() { printf '{"sha":"%s","pr":%s,"merged_by_id":%s,"suspicious":%s,"reason":"%s"}\n' "$1" "$2" "$3" "$4" "$5" >> "$tmp/output"; }
 pending() {
- grep -Fqx "$1" "$tmp/accepted" && return 0
+ # Acceptance covers a commit, not a later movement of main back to that SHA.
+ if [ "$4" != history-rewritten ] && grep -Fqx "$1" "$tmp/accepted"; then return 0; fi
  if ! cut -f1 "$tmp/pending" | grep -Fqx "$1"; then printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$4" >> "$tmp/pending"; fi
 }
 check() {
@@ -167,9 +168,10 @@ case "$command" in
  accept)
    lock; load
    cut -f1 "$tmp/pending" | grep -Fqx "$accepted" || fail 'SHA is not a pending suspicious report'
-   if awk -F '\t' -v sha="$accepted" '$1==sha && $4=="history-rewritten"{found=1} END{exit !found}' "$tmp/pending"; then baseline=$accepted; : > "$tmp/pending"
-   else awk -F '\t' -v sha="$accepted" '$1!=sha' "$tmp/pending" > "$tmp/remaining"; mv "$tmp/remaining" "$tmp/pending"
+   if awk -F '\t' -v sha="$accepted" '$1==sha && $4=="history-rewritten"{found=1} END{exit !found}' "$tmp/pending"; then baseline=$accepted
    fi
+   # Only the exact named SHA is cleared; other observations remain sticky.
+   awk -F '\t' -v sha="$accepted" '$1!=sha' "$tmp/pending" > "$tmp/remaining"; mv "$tmp/remaining" "$tmp/pending"
    printf '%s\n' "$accepted" >> "$tmp/accepted"; save;;
  wait)
    attempts=0
