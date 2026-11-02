@@ -1,0 +1,27 @@
+#!/bin/sh
+set -eu
+printf '%s\n' "$*" >> "$FAKE_GH_LOG"
+[ "$1" = api ] || exit 91
+endpoint=$2; shift 2
+filter=
+while [ "$#" -gt 0 ]; do
+  case "$1" in --jq) shift; filter=$1;; esac
+  shift
+done
+[ -n "$filter" ] || exit 91
+[ "${FAKE_API_FAILURE:-}" != "$endpoint" ] || { echo "$GH_TOKEN" >&2; exit 1; }
+jq --arg endpoint "$endpoint" '
+ . as $f |
+ if $endpoint|endswith("git/ref/heads/main") then {object:{sha:($f.head // $f.commits[-1].sha)}}
+ elif $endpoint|contains("/compare/") then
+   ($endpoint|capture("/compare/(?<base>[a-f0-9]+)\\.\\.\\.(?<head>[a-f0-9]+)\\?per_page=100&page=(?<page>[0-9]+)")) as $c |
+   ($f.commits|map(.sha)|index($c.base)) as $index |
+   (if $index==null then $f.commits else $f.commits[($index+1):] end) as $commits |
+   {status:(if ($commits|length)==0 then "identical" else ($f.status // "ahead") end),total_commits:($commits|length),base_commit:{sha:$c.base},merge_base_commit:{sha:$c.base},commits:$commits[((($c.page|tonumber)-1)*100):(($c.page|tonumber)*100)]}
+ elif $endpoint|contains("/commits/") then
+   ($endpoint|capture("/commits/(?<sha>[a-f0-9]+)/pulls\\?per_page=100&page=(?<page>[0-9]+)")) as $c |
+   [($f.pulls[$c.sha] // [])[]|{number:.}][((($c.page|tonumber)-1)*100):(($c.page|tonumber)*100)]
+ elif $endpoint|contains("/pulls/") then $f.details[$endpoint|split("/")[-1]]
+ else error("unknown endpoint") end
+' "$FAKE_MAIN_WATCH" > "$FAKE_GH_LOG.response"
+jq -er "$filter" "$FAKE_GH_LOG.response"
