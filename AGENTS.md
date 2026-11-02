@@ -18,6 +18,7 @@ Two hard constraints shape every decision:
 | If you are doing... | Read |
 |---|---|
 | Anything | `docs/overview.md`, `docs/agents/roles.md`, `docs/agents/workflow.md` |
+| Model selection, effort tuning, dispatch prompts | `docs/agents/model-guidance.md` |
 | A dispatched task | your task issue and the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53); "Work items" in `docs/agents/workflow.md` |
 | Content schema, topics, tags, images, URLs | `docs/content-model.md` |
 | Scheduled agents, Renovate, event triggers | `docs/automation.md` |
@@ -93,6 +94,7 @@ Added by the tasks in the plan issue: `content/` (Markdown, images, and taxonomy
 
 ### How to work
 - Start from the task issue. If the task is ambiguous or conflicts with a decision in `docs/decisions/`, stop and ask in the PR (label `needs-human`) instead of guessing on anything hard to reverse.
+- Carry authorized work through verification and handoff. Make routine, reversible choices within the task's scope and record assumptions in the handoff report. Continue independent work while an answer is pending; preserve every approval and escalation boundary in this file.
 - Prefer the smallest change that meets the acceptance criteria. No drive-by refactors.
 - Licensing: code is MIT (`LICENSE`); content is all rights reserved unless an entry sets `license` (`LICENSE-CONTENT.md`). When you vendor third-party code, themes, fonts, or assets, record their license in `THIRD_PARTY_NOTICES.md` in the same PR, and say plainly when a license is unverified.
 - Use the latest stable versions of dependencies unless a decision record or the task says otherwise. No pre-release versions in production.
