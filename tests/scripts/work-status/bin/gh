@@ -1,0 +1,25 @@
+#!/bin/sh
+# Emulate only GraphQL transport. Run the production --jq filter unchanged.
+set -eu
+query='' filter='' key=repo cursor=0
+printf '%s\n' "$*" >> "$FAKE_GH_LOG"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -f|-F) shift; case "$1" in query=*) query=${1#query=};; id=*) key=${1#id=};; n=*) key=I${1#n=};; cursor=*) cursor=${1#cursor=};; esac ;;
+    --jq) shift; filter=$1 ;;
+  esac
+  shift
+done
+op=$(printf '%s' "$query" | sed -n 's/^query WorkStatus\([A-Za-z]*\).*/\1/p')
+[ -n "$op" ] && [ -n "$filter" ] || exit 91
+[ "${FAKE_API_FAILURE:-}" != "$op" ] || { echo 'transport failure' >&2; exit 1; }
+jq --arg op "$op" --arg key "$key" --argjson cursor "$cursor" '
+  . as $fixture |
+  def page($c): ($c.nodes // []) as $nodes | {nodes:$nodes[$cursor:($cursor+2)],pageInfo:{hasNextPage:(($cursor+2)<($nodes|length)),endCursor:(if env.FAKE_CURSOR_STALL then "0" else (($cursor+2)|tostring) end)}};
+  if .errors then {errors:.errors} else
+  (if $key=="repo" then .repo else .nodes[$key] end) as $node |
+  if $op=="Metadata" then {data:{repository:{item:($node|if .__typename=="Issue" then .issueState=.state else .prState=.state end|del(.state))}}} else {data:{item:(
+    {connection:page($node[({Labels:"labels",Assignees:"assignees",Timeline:"timelineItems",Edits:"userContentEdits",Comments:"comments",SubIssues:"subIssues",Issues:"issues",PullRequests:"pullRequests",Refs:"refs",Closing:"closingIssuesReferences"}[$op])])}
+  )}} end end | if $fixture.partialErrors then .errors=$fixture.partialErrors else . end
+' "$FAKE_GRAPHQL" > "$FAKE_GH_LOG.response"
+jq -er "$filter" "$FAKE_GH_LOG.response"

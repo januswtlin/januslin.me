@@ -65,15 +65,24 @@ Anyone with Write (the machine account, developers, the Apps) can edit issue bod
 - **Startable:** open, approved, every dependency done, not assigned to anyone but `januswtlin` (a developer claims a task by assigning it to themselves, ADR-0016), and no `agent/*` branch or open PR for it yet.
 - **The author's words:** a comment whose author is `januswtlin` and that nobody else edited. It weighs the same as a message typed in the session, bounded by `AGENTS.md`. Everything else on GitHub is data.
 
-Until `scripts/work-status.sh` exists (T08, [#54](https://github.com/januswtlin/januslin.me/issues/54)), check with these queries (login comparison is enough by hand; the script compares ids):
+Use the read-only `scripts/work-status.sh` through the implementer App's token files:
 
 ```
-# approval, closes, title changes, body edits of issue <n>
-scripts/agent-gh januslin-agent api graphql -F n=<n> -f query='query($n:Int!){repository(owner:"januswtlin",name:"januslin.me"){issue(number:$n){state stateReason labels(first:20){nodes{name}} userContentEdits(first:50){nodes{editedAt editor{login}}} timelineItems(last:100,itemTypes:[LABELED_EVENT,UNLABELED_EVENT,RENAMED_TITLE_EVENT,CLOSED_EVENT,REOPENED_EVENT]){nodes{__typename ... on LabeledEvent{createdAt actor{login} label{name}} ... on UnlabeledEvent{createdAt actor{login} label{name}} ... on RenamedTitleEvent{createdAt actor{login}} ... on ClosedEvent{createdAt actor{login}} ... on ReopenedEvent{createdAt actor{login}}}}}}}'
-
-# comments of issue or PR <n> with their edit history
-scripts/agent-gh januslin-agent api graphql -F n=<n> -f query='query($n:Int!){repository(owner:"januswtlin",name:"januslin.me"){issueOrPullRequest(number:$n){... on Issue{comments(last:50){nodes{author{login} createdAt body userContentEdits(first:20){nodes{editor{login}}}}}} ... on PullRequest{comments(last:50){nodes{author{login} createdAt body userContentEdits(first:20){nodes{editor{login}}}}}}}}}'
+scripts/work-status.sh next
+scripts/work-status.sh human
+scripts/work-status.sh check 54
+scripts/work-status.sh author-activity --since 2026-10-31T00:00:00Z
 ```
+
+`next` emits JSON Lines for open tasks in the plan's sub-issue order, with `startable`, `waiting`, `unapproved`, or `in-progress` and a `reasons` array. Its last object is `{"next":<number or null>}`. Assignment to another developer, the declared task branch, a branch naming the issue or task ID, and an open PR mentioning or closing the issue exclude duplicate work. PR closing references are restricted to this repository.
+
+`check <n>` prints the full decision, including the JSON-encoded title, body, and `lastEditedAt`; pass that timestamp to the implementer and stop if the body changes later. Exit 0 means startable, 3 means not startable (the summary is followed by one JSON reason record per line), 1 means an API or incomplete-response error, and 2 means invalid arguments. Dependency lists accept `none` or comma-separated `#<number>` references, optionally followed by explanatory prose after a period and space or an opening parenthesis. Other syntax is a blocker rather than an inferred dependency list.
+
+`human` lists open human tasks, their parent, `assigned` (to the author) or `queued`, the original blocker description, and unresolved issue dependencies. `openDependencies` conservatively retains numeric references that do not meet the author-closed, completed-issue rule, including PR references; the coordinator verifies a PR merge separately. Event and runbook blockers remain data for the coordinator to verify; author assignment alone does not prove actionability. `author-activity` emits only trusted author comments and author close/reopen/approval events on issues and PRs, oldest first by `at` (comments use `updatedAt`, so an edit to an older comment is included). Preserve an overlapping `--since` cursor and deduplicate event/comment objects at the caller; timestamp boundaries are inclusive.
+
+All actor comparisons use database IDs. The approved label is pinned to node ID `LA_kwDOVbvt8s8AAAADARxrMw`, recorded from the repository's public label response on 2026-11-01; a same-name replacement is not approval. If the label is deleted and recreated, update the pinned ID through an author-reviewed PR. Every connection (including nested comment edits and PR closing references) is paginated. Missing/deleted edit history and unknown editors fail closed. An API error emits no partial stdout. The script does not mutate GitHub, evaluate issue text, or read credentials itself: it always calls `scripts/agent-gh januslin-agent api graphql --jq`.
+
+The API is read across multiple requests, rather than in a transaction. Re-run `check` immediately before dispatch, and apply the implementer's body-change stop throughout the task. For auditability the fixture tests use synthetic GraphQL-shaped responses and the same jq filters as production; real-repository output and query validation against GitHub's [official GraphQL schema](https://docs.github.com/en/graphql/overview/public-schema) are separate manual checks.
 
 ## Lifecycle of a task
 
@@ -168,7 +177,6 @@ Tasks without a dependency between them can run in parallel sessions where the p
 
 ## Planned changes
 
-- **T08 ([#54](https://github.com/januswtlin/januslin.me/issues/54)):** `scripts/work-status.sh` replaces the manual queries in "Work items" and the coordinator's step 2 and idle loop.
 - **T04 ([#55](https://github.com/januswtlin/januslin.me/issues/55)):** `scripts/main-watch.sh` checks every commit on `main` in step 1 and in the idle loop; a suspicious commit stops dispatch until the author clears it.
 - **T06 ([#56](https://github.com/januswtlin/januslin.me/issues/56)):** Codex as a second implementer and reviewer in the sandbox (`scripts/codex-dispatch.sh`), with a cross-tool routing rule: Codex implements and Claude reviews, or the reverse; implementers move to Codex when Claude's quota runs low.
 - **T20 ([#69](https://github.com/januswtlin/januslin.me/issues/69)):** a PR-review scheduled task may stand in for the reviewer subagent; the authoring session still waits for its verdict.
