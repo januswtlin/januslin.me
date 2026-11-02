@@ -1,7 +1,7 @@
 # Start, stop, or restart the coordinator
 Where: your own Terminal, then `agent-session` · Time: about 5 min
 
-`scripts/sandbox-session.sh` does the host part in one command: it fast-forwards the host clone to `main` and re-runs itself from there, restarts the token broker, mints both App tokens (and stops if that fails), then opens `sbx run --name januslin` (if that fails, it stops the broker again). Leaving the session with `/exit` leaves the VM and the broker running; `stop` ends both. Keep the `agent-session` window open while the coordinator runs: the broker belongs to it, and closing the window stops token refresh within the hour.
+`scripts/sandbox-session.sh` does the host part in one command: it fast-forwards the host clone to `main` and re-runs itself from there, restarts the token broker, mints both App tokens (and stops if that fails), then opens `sbx run --name agent-vm` (if that fails, it stops the broker again). Leaving the session with `/exit` leaves the VM and the broker running; `stop` ends both. Keep the `agent-session` window open while the coordinator runs: the broker belongs to it, and closing the window stops token refresh within the hour.
 
 ## Start
 1. In your own Terminal:
@@ -17,7 +17,7 @@ Where: your own Terminal, then `agent-session` · Time: about 5 min
    ```sh
    caffeinate -ims
    ```
-4. Paste the coordinator prompt from `docs/agents/workflow.md` ("Coordinator loop") verbatim.
+4. Paste the coordinator prompt from [`docs/agents/coordinator.md`](../agents/coordinator.md) verbatim.
 5. For the phone: type `/remote-control` and open the link.
 
 ## Stop
@@ -38,9 +38,26 @@ After a merge that changes the prompt or a host script, or after an `sbx` upgrad
    ```
 3. Start steps 4 and 5.
 
+## Initialize a missing main watcher state
+Only when the coordinator reports missing state, including after VM re-creation. In the sandbox session, tell the coordinator: "I authorize main-watch init at the repository root, then a complete check of main." The coordinator runs the reviewed `scripts/main-watch.sh init` and `check`; it must report a verified history before dispatch resumes. Never authorize an alternate baseline or reset the state to suppress a suspicious report. An unexpected SHA needs separate explicit author review and acceptance.
+
+Two historical commits currently lack accessible PR metadata: `dbb73f6e3daec0a64156c527f12356ab70436dbe` and `8f47de99b693fa27dfa5b61568486037315a6b95`. The author originally authorized those exceptions for T04's private live test, later withdrew that statement because the PRs could not be verified, then checked the PRs through the machine account and confirmed they were author-merged. The author reports account-dependent visibility after GitHub spam-blocked the machine account; this explanation was not independently verified. [The infrastructure evidence](../infra-current-state.md#main-watcher-acceptance-evidence-t04-2026-11-02) preserves that chronology and the original API failure. The latest merger clarification did not issue a new acceptance or initialization instruction. The default coordinator state has not been initialized. A newly authorized root initialization checks the complete history and may report them again. Keep those reports pending until the author explicitly authorizes their acceptance in that state; then the coordinator accepts only the named pending SHAs and checks the complete remaining history. Never copy the test state into the default path, hardcode exceptions, replay acceptance automatically from this historical note, or skip the initial root check. Any additional suspicious SHA needs its own author instruction.
+
+## T04 phone notification check
+After T04 merges and #71 becomes actionable:
+1. Restart as above and connect Remote Control. In the sandbox session use `/permissions` to add a temporary **Ask** rule scoped to `Bash(printf T04-permission-check)` in local settings. This changes only the harmless check command; keep auto mode and all managed restrictions enabled. [Claude Code permissions](https://code.claude.com/docs/en/permissions) describes the Ask rule and `/permissions` editor.
+2. Tell the coordinator "run the T04 notification check", lock the phone, and step away. The coordinator assigns a throwaway issue, records UTC time, then attempts exactly this harmless command through its Bash tool:
+   ```sh
+   printf T04-permission-check
+   ```
+3. Note whether GitHub assignment and the permission prompt each reach the locked phone, and their delay. Answer the prompt through Remote Control. If the command does not prompt, report that result; do not weaken managed restrictions to force it.
+4. Remove only the temporary Ask rule with `/permissions`; confirm auto mode remains enabled. Close the throwaway issue and reply to #71 with the two observed results (yes/no and delay). The coordinator records V27/V33 through a follow-up docs PR; a missing notification is an observed failure with a proposed follow-up, not a passing result.
+
 ## Check
 In `agent-session`:
 ```sh
 scripts/token-broker.sh status; sbx ls
 ```
-Expected: both Apps about an hour ahead; `januslin` running.
+Expected: both Apps about an hour ahead; `agent-vm` running.
+
+For watcher initialization, the coordinator reports `check` exit 0 and the verified baseline; for #71, reply with assignment and permission-prompt arrival/delay, including any failure to produce a prompt. Never paste the private state file or credentials.

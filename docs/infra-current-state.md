@@ -50,7 +50,8 @@ Permissions of the Claude GitHub App on this repository (V6; from the author's s
 - macOS account `agent` (short name `Agent`): standard, set up, File Sharing and Remote Login off, `sudoers` rule installed, no cron jobs or LaunchAgents (`docs/admin-guide.md`).
 - Clone of this repository at `~/januslin.me`, with its credential helper pointing at `~/januslin.me/scripts/agent-git-credential` and no git hooks (`docs/admin-guide.md`).
 - No AI tool in `agent` (removed in T03, with its `setup-token` token and the `claude-oauth-token` file). Claude Code runs only in the sandbox, with a full claude.ai login whose tokens stay in `sbx`'s host secret store (V24). Codex: not installed.
-- Docker Sandboxes (`sbx`) v0.50.1, installed with Homebrew from the author's account (`/opt/homebrew/bin/sbx`, `docker/tap`), run by `agent`. Signed in to Docker (`sbx login`) in `agent`; login and secrets in the dedicated keychain `~/Library/Keychains/sbx.keychain-db`. Settings: `ssh.agentForwardingEnabled false`. Global policy `deny-all` plus the global allowlist in `docs/agents/sandbox.md`. Sandbox `januslin` created from `sandbox/kit` (template `docker/sandbox-templates:claude-code-docker`, Ubuntu 26.04 arm64, Claude Code 2.1.306 in the image, Node 24.22.2 from nodejs.org, pnpm 12.16.1), with `claude.remoteControl` true. `sbx` secrets: `anthropic` only (global, the Claude login, OAuth). Credential binding for `anthropic` in `~/.config/sbx/credentials.yaml`. Token broker `scripts/token-broker.sh`, started with the sandbox by `scripts/sandbox-session.sh`.
+- Current sandbox: `agent-vm`, running Claude Code and Codex (author confirmation, 2026-11-02). The following provisioning record describes the original sandbox, not a fresh verification of the current VM.
+- Historical provisioning (2026-10-30): Docker Sandboxes (`sbx`) v0.50.1, installed with Homebrew from the author's account (`/opt/homebrew/bin/sbx`, `docker/tap`), run by `agent`. Signed in to Docker (`sbx login`) in `agent`; login and secrets in the dedicated keychain `~/Library/Keychains/sbx.keychain-db`. Settings: `ssh.agentForwardingEnabled false`. Global policy `deny-all` plus the global allowlist in `docs/agents/sandbox.md`. Sandbox `januslin` created from `sandbox/kit` (template `docker/sandbox-templates:claude-code-docker`, Ubuntu 26.04 arm64, Claude Code 2.1.306 in the image, Node 24.22.2 from nodejs.org, pnpm 12.16.1), with `claude.remoteControl` true. `sbx` secrets: `anthropic` only (global, the Claude login, OAuth). Credential binding for `anthropic` in `~/.config/sbx/credentials.yaml`. Token broker `scripts/token-broker.sh`, started with the sandbox by `scripts/sandbox-session.sh`.
 - Claude Code managed settings installed, root-owned, with `disableRemoteControl: true`; kept unchanged as a host backstop (ADR-0013).
 
 ### Claude Code cloud
@@ -60,14 +61,14 @@ Permissions of the Claude GitHub App on this repository (V6; from the author's s
 ### Codex bootstrap preparation (2026-11-01; no live configuration changed)
 
 The author authorized local code/runbook preparation before #55 is completed.
-That exception does not make #56 startable or complete. No Codex runtime was
+At that time the exception did not make #56 startable or complete. No Codex runtime was
 installed, OAuth login performed, host mixin/policy changed, App token accessed,
 cloud environment created, or live dispatch run during preparation.
 
 Prepared: VM-only dispatcher, JSON result schema, fake CLI tests, project defaults,
 and an uninstalled OpenAI OAuth proxy mixin/config candidate. Official release
 metadata identified stable 0.166.0 (2026-10-29); the desktop-bundled alpha is not
-the candidate stable runtime. Existing `januslin`/sbx 0.50.1 compatibility is
+the candidate stable runtime. Existing Claude-kit/sbx 0.50.1 compatibility is
 unverified, including experimental kit-add support and automatic review through
 the proxy provider. Details and evidence fields: `docs/agents/codex.md`.
 New host runbook commands wait for their merge to `main`; only preparation and
@@ -79,6 +80,51 @@ published Cloud environments from legacy GitHub-integration environments;
 `docs/runbooks/codex-cloud.md` requires recording which actual UI is available.
 V8/V10/V22/V28/V29/V30 and reverse cross-tool review remain PENDING; no placeholder
 in a config file or passing fake test resolves those rows.
+## Main watcher acceptance evidence (T04, 2026-11-02)
+
+The isolated live test for #55 / PR #102 started at the confirmed root `422517b80a52ae51d849080ab01c5b6a60b22b91`. Its first complete check returned exit 3: 13 commits were verified through the API as author merges, and two historical commits returned `no-pr`. Their subjects reference PR #5 and #6, whose endpoints return 404 through the App. They remain API-unverified:
+
+| SHA | Resolution |
+|---|---|
+| `dbb73f6e3daec0a64156c527f12356ab70436dbe` | Author-confirmed merge; historical acceptance entry (chronology below) |
+| `8f47de99b693fa27dfa5b61568486037315a6b95` | Author-confirmed merge; historical acceptance entry (chronology below) |
+
+The author answered the coordinator's exact-SHA question in the session: "I merged both; authorize those two exceptions". The coordinator recorded that direct-session authorization in [#55's evidence comment](https://github.com/januswtlin/januslin.me/issues/55#issuecomment-6569139951). The comment is an audit record; the direct author statement was the authority.
+
+Under that original authorization, the implementer ran `accept` for only those two SHAs in the existing private temporary test state, then `check`. Both accept commands and the final check returned exit 0. The final baseline was `cfb6c3481571101c2e68884ec2bcadb66b729684`; its acceptance journal contained exactly those two SHAs and no pending records. The original failing report is preserved in PR #102 alongside the subsequent successful output. No default coordinator state was initialized or changed, and the script has no hardcoded exceptions.
+
+The author then withdrew the earlier statement: "I need to revert what I said. I can't verify #5 and #6." The [withdrawal record](https://github.com/januswtlin/januslin.me/pull/102#issuecomment-6569673911), posted 2026-11-02T05:17:18Z, superseded the earlier readiness notice. The existing temporary journal was preserved as historical evidence; no new acceptance or permanent-state initialization followed the withdrawal.
+
+Subsequently the author checked the PRs while logged in as machine account `januslin-agent`. The author reports that GitHub spam-blocked that account and that PR #5/#6 are visible there but unavailable when logged in as `januswtlin`; agents did not independently verify this account-visibility explanation or access that account. The author initially said the two PRs were closed, then clarified "merged" when asked whether that meant author-merged. [The subsequent evidence record](https://github.com/januswtlin/januslin.me/issues/55#issuecomment-6569779487) documents this direct merger confirmation. This resolves the author's stated inability to verify those historical merges; it is not a new statement authorizing acceptance commands or initialization.
+
+After that clarification, the implementer ran only `check` against the same private temporary journal: exit 0, no new commit reports, baseline still `cfb6c3481571101c2e68884ec2bcadb66b729684`, and exactly the same two accepted entries. No new `accept` or `init` ran. The two merges are now author-confirmed but remain API-unverified; the original `no-pr` reports, original authorization, withdrawal, and later clarification are all retained as the live evidence adjustment. This successful incremental check does not independently reverify already accepted historical commits.
+
+[Incident #103](https://github.com/januswtlin/januslin.me/issues/103) remains open for the author alone to close. Fresh-state initialization and exception handling remain author-controlled ([startup runbook](runbooks/start-coordinator.md#initialize-a-missing-main-watcher-state)); the historical test journal grants no permission to initialize permanent state or replay acceptance. #70 remains open and independently actionable; #71 becomes actionable after merge, with V27/V33 still pending.
+
+### Current coordinator handoff (2026-11-02)
+
+After the historical test above, the author explicitly authorized permanent
+initialization: [#104 initialization evidence](https://github.com/januswtlin/januslin.me/issues/104#issuecomment-6572983471)
+records `init` exit 0, then `check` exit 3 with 14 verified and the same two pending
+historical SHAs. The author subsequently approved accepting exactly
+`dbb73f6e3daec0a64156c527f12356ab70436dbe` and
+`8f47de99b693fa27dfa5b61568486037315a6b95`. The coordinator records both accepts
+exit 0, final `check` exit 0, baseline
+`afae1ebd6d644e8d305fb1031b76e6ee39ece184`, journal mode 0600, exactly those two
+acceptance entries, and no pending reports in
+[#104's result](https://github.com/januswtlin/januslin.me/issues/104#issuecomment-6573048249)
+and [#103's evidence](https://github.com/januswtlin/januslin.me/issues/103#issuecomment-6573048809).
+This supersedes the earlier pending initialization state; it preserves every
+historical withdrawal and does not independently API-verify the two old merges.
+The T06 implementer did not initialize or change watcher state.
+
+#55 is now completed. #70/#71 and V27/V33 remain pending follow-ups. For #56, the
+author confirms ChatGPT is still connected as `januswtlin`
+([#72](https://github.com/januswtlin/januslin.me/issues/72#issuecomment-6573097069)).
+Runtime dispatch/model calls, login, and identity-dependent probes wait for the
+machine-account connection and reviewed-main setup procedures. The coordinator
+observed Codex 0.166.0 in `agent-vm`; this is presence evidence only. No live T06
+acceptance row is resolved by this preparation PR.
 
 ## Planned state
 
@@ -122,17 +168,17 @@ Claims the docs rely on that nobody has tested yet. Whoever reaches the "When" s
 | V19 | The egress allowlist is enough for `pnpm install`, Playwright's Chromium download, `pnpm verify`, `gh`, and git, and blocks everything else | `docs/agents/sandbox.md` | T07 (#57), T06 (#56) | Partly passed 2026-10-30: `gh`, git push, the npm registry (Node 24, pnpm via Corepack), Playwright's Chromium download and launch (with the Chrome for Testing and Ubuntu mirror rules), `sh tests/scripts/run.sh` on Linux; `curl https://example.com` returns 403 and appears in `sbx policy approval ls`. Claude Code and Remote Control passed (V21). Open: `pnpm install` and `pnpm verify` of the real project (T07); Codex (T06) |
 | V20 | Claude Code subagents with `isolation: "worktree"` work inside the sandbox clone, two at a time without interfering | `docs/agents/workflow.md`, ADR-0010 | T05 | Passed 2026-10-30 (T05, Claude Code 2.1.314): the coordinator ran two worktree subagents at once (the T05 implementer and a probe). `git worktree list` showed the main checkout `/Users/Agent/januslin.me` at 8f47de9 [main] and two locked worktrees under `.claude/worktrees/`; a file the probe created showed as untracked only in its own worktree and was absent from the main checkout; each subagent's git commands were confined to its own worktree by the harness ("a worktree-isolated agent's git operations must target its own worktree"). **Finding:** both worktrees started at a0ca6c8, the commit the coordinator session started on, not at `main`'s 8f47de9; an implementer must branch from `origin/main` itself (`docs/agents/workflow.md`, "Coordinator loop") |
 | V21 | Remote Control works from the phone to the sandboxed Claude Code session (`claude.remoteControl` setting), and which hosts it needs | ADR-0013, ADR-0014 | T05 | Passed 2026-10-30 (T05): after `sbx settings set claude.remoteControl true`, the author attached from the phone to the coordinator session in `januslin` and sent the probe instruction. The session pushed an empty commit 61fea25 to `agent/test/T05-rc-probe`; the activity API shows `branch_creation` by `januslin-agent[bot]`, id 349177542, at 2026-10-30T15:21:33Z, so GitHub access from a Remote Control session stays on the App. The session then deleted the branch with the App credential (accepted). No host beyond the allowlist was needed; Remote Control connected without any approval request |
-| V22 | `sbx secret set openai --oauth` works with the author's ChatGPT subscription and keeps the tokens on the host, unreadable in the VM; and whether `--oauth` can be scoped with `--sandbox januslin` | ADR-0013 | T06 | open; `sbx` v0.50.1's help says `--oauth` is "openai/global only", so it cannot be scoped with `--sandbox` (seen in T03) |
+| V22 | `sbx secret set openai --oauth` works with the author's ChatGPT subscription and keeps the tokens on the host, unreadable in the VM; and whether `--oauth` can be scoped with `--sandbox agent-vm` | ADR-0013 | T06 | open; `sbx` v0.50.1's help says `--oauth` is "openai/global only", so it cannot be scoped with `--sandbox` (seen in T03) |
 | V24 | Where the Claude `/login` credential is stored: on the host (proxy) or readable inside the VM; and whether it survives `sbx stop` and `sbx run` | ADR-0013, `docs/agents/sandbox.md` (accepted if readable) | T05 | Passed 2026-10-30 (T21): stored on the host. After `/login`, `sbx secret ls` lists `anthropic` (global, "oauth configured"); the VM's `~/.claude/.credentials.json` has a 26-character sentinel access token, with the claude.ai scopes (`user:inference`, `user:profile`, `user:sessions:claude_code`, among others). The login survived `sbx stop` and `sbx run`. Re-confirmed 2026-10-30 (T05): `~/.credentials.json` in the VM still holds 26-character access and refresh tokens; no `claude-oauth-token` file anywhere in the VM, and no `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_*` credential variable in its environment |
 | V25 | wrangler works in the sandbox with a placeholder `CLOUDFLARE_API_TOKEN` that the proxy replaces for `api.cloudflare.com` | `docs/agents/sandbox.md` | T14 (#60) | open |
 | V26 | Claude Code inside the sandbox starts in auto mode (a kit entrypoint, or Linux managed settings with `disableBypassPermissionsMode` and `permissions.defaultMode: "auto"`; whether the bypass flag then falls back or refuses to start), shown by `/permissions` | `docs/agents/sandbox.md`, ADR-0013 | T03 | Passed 2026-10-30 (T03, live check in T21, Claude Code v2.1.314): `sandbox/kit` starts Claude Code with `--permission-mode auto` and writes managed settings disabling bypass mode. After the first working `/login`, the interactive session shows `auto mode on`; `claude -p … --output-format stream-json` reports `"permissionMode":"auto"` both without a flag and with `--dangerously-skip-permissions`, so the bypass flag does not refuse to start but falls back to the managed default. `/etc/claude-code/managed-settings.json` in the VM is as written by the kit |
-| V27 | Auto mode in long unattended coordinator runs: how often it pauses (3 consecutive or 20 total blocks), and whether the author learns that it waits, while away with Remote Control connected | `docs/agents/sandbox.md` | T04 (#55, #71), then the first weeks of T07 onward | open |
+| V27 | Auto mode in long unattended coordinator runs: how often it pauses (3 consecutive or 20 total blocks), and whether the author learns that it waits, while away with Remote Control connected | `docs/agents/sandbox.md` | T04 (#55, #71), then the first weeks of T07 onward | Pending after T04 merges: #71 exercises a harmless scoped permission prompt while the author is away with Remote Control connected; a follow-up docs PR records arrival/delay or failure and the proposed next step. No live notification result yet |
 | V28 | The Codex CLI installed in the Claude-template sandbox uses the proxy-injected `openai` OAuth secret, and stays installed after `sbx template save` and re-creating the sandbox (`sbx create -t`); which user-level config (`~/.codex`) survives | `docs/agents/sandbox.md` | T06 (#56) | open |
 | V29 | Codex's Linux sandbox (`workspace-write`) and automatic review (`--approve-for-me`) work inside the microVM, including commits and pushes, which escalate because `.git` is read-only | `docs/agents/sandbox.md` | T06 (#56) | open |
 | V30 | End to end: the Claude coordinator dispatches a task to Codex with `codex exec`, gets the PR link, `pnpm verify` result, and blockers back as JSON, has a separate reviewer review it, resumes the same Codex session to fix findings, and reports; and whether auto mode blocks the dispatch command | `docs/agents/workflow.md` | T06 (#56) | open |
 | V31 | The repository's `.claude/settings.json` takes effect in the sandbox: a claude.ai connector tool (`mcp__claude_ai_*`) and `CronCreate` are denied, `RemoteTrigger` is the right tool name, and `CLAUDE_CODE_DISABLE_CRON` turns the cron tools off | `docs/agents/sandbox.md` ("Permissions inside the VM") | T05 | Passed 2026-10-30 (T05, Claude Code 2.1.314), with one part not observable: the `init` event of `claude -p … --output-format stream-json --verbose` lists 23 tools in the repository and 29 outside it, the six missing being `RemoteTrigger` (so the name is right and the deny applies) and the five `mcp__mcp-gateway__*` tools, denied since the author's decision of 2026-10-30. In the interactive sessions in the repository, the claude.ai connector "Claude Docs" connects (its server instructions arrive) but none of its `mcp__claude_ai_*` tools is offered. No `Cron*` tool appears in either `-p` run, with or without the repository settings, so the effect of the cron denies and `CLAUDE_CODE_DISABLE_CRON` cannot be told apart in 2.1.314; they stay as defaults. `permissionMode` is `auto` in both |
-| V32 | A PR merged by the author records the author as the `ClosedEvent` actor of the issue it closes, so "closed by the author" covers merges | ADR-0014, `docs/agents/workflow.md` | T08 (#54) tests it; the first task merge after it confirms it | open |
-| V33 | Assigning an issue to `januswtlin` and requesting the author's review reach the author's phone as GitHub Mobile push notifications | ADR-0014, `docs/admin-guide.md` | T04 (#71) | open |
+| V32 | A PR merged by the author records the author as the `ClosedEvent` actor of the issue it closes, so "closed by the author" covers merges | ADR-0014, `docs/agents/workflow.md` | T08 (#54) fixture-tests author vs bot closes; the first task merge after it confirms the live behavior | Passed 2026-11-02 (T04): `scripts/work-status.sh check 54` exits 3 with `issue is not open`. Live GraphQL through the implementer App confirms issue #54 is `CLOSED` / `COMPLETED`; its latest `ClosedEvent` is 2026-11-02T04:15:40Z, actor `januswtlin` database ID 2433928. PR #101 was merged 2026-11-02T04:15:38Z by the same database ID 2433928, merge commit `cfb6c3481571101c2e68884ec2bcadb66b729684` |
+| V33 | Assigning an issue to `januswtlin` and requesting the author's review reach the author's phone as GitHub Mobile push notifications | ADR-0014, `docs/admin-guide.md` | T04 (#71) | Pending after T04 merges: #71 tests a throwaway issue assignment; record the phone result in a follow-up docs PR. PR review-request delivery remains a separate observation |
 
 ## Change log
 

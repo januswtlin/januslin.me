@@ -8,8 +8,8 @@ Where: `agent-session` · Time: about 5 min, plus restarting the coordinator
    volume, host credential, or configuration. Keep all work pushed, record the
    coordinator/Codex UUIDs privately, and stop the coordinator cleanly. Then:
    ```sh
-   sbx stop januslin
-   sbx template save januslin "januslin:codex-$(date +%F)"
+   sbx stop agent-vm
+   sbx template save agent-vm "agent-vm:codex-$(date +%F)"
    ```
 2. Never push the template to a registry.
    It may contain private session/configuration material. The OAuth credential
@@ -24,7 +24,7 @@ Where: `agent-session` · Time: about 5 min, plus restarting the coordinator
 ```sh
 sbx template ls
 ```
-Expected: `januslin:codex-<today>`.
+Expected: `agent-vm:codex-<today>`.
 Reply with the local tag and installed version, not image contents or raw session
 logs. A listed template does not complete V28: re-creation is a separate author
 step using `recreate-sandbox.md` after all important work is safely retained.

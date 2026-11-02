@@ -54,18 +54,18 @@ Your own `~/.zshrc` defines `agent-session` (a login shell as `agent` in `~/janu
 The `sbx` keychain must be unlocked once before `sbx` works; [`start-coordinator.md`](runbooks/start-coordinator.md) does it. The account has no login keychain (it is never logged in at the desktop), so `sbx` keeps its Docker login and secrets in a dedicated keychain, `sbx.keychain-db`, made the default and only keychain and set to stay unlocked once unlocked. If a "Keychain Not Found" dialog appears, cancel it; never "Reset To Defaults", which acts in your desktop session.
 
 ### The host clone
-`~/januslin.me` in the `agent` account is the source for the sandbox and the place the broker runs from. It only fast-forwards `main`, never fetches `sandbox-januslin` or checks out an agent branch, and has no git hooks, because code here runs next to the keys. Its credential helper answers only for `januswtlin/januslin.me`. To re-create it: [`recreate-host-clone.md`](runbooks/recreate-host-clone.md).
+`~/januslin.me` in the `agent` account is the source for the sandbox and the place the broker runs from. It only fast-forwards `main`, never fetches `sandbox-agent-vm` or checks out an agent branch, and has no git hooks, because code here runs next to the keys. Its credential helper answers only for `januswtlin/januslin.me`. To re-create it: [`recreate-host-clone.md`](runbooks/recreate-host-clone.md).
 
 ## Start the coordinator
 
-The coordinator is the long-running Claude Code session that runs the task loop (`docs/agents/workflow.md`, "Coordinator loop"). It runs only inside the sandbox; Claude Code is not installed on the host, so never run `claude` in `agent-session`. Start it after a restart of the Mac or whenever it has stopped; restart it after a merge that changes its prompt. It cannot keep the Mac awake from the VM, so `caffeinate` runs in your own account. A new coordinator resumes from GitHub. Start, stop, and restart: [`start-coordinator.md`](runbooks/start-coordinator.md).
+The coordinator is the long-running Claude Code session that runs the task loop ([coordinator procedure](agents/coordinator.md)). It runs only inside the sandbox; Claude Code is not installed on the host, so never run `claude` in `agent-session`. Start it after a restart of the Mac or whenever it has stopped; restart it after a merge that changes its prompt. It cannot keep the Mac awake from the VM, so `caffeinate` runs in your own account. A new coordinator resumes from GitHub. Start, stop, and restart: [`start-coordinator.md`](runbooks/start-coordinator.md).
 
 ## The sandbox
 
 How it works: `docs/agents/sandbox.md`. Only you change it, from `agent-session`; the agent in the VM cannot run `sbx`.
 
 ### Create or re-create it
-Needed only if the sandbox is lost or its kit changes: [`recreate-sandbox.md`](runbooks/recreate-sandbox.md). Two things to know: `sbx rm januslin` deletes the VM's clone and every rule scoped to it (that is why the allowlist is global), and `sandbox/kit` counts to `sbx` as a third-party kit, so `/login` works only with the credential binding the runbook writes ([credential bindings](https://docs.docker.com/ai/sandboxes/configuration/credentials/#credential-bindings)). Settings in force: `ssh.agentForwardingEnabled` false, `claude.remoteControl` true.
+Needed only if the sandbox is lost or its kit changes: [`recreate-sandbox.md`](runbooks/recreate-sandbox.md). Two things to know: `sbx rm agent-vm` deletes the VM's clone and every rule scoped to it (that is why the allowlist is global), and `sandbox/kit` counts to `sbx` as a third-party kit, so `/login` works only with the credential binding the runbook writes ([credential bindings](https://docs.docker.com/ai/sandboxes/configuration/credentials/#credential-bindings)). Settings in force: `ssh.agentForwardingEnabled` false, `claude.remoteControl` true.
 
 ### Allow a new host
 When an agent asks in a `human-task` issue and you agree: [`allow-sandbox-host.md`](runbooks/allow-sandbox-host.md). The agent adds the row to the allowlist in `docs/agents/sandbox.md` the same day.
@@ -86,7 +86,7 @@ Monthly, when the release notes show a new version (`sbx` is early access): [`up
 
 ## Tool logins
 
-- **Claude Code** in the sandbox: a full claude.ai login (`/login` in `sbx run --name januslin`), needing the credential binding above. claude.ai's GitHub connection is the machine account; its connectors: GitHub only (a few claude.ai built-in servers such as "Claude Docs" are listed but not connected and cannot be removed; `.claude/settings.json` denies their tools). To end it: `/logout` in the sandbox, or remove the `anthropic` secret in `agent-session` (`sbx reset` removes every sandbox secret), and sign out its sessions at claude.ai → Settings.
+- **Claude Code** in the sandbox: a full claude.ai login (`/login` in `sbx run --name agent-vm`), needing the credential binding above. claude.ai's GitHub connection is the machine account; its connectors: GitHub only (a few claude.ai built-in servers such as "Claude Docs" are listed but not connected and cannot be removed; `.claude/settings.json` denies their tools). To end it: `/logout` in the sandbox, or remove the `anthropic` secret in `agent-session` (`sbx reset` removes every sandbox secret), and sign out its sessions at claude.ai → Settings.
 - **Claude Code cloud** environment `januslin.me`: network access Limited, no variables or secrets, a setup script that installs dependencies once a lockfile exists: [`claude-cloud-environment.md`](runbooks/claude-cloud-environment.md).
   Only you start cloud sessions and scheduled tasks.
 - Local agents act on GitHub only through the Apps, whatever the tool login can reach.

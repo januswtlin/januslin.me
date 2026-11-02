@@ -16,7 +16,7 @@ Where: your own Terminal (not `agent-session`, which needs the clone to exist) Â
    git config --local user.name 'januslin-agent[bot]'
    git config --local user.email '349177542+januslin-agent[bot]@users.noreply.github.com'
    ```
-3. Never set `core.hooksPath`, fetch `sandbox-januslin`, or check out an agent branch here. Delete the `.old-` copy once the new clone works.
+3. Never set `core.hooksPath`, fetch `sandbox-agent-vm`, or check out an agent branch here. Delete the `.old-` copy once the new clone works.
 
 ## Check
 ```sh

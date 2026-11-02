@@ -18,6 +18,8 @@ Two hard constraints shape every decision:
 | If you are doing... | Read |
 |---|---|
 | Anything | `docs/overview.md`, `docs/agents/roles.md`, `docs/agents/workflow.md` |
+| Coordinating tasks | `docs/agents/coordinator.md` |
+| Evaluating model settings | `docs/agents/model-guidance.md` |
 | A dispatched task | your task issue and the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53); "Work items" in `docs/agents/workflow.md` |
 | Content schema, topics, tags, images, URLs | `docs/content-model.md` |
 | Scheduled agents, Renovate, event triggers | `docs/automation.md` |
@@ -30,37 +32,11 @@ Two hard constraints shape every decision:
 | Why something is the way it is | `docs/decisions/` (decision records) |
 | Future ideas | `docs/roadmap.md` |
 
-## Stack (decided)
+## Architecture
 
-- **Framework:** Astro 7 (latest stable), static output. Theme: Retypeset, vendored and kept to its original design; we do not merge upstream (our changes would conflict constantly), but a monthly check reviews upstream changes and ports fixes by hand.
-- **Package manager / runtime:** pnpm, Node.js active LTS (24.x), pinned in `package.json` (`packageManager`, `engines`) and `.nvmrc`.
-- **Hosting:** Cloudflare Workers with static assets plus a minimal Worker script, configured in `wrangler.jsonc`. The script runs only for HTML entry paths, because script invocations count against the free plan's daily limit.
-- **CI/CD:** GitHub Actions. A `main` ruleset lets only the author merge; the Cloudflare token is an environment secret limited to `main`, so no branch workflow can read it.
-- **Content:** one repo, `content/` written by people and merged only by the author (ADR-0016), published with Git only. No CMS: GitHub cannot limit a credential to `content/`, so a CMS credential would be a full write credential.
-- **i18n:** `zh-TW` at the root, `en` under `/en/`, with shared ASCII slugs. English versions are written by the entry's writer; an entry without one has no `/en/` URL.
-- **AI access:** all AI crawler categories allowed; Content Signals `search=yes, ai-input=yes, ai-train=yes`. Blocking AI training at the edge would also block major search crawlers.
-- **Information architecture:** one `posts` collection, curated topics, tags as attributes; URLs `/<topic>/<slug>/`. Published URLs are permanent; a move needs a 301 redirect.
-- **Automation:** Renovate and GitHub Actions detect, scheduled agent tasks act, the author merges. Agents learn about work from events and issues; only the local coordinator polls GitHub while idle (every 5 minutes).
-- **Agent identity:** local agents run in a Docker Sandbox started from the macOS account `agent` and act on GitHub through two role Apps (implementer and reviewer); cloud agents and the tools' full logins act as the machine account `januslin-agent`. Neither ever uses the author's GitHub account ("Identity" below).
-- **Coordination:** work is tracked in GitHub issues: one per task, one per human task, and a plan issue that orders them (ADR-0014). A local coordinator session dispatches implementer and reviewer subagents; `pnpm verify` gates every task. It reaches the author by assigning issues and requesting reviews (GitHub notifications); the author can steer local sessions with Remote Control.
+Astro 7, static output; vendored Retypeset kept to its original design. pnpm and Node 24 active LTS are pinned in `package.json` and `.nvmrc`. Cloudflare Workers static assets host the site; only HTML entry paths invoke the minimal Worker. GitHub Actions builds and deploys the author's merges.
 
-## Repository layout
-
-What exists today:
-
-```
-drafts/             Author's local-only drafts. Gitignored except README.md; never read or commit it.
-sandbox/kit/        The sbx kit the local AI sandbox is created from (docs/agents/sandbox.md)
-scripts/            Agent scripts: token broker, token minting, agent-gh, git credential helper, sandbox-session
-tools/author/       Tools the author runs in their own account (januslin-keys: App key sets, ADR-0015)
-tests/scripts/      Shell tests for the scripts (sh tests/scripts/run.sh)
-.github/            PR template, issue forms, CODEOWNERS
-.githooks/          prepare-commit-msg (adds the Agent: trailer in agent clones)
-.claude/            settings.json: tool denies for Claude Code in this repository
-docs/               Project documentation (this is where knowledge lives)
-```
-
-Added by the tasks in the plan issue: `content/` (Markdown, images, and taxonomy written by people, never agents; `docs/content-model.md`), `src/` (Astro source), `public/` (static files, `_headers`, `_redirects`), `worker/` and `wrangler.jsonc` (Cloudflare Worker), `automation/prompts/` (scheduled agent tasks; `docs/automation.md`), `.github/workflows/`, and the site's tests under `tests/`.
+Architecture and component paths: `docs/overview.md`. Current versus planned infrastructure: `docs/infra-current-state.md`. Topic-specific docs above describe content, locales, SEO, deployment, and automation. All decisions remain in `docs/decisions/`.
 
 ## Rules for all agents
 
@@ -93,6 +69,7 @@ Added by the tasks in the plan issue: `content/` (Markdown, images, and taxonomy
 
 ### How to work
 - Start from the task issue. If the task is ambiguous or conflicts with a decision in `docs/decisions/`, stop and ask in the PR (label `needs-human`) instead of guessing on anything hard to reverse.
+- Carry authorized work through verification and handoff. Make routine, reversible choices within the task's scope and record assumptions in the handoff report. Continue independent work while an answer is pending; preserve every approval and escalation boundary in this file.
 - Prefer the smallest change that meets the acceptance criteria. No drive-by refactors.
 - Licensing: code is MIT (`LICENSE`); content is all rights reserved unless an entry sets `license` (`LICENSE-CONTENT.md`). When you vendor third-party code, themes, fonts, or assets, record their license in `THIRD_PARTY_NOTICES.md` in the same PR, and say plainly when a license is unverified.
 - Use the latest stable versions of dependencies unless a decision record or the task says otherwise. No pre-release versions in production.

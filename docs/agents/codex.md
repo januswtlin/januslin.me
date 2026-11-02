@@ -1,22 +1,26 @@
 # Codex dispatch and pending sandbox acceptance
 
-Prepared: 2026-11-01 · Task: [#56](https://github.com/januswtlin/januslin.me/issues/56)
+Updated: 2026-11-02 · Task: [#56](https://github.com/januswtlin/januslin.me/issues/56)
 
-This is a local bootstrap candidate, not completed T06 acceptance. The author
-explicitly authorized preparing code and runbooks in a local checkout before
-#55 is completed. That temporary preparation exception does not authorize a live
-task dispatch, bypass approval, satisfy a dependency, or select the fallback.
-Do not close #56 or describe the runtime as working from these fake tests.
+This preparation PR delivers code, fake tests, and reviewable runbooks for #56;
+it does not complete T06. #55 is now completed and merged. The author confirmed
+on 2026-11-02 that ChatGPT still connects to the primary GitHub account
+`januswtlin` ([#72 evidence](https://github.com/januswtlin/januslin.me/issues/72#issuecomment-6573097069)).
+Until #72's machine-account connection is checked, no Codex dispatch/model call,
+login, or identity-dependent runtime/cloud probe is authorized. Independent code,
+fake CLI tests, and non-secret read-only checks may continue. Do not infer live
+acceptance from the presence of Codex or from fake tests, and do not close #56.
 
 ## Runtime candidate and sources
 
 The preferred candidate installs Codex in the existing Claude-template VM,
-`januslin`. The coordinator calls it there; no AI binary or login runs in the host
+`agent-vm`. The coordinator calls it there; no AI binary or login runs in the host
 `agent` shell. The host only uses `sbx` and the reviewed token-broker scripts.
 Python 3.11 or later is a dispatcher/test prerequisite (stdlib only), along with
 git and the existing `agent-gh`/T08 scripts. Check it before installation.
 
-Verified documentation on 2026-11-01:
+Official documentation rechecked on 2026-11-02 (release metadata below retains
+its original preparation date):
 
 - [Official non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)
   documents stdin prompts, JSONL, schema output, and exact-session resume.
@@ -157,11 +161,12 @@ to it. The VM cannot create that second sandbox. Missing support for adding the
 OAuth mixin is a concrete blocker to resolve with the author, not evidence of
 Codex sandbox failure.
 
-The normal runtime setup waits for #55 and a reviewed-main runbook. If Codex is
-needed to finish #54/#55 because Claude quota is exhausted, an additional explicit
-author decision is necessary for the exact reviewed bootstrap host/VM steps;
-preparation/push authorization alone does not permit them. See
-`docs/runbooks/codex-runtime.md` before proposing that bounded exception.
+Runtime setup requires the checked machine-account connection and a reviewed-main
+runbook. Inventory author-completed setup before repeating any step: Codex
+0.166.0 was observed in the current VM by the coordinator, but its presence does
+not resolve any acceptance row. #73/#74/#75 remain pending; the coordinator first
+records completed work and then requests only the remaining author steps through
+`docs/runbooks/codex-runtime.md` and `docs/runbooks/codex-cloud.md`.
 
 ## Acceptance ledger (all live rows pending)
 
@@ -170,7 +175,7 @@ Record sanitized evidence in the eventual PR/handoff and update
 
 | Probe | Required evidence | Status / evidence |
 |---|---|---|
-| Human connection | GitHub connection machine account numeric ID 349746030; author grant revoked; permissions including Workflows, Secrets, Variables; connector names and decisions | PENDING |
+| Human connection | GitHub connection machine account numeric ID 349746030; author grant revoked; permissions including Workflows, Secrets, Variables; connector names and decisions | BLOCKED: author confirmed primary-account connection; #72 |
 | V8 | Effective config/requirements paths, disabled app/plugin/gateway tools, attempted ordinary override outcome; personal account limitations | PENDING |
 | V22 | Host OAuth listing; whether current sbx accepts scoping (0.50.1 help says global only); approved binding domains; VM sentinel-only check without printing values | PENDING |
 | V28 | Stable version and subscription-backed inference in Claude kit; model retained; proxy replacement; no real auth token in VM; save/recreate preserves binary and measured config/session state | PENDING |

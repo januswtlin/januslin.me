@@ -15,6 +15,6 @@ Where: Slack in the browser, then `agent-session` · Time: about 10 min
 
 ## Check
 ```sh
-ls -la ~/.config/januslin-agent ~/.config/januslin-agent/sandbox-config; sbx secret ls; sbx policy ls januslin --wide | grep -i slack; echo "grep exit=$?"
+ls -la ~/.config/januslin-agent ~/.config/januslin-agent/sandbox-config; sbx secret ls; sbx policy ls agent-vm --wide | grep -i slack; echo "grep exit=$?"
 ```
 Expected: no Slack file, no Slack secret, `grep exit=1`.

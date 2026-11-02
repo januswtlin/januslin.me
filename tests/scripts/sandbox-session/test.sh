@@ -38,7 +38,7 @@ check() { if [ "$2" = 0 ]; then pass "$1"; else fail "$1"; fi; }
 run() { : > "$FAKE_LOG"; (unset SANDBOX_SESSION_UPDATED; sh "$script" "$@") >/dev/null 2>&1; }
 log() { tr '\n' '|' < "$FAKE_LOG"; }
 
-start_calls="git checkout -q main|git fetch -q origin|git merge -q --ff-only origin/main|token-broker stop|token-broker once|token-broker start|token-broker status|sbx run --name januslin|"
+start_calls="git checkout -q main|git fetch -q origin|git merge -q --ff-only origin/main|token-broker stop|token-broker once|token-broker start|token-broker status|sbx run --name agent-vm|"
 
 # ---- start ------------------------------------------------------------------
 run start; rc=$?
@@ -71,7 +71,7 @@ FAKE_FAIL="security unlock-keychain" run start --unlock-keychain; rc=$?
 check "start --unlock-keychain: stops before the broker when the unlock fails" $?
 
 FAKE_FAIL="sbx run" run start; rc=$?
-[ $rc -ne 0 ] && [ "$(tail -n 2 "$FAKE_LOG" | tr '\n' '|')" = "sbx run --name januslin|token-broker stop|" ]
+[ $rc -ne 0 ] && [ "$(tail -n 2 "$FAKE_LOG" | tr '\n' '|')" = "sbx run --name agent-vm|token-broker stop|" ]
 check "start: stops the broker again when sbx run fails" $?
 
 run start --bogus; rc=$?
@@ -81,7 +81,7 @@ check "start: refuses an unknown option before doing anything" $?
 # ---- restart ----------------------------------------------------------------
 run restart; rc=$?
 update="git checkout -q main|git fetch -q origin|git merge -q --ff-only origin/main|"
-[ $rc -eq 0 ] && [ "$(log)" = "${update}sbx stop januslin|${start_calls#"$update"}" ]
+[ $rc -eq 0 ] && [ "$(log)" = "${update}sbx stop agent-vm|${start_calls#"$update"}" ]
 check "restart: updates main, then stops the VM, then starts without updating again" $?
 
 FAKE_FAIL="git merge" run restart; rc=$?
@@ -98,7 +98,7 @@ check "restart: starts even when the VM was not running" $?
 
 # ---- stop -------------------------------------------------------------------
 run stop; rc=$?
-[ $rc -eq 0 ] && [ "$(log)" = "sbx stop januslin|token-broker stop|" ]
+[ $rc -eq 0 ] && [ "$(log)" = "sbx stop agent-vm|token-broker stop|" ]
 check "stop: stops the VM and the broker" $?
 
 FAKE_FAIL="sbx stop" run stop

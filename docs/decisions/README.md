@@ -24,6 +24,7 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 | [0014](ADR-0014-github-issues-for-work-and-the-author.md) | GitHub issues carry the work and reach the author | proposed; startable amended by ADR-0016 |
 | [0015](ADR-0015-app-key-sets.md) | App key sets, kept in the author's account, one active on the host | proposed; developers' own sets amended by ADR-0016 |
 | [0016](ADR-0016-one-editor-many-developers.md) | One editor, any number of developers | proposed |
+| [0017](ADR-0017-task-context-and-token-efficiency.md) | Reduce task context while preserving completion gates | proposed |
 
 ## Template
 

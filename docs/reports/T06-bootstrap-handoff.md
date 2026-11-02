@@ -102,3 +102,49 @@ After actual VM prerequisites pass, use the coordinator's separately reviewed
 [durable microVM takeover prompt](https://github.com/januswtlin/januslin.me/blob/677f9e177ae84532811cb658fff1d523781a0f96/docs/agents/microvm-codex-handoff.md).
 It lives on the T08 bootstrap commit, not this T06 base. It does not itself grant
 new host authority, satisfy dependencies, or complete T06.
+
+## Resumed preparation (2026-11-02)
+
+The existing branch merged verified `origin/main`
+`afae1ebd6d644e8d305fb1031b76e6ee39ece184`; no rebase or force-push. Conflicts
+were documentation-only. The extracted coordinator prompt and merged T08/T04
+integration are retained. The infra record preserves the historical watcher
+initialization/withdrawal/clarification sequence and appends the coordinator's
+subsequent permanent-journal evidence; this implementer did not touch that state.
+
+Current scope is one preparation/runbook PR referring to #56 without closing it.
+It makes the author-only steps reviewable on `main` before execution. All eight
+live acceptance criteria in #56 remain incomplete: connector identity/permissions,
+connector decisions, V22 and live App push, V8, V10, reverse cross-tool review,
+V28/V29, and V30. No real Codex runtime/model call or login was performed in this
+resumed preparation. Actual calls remain stopped while #72 is incomplete: the
+author confirmed ChatGPT still connects as `januswtlin`. App-helper reads and
+candidate-branch push/PR publication use the active implementer App only.
+
+The current VM is `agent-vm`; the coordinator already observed Codex 0.166.0.
+Runbooks now require inventorying completed setup before repeating an install,
+login, binding, or restart. Binary presence does not prove inference, OAuth token
+isolation, managed settings, approval review, persistence, or any live criterion.
+#73/#74/#75 remain pending; first record what the author has already done, then
+request only remaining steps after #72 and the preparation/runbook merge.
+
+Verification after the main merge:
+
+- `sh tests/scripts/run.sh`: exit 0 in the current Linux VM; all script suites,
+  including 15 fake Codex methods, T08, T04, and sandbox-session, passed. This
+  supersedes the earlier macOS-shell limitation for this current VM gate while
+  preserving that historical result. `pnpm verify` and CI do not exist yet.
+- Python AST, result JSON, both TOML syntax and permission defaults: passed;
+  no model or reasoning-effort override. `git diff --check`: passed.
+- New isolated copied-tree mutation removed the verification-status enum;
+  the existing rejection test failed with `AssertionError: 0 == 0 : bad-schema`
+  and `FAILED (failures=1)`. No mutation or weakened test remains.
+- Shellcheck is not installed in this VM, so no fresh Shellcheck result is
+  claimed. The earlier preparation's passing result remains recorded above.
+- Official non-interactive/approval/managed-config/cloud docs and Docker
+  kit/credential/template docs, plus the plugin README, were fetched again.
+  Runtime and actual account/UI compatibility remain unverified.
+
+The coordinator arranges independent review against the published preparation PR
+head. Preparation approval is not V30's live cross-tool verdict or permission to
+close #56. No author review request is sent by this implementer.

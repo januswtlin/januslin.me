@@ -13,6 +13,6 @@ Where: `agent-session` · Time: about 2 min
 
 ## Check
 ```sh
-sbx policy ls januslin --wide
+sbx policy ls agent-vm --wide
 ```
 Expected: the new rule. An agent adds its row to `docs/agents/sandbox.md` the same day.
