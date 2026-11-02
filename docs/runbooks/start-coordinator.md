@@ -1,7 +1,7 @@
 # Start, stop, or restart the coordinator
 Where: your own Terminal, then `agent-session` · Time: about 5 min
 
-`scripts/sandbox-session.sh` does the host part in one command: it fast-forwards the host clone to `main` and re-runs itself from there, restarts the token broker, mints both App tokens (and stops if that fails), then opens `sbx run --name januslin` (if that fails, it stops the broker again). Leaving the session with `/exit` leaves the VM and the broker running; `stop` ends both. Keep the `agent-session` window open while the coordinator runs: the broker belongs to it, and closing the window stops token refresh within the hour.
+`scripts/sandbox-session.sh` does the host part in one command: it fast-forwards the host clone to `main` and re-runs itself from there, restarts the token broker, mints both App tokens (and stops if that fails), then opens `sbx run --name agent-vm` (if that fails, it stops the broker again). Leaving the session with `/exit` leaves the VM and the broker running; `stop` ends both. Keep the `agent-session` window open while the coordinator runs: the broker belongs to it, and closing the window stops token refresh within the hour.
 
 ## Start
 1. In your own Terminal:
@@ -43,4 +43,4 @@ In `agent-session`:
 ```sh
 scripts/token-broker.sh status; sbx ls
 ```
-Expected: both Apps about an hour ahead; `januslin` running.
+Expected: both Apps about an hour ahead; `agent-vm` running.

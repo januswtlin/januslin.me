@@ -10,7 +10,7 @@
 # updated file, so the broker and this script always run reviewed code from main.
 # It then restarts the broker, mints both tokens in the foreground (stops here if
 # that fails), starts the background refresh, and hands the terminal to
-# `sbx run --name januslin`; if that fails, it stops the broker again. Leaving the
+# `sbx run --name agent-vm`; if that fails, it stops the broker again. Leaving the
 # session (/exit) leaves the VM and the broker running; `stop` ends both. The
 # broker belongs to this terminal: closing the agent-session window ends it.
 # --unlock-keychain is for the first start after a restart of the Mac; it asks
@@ -23,7 +23,7 @@ set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
 root=$(cd "$here/.." && pwd)
-SANDBOX=januslin
+SANDBOX=agent-vm
 KEYCHAIN="$HOME/Library/Keychains/sbx.keychain-db"
 
 usage() {

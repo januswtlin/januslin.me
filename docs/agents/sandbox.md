@@ -4,7 +4,7 @@ Last reviewed: 2026-10-31 · Decision: ADR-0013
 
 How local AI runs, for agents and reviewers. The author's procedures (creating the sandbox, starting it, changing its policy and secrets) are runbooks in `docs/runbooks/`, explained in `docs/admin-guide.md`.
 
-macOS (the author's Mac) → the standard macOS account `agent` (keys, token broker, `sbx`, no AI) → one Docker Sandbox microVM, `januslin` (Claude Code, the coordinator and its subagents, `pnpm verify`). `sbx` version and the open questions about it: `docs/infra-current-state.md`.
+macOS (the author's Mac) → the standard macOS account `agent` (keys, token broker, `sbx`, no AI) → one Docker Sandbox microVM, `agent-vm` (Claude Code, Codex, the coordinator and its subagents, `pnpm verify`). `sbx` version and the open questions about it: `docs/infra-current-state.md`.
 
 ## Layers
 
@@ -12,7 +12,7 @@ macOS (the author's Mac) → the standard macOS account `agent` (keys, token bro
 |---|---|---|---|
 | The author's macOS account | Own GitHub login, SSH keys, Keychain | The author's tools | Everything the author can |
 | macOS account `agent` (host) | The active App set's keys (`~/.config/januslin-agent/active/`, put there by the author, ADR-0015), `sbx` and its keychain secrets, the token broker | `sbx`, `scripts/sandbox-session.sh`, `scripts/token-broker.sh`, `git` for the host clone. **Never an AI tool.** | GitHub as the Apps (through the broker), Docker login |
-| Sandbox `januslin` (microVM, Linux) | A private clone of the repository; the one-hour tokens of both Apps in a read-only directory; never a key | Claude Code, the coordinator and subagents, `pnpm`, Playwright | Only the hosts on the allowlist below; credentials injected by the host proxy |
+| Sandbox `agent-vm` (microVM, Linux) | A private clone of the repository; the one-hour tokens of both Apps in a read-only directory; never a key | Claude Code, Codex, the coordinator and subagents, `pnpm`, Playwright | Only the hosts on the allowlist below; credentials injected by the host proxy |
 
 The sandbox never sees a `.pem`, the author's files, or the `agent` account's home outside its mounts. The host runs only reviewed code from `main` (the broker and the other host scripts are CODEOWNERS paths, `.github/CODEOWNERS`), never a branch the sandbox pushed.
 
@@ -28,7 +28,7 @@ The sandbox is created from the kit in this repository, `sandbox/kit/spec.yaml` 
 
 Mounts (read-only, writes refused even as root): the host clone at `/run/sandbox/source`, the token directory `sandbox-tokens/`, and `sandbox-config/` (non-secret configuration: `identity.json`, the active App set's name, owner, and each role's App ID, bot slug, and bot user ID, written by the broker).
 
-Clone mode gives the VM its own clone, with the host's `origin` (`https://github.com/januswtlin/januslin.me.git`), so branches are pushed to GitHub. The host clone has a `sandbox-januslin` remote served by a git daemon on `127.0.0.1`; the host never fetches it.
+Clone mode gives the VM its own clone, with the host's `origin` (`https://github.com/januswtlin/januslin.me.git`), so branches are pushed to GitHub. The host clone has a `sandbox-agent-vm` remote served by a git daemon on `127.0.0.1`; the host never fetches it.
 
 Docker also writes a generic agent guide into the VM (`/Users/Agent/CLAUDE.md`, loaded by Claude Code as a parent-directory `CLAUDE.md`). Its advice on GitHub tokens, `"**"` network rules, and `git add -A` conflicts with this project; `AGENTS.md` ("Identity") wins.
 
@@ -62,7 +62,7 @@ The App keys are never mounted. The agent inside the VM cannot run `sbx`; every 
 
 ## Egress allowlist
 
-Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. Only `januslin` exists, so global and scoped are the same in effect. Each host is limited to port 443 (or 80 for Ubuntu's mirror). `sbx policy ls januslin --wide` must show exactly this table.
+Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. The current sandbox is `agent-vm`; the global rules also apply during creation. Each host is limited to port 443 (or 80 for Ubuntu's mirror). `sbx policy ls agent-vm --wide` must show exactly this table.
 
 | Host | Rule | Why |
 |---|---|---|
@@ -99,15 +99,17 @@ The repository's `.claude/settings.json` denies the claude.ai connector tools (`
 
 ## Tests in the sandbox
 
-`pnpm verify`, Playwright, and visual snapshots run on Linux in the VM, the same platform as CI, so one set of baselines serves both. Dev servers started by agents bind inside the VM; a port is published to the host (`sbx ports januslin --publish <port>`) only when the author asks to see something.
+`pnpm verify`, Playwright, and visual snapshots run on Linux in the VM, the same platform as CI, so one set of baselines serves both. Dev servers started by agents bind inside the VM; a port is published to the host (`sbx ports agent-vm --publish <port>`) only when the author asks to see something.
 
 ## Checks
 
-The quarterly review (`docs/operations.md`) re-runs the canary (no key or host file outside the read-only mounts is readable from the VM) and compares `sbx policy ls januslin --wide` with the allowlist above.
+The quarterly review (`docs/operations.md`) re-runs the canary (no key or host file outside the read-only mounts is readable from the VM) and compares `sbx policy ls agent-vm --wide` with the allowlist above.
+
+Codex also runs in `agent-vm` (author confirmation, 2026-11-02). The launcher, routing, and verification work tracked by T06 remains separate from this naming correction.
 
 ## Planned changes
 
-- **Codex** (T06, [#56](https://github.com/januswtlin/januslin.me/issues/56)): the Codex CLI installed in this sandbox and saved as a template; its ChatGPT login through `sbx secret set openai --oauth`, kept on the host; `codex exec --sandbox workspace-write --approve-for-me` with automatic review, never full bypass; OpenAI hosts added to the allowlist. The issue holds the design and the fallback.
+- **Codex integration** (T06, [#56](https://github.com/januswtlin/januslin.me/issues/56)): remaining installation/recreation documentation and saved-template steps; its ChatGPT login through `sbx secret set openai --oauth`, kept on the host; `codex exec --sandbox workspace-write --approve-for-me` with automatic review, never full bypass; OpenAI hosts added to the allowlist. The issue holds the design and the fallback.
 - **Cloudflare ops token** (T14, [#60](https://github.com/januswtlin/januslin.me/issues/60); also T15, T17): while a Cloudflare task runs, the author lends a short-lived token that the proxy injects for `api.cloudflare.com` as `CLOUDFLARE_API_TOKEN`, with a temporary rule for that host (`docs/runbooks/lend-cloudflare-token.md`). V25 checks that wrangler works with the placeholder.
 - **Narrow implementer token** (decided trigger, T16, [#65](https://github.com/januswtlin/januslin.me/issues/65)): if a branch workflow can post a passing `ci` check on another PR's head commit, the broker mints the everyday token without `workflows`, and the author enables it per workflow task with `scripts/token-broker.sh workflows on|off`.
 - **`main` watch** (T04, [#55](https://github.com/januswtlin/januslin.me/issues/55)): `scripts/main-watch.sh` keeps its state in `~/.local/state/januslin-agent/main-watch.state` in the VM.
