@@ -9,6 +9,6 @@ Where: `agent-session`, and your browser for the ChatGPT sign-in · Time: about 
 
 ## Check
 ```sh
-sbx secret ls; sbx secret ls --sandbox januslin
+sbx secret ls; sbx secret ls --sandbox agent-vm
 ```
 Expected: `openai` with OAuth configured.

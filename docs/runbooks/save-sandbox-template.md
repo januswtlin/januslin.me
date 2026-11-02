@@ -3,8 +3,8 @@ Where: `agent-session` · Time: about 5 min, plus restarting the coordinator
 
 1. Only right after a reviewed install (the template captures the whole VM). This stops the coordinator:
    ```sh
-   sbx stop januslin
-   sbx template save januslin "januslin:codex-$(date +%F)"
+   sbx stop agent-vm
+   sbx template save agent-vm "agent-vm:codex-$(date +%F)"
    ```
 2. Never push the template to a registry.
 3. Start it again in `agent-session`, then Start steps 4 and 5 in `start-coordinator.md`:
@@ -16,4 +16,4 @@ Where: `agent-session` · Time: about 5 min, plus restarting the coordinator
 ```sh
 sbx template ls
 ```
-Expected: `januslin:codex-<today>`.
+Expected: `agent-vm:codex-<today>`.

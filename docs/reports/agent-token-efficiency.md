@@ -31,6 +31,6 @@ The revised shared startup is 16.1% smaller by words and 14.8% by characters tha
 
 ## Validation and limits
 
-Compare the shared rules verbatim with `6ed2586`, and compare the moved coordinator block after normalizing its heading, self-reference, and terminal blank lines. Inspect dispatch against the original workflow responsibilities, check changed local links, run the existing shell suite and whitespace check, and obtain a fresh independent review of the substantive revision. These verify the documentation change, not the effectiveness of future task executions.
+Compare the shared rules verbatim with `6ed2586`, and compare the moved coordinator block after normalizing its heading, self-reference, current sandbox name (`agent-vm`), and terminal blank lines. Inspect dispatch against the original workflow responsibilities, check changed local links, run the existing shell suite and whitespace check, and obtain a fresh independent review of the substantive revision. These verify the documentation change, not the effectiveness of future task executions.
 
 No matched end-to-end Sol/Opus trials are available. Claude's weekly quota blocked the earlier cross-tool attempt. Runtime effort remains unchanged. The model evaluation guide defines matched trials with complete usage and quality evidence; select a lower-effort setting only after those trials demonstrate a reduction without lost completion or review quality. A global minimum cannot be claimed from a documentation study.

@@ -1,6 +1,6 @@
 # Coordinator loop (ADR-0010)
 
-One long-running Claude Code session in the sandbox `januslin` coordinates the plan. The author starts it (`docs/admin-guide.md`, "Start the coordinator") with the prompt below, and afterwards approves tasks, merges PRs, closes human tasks, and answers `needs-human` items. The author can attach from the phone with Remote Control.
+One long-running Claude Code session in the sandbox `agent-vm` coordinates the plan. The author starts it (`docs/admin-guide.md`, "Start the coordinator") with the prompt below, and afterwards approves tasks, merges PRs, closes human tasks, and answers `needs-human` items. The author can attach from the phone with Remote Control.
 
 ```
 You are the Coordinator session for the januslin.me project, running in the local Docker Sandbox (ADR-0010, ADR-0013, ADR-0014). App keys are never here; tokens come from the host broker.
