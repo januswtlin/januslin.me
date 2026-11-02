@@ -9,7 +9,7 @@ Each dispatched session takes exactly one role. The role determines what it may 
 ### Coordinator (the author, assisted by a coordinator session)
 - Owns direction: ADRs, roadmap, task issues, priorities. The author decides (approves tasks with the `approved` label, orders the plan issue); the coordinator session proposes and writes.
 - The author merges every PR, closes human tasks, and resolves `needs-human` items. Only the author merges.
-- A coordinator session in the local sandbox dispatches tasks to implementer subagents and starts reviewer subagents, following "Coordinator loop" in `docs/agents/workflow.md` (ADR-0010). Each subagent takes exactly one role and acts through that role's App.
+- A coordinator session in the local sandbox dispatches tasks to implementer subagents and starts reviewer subagents, following `docs/agents/coordinator.md` (ADR-0010). Each subagent takes exactly one role and acts through that role's App.
 - Coordinator sessions write `docs/` (except `docs/reports/`) and issues (task and human-task issues, comments, assignments to the author), and never implement features. They never close task or human-task issues (only the author's closes count, ADR-0014).
 
 ### Site Engineer
