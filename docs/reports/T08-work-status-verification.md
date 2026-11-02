@@ -1,6 +1,6 @@
 # T08 work-status verification
 
-Task: [#54](https://github.com/januswtlin/januslin.me/issues/54). Date: 2026-11-01.
+Task: [#54](https://github.com/januswtlin/januslin.me/issues/54). Bootstrap evidence: 2026-11-01. Sandbox acceptance: 2026-11-02.
 
 ## Scope and test history
 
@@ -114,11 +114,104 @@ Representative fixture output:
 
 The script intentionally enumerates full issue/PR history for `author-activity`, including closed objects and comment-edit history. Request volume grows with object count, pages, and author comments. These request counts are not measurements of GraphQL point costs; a live rate-budget check is pending. No `updatedAt` shortcut was introduced without verifying whether it preserves all trusted activity.
 
-## Pending live acceptance and operating limits
+## Sandbox acceptance, 2026-11-02
 
-- Capture real App-authenticated `next` and `human` output, confirm preference against the plan, and record `check` exiting 3 for an unapproved task. The public REST snapshot of #54 was rechecked on 2026-11-01: `updated_at` remains `2026-10-31T09:18:48Z`, the issue is open, and its only label is `task`. Public REST evidence is not a substitute for exercising the script's GraphQL path.
-- The author explicitly authorized this preparation in their Mac account before moving it into the microVM. This session authorization does not alter runtime approval checks; an unapproved task still fails `check`.
-- The active implementer App channel, live output, PR publication, and the independent reviewer's App-posted verdict remain pending coordinator setup. The task and plan were initially fetched read-only through the connector before its account was identified as the author; connector use then stopped. No author credential was used for Git operations, runtime script calls, or GitHub writes. No key or live token was read by the implementer, and no GitHub write was performed.
-- V32 remains open until the first subsequent task PR merged by the author demonstrates that GitHub records database ID `2433928` as the issue's latest `ClosedEvent` actor. Fixtures establish the checking rule, not GitHub's live merge behavior.
-- GitHub reads span multiple requests. Re-run `check` immediately before dispatch, pass `lastEditedAt`, and retain the implementer's body-change stop. Missing edit history, deleted edits, unknown actors, API failures, and ambiguous dependency syntax stop dispatch rather than infer approval.
-- The coordinator must retain an overlapping inclusive activity cursor, deduplicate events/comments, and advance only after successful complete reads. Human-task assignment does not independently prove runbook/event blockers are resolved.
+Implementation head tested: `412f9bf` (saved code plus merge of `origin/main`
+`2ad410b`). Platform: Linux aarch64 in the existing `agent-vm` sandbox.
+The coordinator prompt moved into `docs/agents/coordinator.md` in #98; its
+step 2 and idle loop now use the script there, with a link from the workflow.
+No production script or fixture behavior changed during this continuation.
+
+- `sh tests/scripts/run.sh`: exit 0; all existing suites and all 53 work-status
+  checks pass under the sandbox's default `sh`. The earlier macOS failures above
+  are historical platform evidence, not current failures.
+- `sh -n scripts/work-status.sh tests/scripts/work-status/test.sh
+  tests/scripts/work-status/bin/gh` and `git diff --check origin/main...HEAD`:
+  exit 0. ShellCheck is unavailable in this VM; its prior result above was not
+  re-run or presented as fresh evidence.
+- All live calls use `scripts/agent-gh januslin-agent`; the active App is
+  `januswtlin-agent[bot]` (database ID `350971135`), not the machine account.
+  The author approved #54, #55, and #56. #54's body `lastEditedAt` remains
+  `2026-10-31T09:18:48Z`.
+- `scripts/work-status.sh next`: exit 0; task order is 54 through 69, matching
+  plan #53. #54/#56 are existing work, #55 waits for #54, and the remaining
+  tasks are unapproved. The final output is `{"next":null}`: resuming #54 is
+  correct; dispatching a duplicate or skipping to #55 would be wrong.
+- `scripts/work-status.sh human`: exit 0; 23 records, #70 and #92 assigned to
+  the author and the other 21 queued. See selected output below. The first
+  attempt failed closed because #70 referred to inaccessible PR #50. The
+  coordinator verified author-merged PR #52 and the runbook on `main`, and
+  corrected #70's reference to #52. This was an issue-data correction, not an
+  implementation fix or relaxation of the fail-closed rule.
+- `scripts/work-status.sh check 57`: exit 3; the genuinely unapproved task
+  reports `no label` and incomplete dependencies #55/#56. No label was changed
+  to manufacture this example.
+
+Live `next` output, projecting only `number`/`state` (the command also emits the
+JSON-encoded title/body and reasons):
+
+```json
+{"number":54,"state":"in-progress"}
+{"number":55,"state":"waiting"}
+{"number":56,"state":"in-progress"}
+{"number":57,"state":"unapproved"}
+{"number":58,"state":"unapproved"}
+{"number":59,"state":"unapproved"}
+{"number":60,"state":"unapproved"}
+{"number":61,"state":"unapproved"}
+{"number":62,"state":"unapproved"}
+{"number":63,"state":"unapproved"}
+{"number":64,"state":"unapproved"}
+{"number":65,"state":"unapproved"}
+{"number":66,"state":"unapproved"}
+{"number":67,"state":"unapproved"}
+{"number":68,"state":"unapproved"}
+{"number":69,"state":"unapproved"}
+{"next":null}
+```
+
+Selected live `human` output (other records are queued):
+
+```json
+{"number":70,"parent":55,"state":"assigned","title":"Delete the Slack app and its bot token","blockers":"PR #52 merged (adds the runbook)","openDependencies":[52]}
+{"number":71,"parent":55,"state":"queued","title":"Restart the coordinator on the new prompt and check phone notifications","blockers":"T04's PR merged","openDependencies":[]}
+{"number":72,"parent":56,"state":"queued","title":"Connect ChatGPT to GitHub as the machine account","blockers":"nothing","openDependencies":[]}
+{"number":73,"parent":56,"state":"queued","title":"Log in to Codex through sbx on the Mac","blockers":"#72","openDependencies":[72]}
+{"number":74,"parent":56,"state":"queued","title":"Save the sandbox as a template after the Codex install","blockers":"the reviewed Codex install (the agent's comment says when)","openDependencies":[]}
+{"number":75,"parent":56,"state":"queued","title":"Create the Codex cloud environment and run the probe from the phone","blockers":"#72; the runbook `docs/runbooks/codex-cloud.md`, which T06 adds in a small PR first (environment settings and the probe prompt)","openDependencies":[72]}
+{"number":92,"parent":null,"state":"assigned","title":"Adopt issue tracking: phone notifications, review PR #50, approve the tasks","blockers":"nothing","openDependencies":[]}
+```
+
+`openDependencies` applies the completed-issue rule to numeric references.
+It conservatively retains PR #52 because a merged PR is not an issue closed as
+`COMPLETED`. The coordinator verified that PR's author merge separately;
+assignment and this field alone do not prove a human task is actionable.
+No PR-completion policy was added to the task's dependency rules.
+
+Live refusal reasons from `check 57` (after its full JSON summary):
+
+```json
+{"number":57,"reason":"no label"}
+{"number":57,"reason":"dependency #55 is not completed by author"}
+{"number":57,"reason":"dependency #56 is not completed by author"}
+```
+
+PR: [#101](https://github.com/januswtlin/januslin.me/pull/101). Independent
+App-posted review is requested by the coordinator after final documentation.
+`pnpm verify`, the site preview, and `ci` do not exist yet; the script gate is the
+current required check. Earlier deliberate-break and schema validation evidence
+above is retained as dated bootstrap evidence and was not repeated needlessly.
+
+## Remaining operating limits
+
+- V32 remains open until a subsequent author-merged task PR demonstrates that
+  GitHub records database ID `2433928` as the issue's latest `ClosedEvent` actor.
+  Fixtures establish the checking rule, not GitHub's live merge behavior.
+- GitHub reads span multiple requests. Re-run `check` immediately before
+  dispatch, pass `lastEditedAt`, and retain the implementer's body-change stop.
+  Missing edit history, deleted edits, unknown actors, API failures, and ambiguous
+  dependency syntax stop dispatch rather than infer approval.
+- Keep an overlapping inclusive activity cursor, deduplicate events/comments,
+  and advance only after successful complete reads. `author-activity` enumerates
+  full history; the fixture request counts above are not a measured long-running
+  GitHub rate budget. No performance shortcut was introduced.
