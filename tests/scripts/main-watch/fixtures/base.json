@@ -1,0 +1,35 @@
+{
+  "status": "ahead",
+  "commits": [
+    {
+      "sha": "1111111111111111111111111111111111111111",
+      "parents": [
+        {
+          "sha": "422517b80a52ae51d849080ab01c5b6a60b22b91"
+        }
+      ]
+    }
+  ],
+  "pulls": {
+    "1111111111111111111111111111111111111111": [
+      1
+    ]
+  },
+  "details": {
+    "1": {
+      "number": 1,
+      "merged": true,
+      "merge_commit_sha": "1111111111111111111111111111111111111111",
+      "merged_by": {
+        "id": 2433928
+      },
+      "base": {
+        "ref": "main",
+        "repo": {
+          "full_name": "januswtlin/januslin.me"
+        }
+      },
+      "title": "hostile $(touch /tmp/main-watch-injected) `touch /tmp/main-watch-injected` \" title"
+    }
+  }
+}

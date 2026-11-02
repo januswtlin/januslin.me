@@ -177,6 +177,6 @@ Tasks without a dependency between them can run in parallel sessions where the p
 
 ## Planned changes
 
-- **T04 ([#55](https://github.com/januswtlin/januslin.me/issues/55)):** `scripts/main-watch.sh` checks every commit on `main` in step 1 and in the idle loop; a suspicious commit stops dispatch until the author clears it.
+- `scripts/main-watch.sh` verifies every commit on `main` before a coordinator updates its checkout and during idle waiting. Suspicious reports persist until the author explicitly accepts them; API/state errors stop dispatch. Commands, exit codes, initialization, and recovery: [coordinator procedure](coordinator.md#main-watcher-recovery).
 - **T06 ([#56](https://github.com/januswtlin/januslin.me/issues/56)):** Codex as a second implementer and reviewer in the sandbox (`scripts/codex-dispatch.sh`), with a cross-tool routing rule: Codex implements and Claude reviews, or the reverse; implementers move to Codex when Claude's quota runs low.
 - **T20 ([#69](https://github.com/januswtlin/januslin.me/issues/69)):** a PR-review scheduled task may stand in for the reviewer subagent; the authoring session still waits for its verdict.
