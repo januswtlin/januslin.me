@@ -8,7 +8,7 @@ Last reviewed: 2026-11-03
 
 Snapshot: 2026-11-03. Repository setup, agent identities, and the sandbox are in place; see [current infrastructure](infra-current-state.md) for the earlier setup history. The table summarizes every task in [plan #53](https://github.com/januswtlin/januslin.me/issues/53), with completed supporting work first, then the plan's execution order. Dependencies may allow parallel work; the plan and linked issues carry live status. Update this snapshot when tasks merge or the plan changes.
 
-**Now:** T06 has an open [implementation PR #105](https://github.com/januswtlin/januslin.me/pull/105). Further coordinator dispatch waits for [watcher initialization #104](https://github.com/januswtlin/januslin.me/issues/104) and resolution of [history verification #103](https://github.com/januswtlin/januslin.me/issues/103).
+**Now:** T06 has an open [implementation PR #105](https://github.com/januswtlin/januslin.me/pull/105). The latest agent reports say [watcher initialization #104](https://github.com/januswtlin/januslin.me/issues/104#issuecomment-6573048249) and [history acceptance #103](https://github.com/januswtlin/januslin.me/issues/103#issuecomment-6573048809) completed with a passing check; both issues remain open for the author to close.
 
 | Status | Task |
 |---|---|
