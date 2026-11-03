@@ -2,8 +2,8 @@
 # Start, stop, or restart the sandbox session in one command (docs/runbooks/start-coordinator.md).
 # Runs in the `agent` macOS account (agent-session), never inside the sandbox.
 #
-#   scripts/sandbox-session.sh start [--unlock-keychain]    update main, start the broker, sbx run
-#   scripts/sandbox-session.sh restart [--unlock-keychain]  update main, stop the VM, then start
+#   scripts/sandbox-session.sh start [--unlock-keychain] [--agent claude|codex]    update main, start the broker, sbx run
+#   scripts/sandbox-session.sh restart [--unlock-keychain] [--agent claude|codex]  update main, stop the VM, then start
 #   scripts/sandbox-session.sh stop                         stop the VM and the broker
 #
 # start: fast-forwards the host clone to origin/main and re-runs itself from the
@@ -14,7 +14,8 @@
 # session (/exit) leaves the VM and the broker running; `stop` ends both. The
 # broker belongs to this terminal: closing the agent-session window ends it.
 # --unlock-keychain is for the first start after a restart of the Mac; it asks
-# for the sbx keychain password.
+# for the sbx keychain password. --agent defaults to claude; codex is launched
+# with sbx exec in the same VM, with workspace-write and automatic review.
 #
 # Nothing runs this on a schedule: the broker refreshes tokens only while the
 # author has started a session (ADR-0009). Stopping it revokes nothing; the last
@@ -27,7 +28,7 @@ SANDBOX=agent-vm
 KEYCHAIN="$HOME/Library/Keychains/sbx.keychain-db"
 
 usage() {
-  echo "usage: $0 start [--unlock-keychain] | restart [--unlock-keychain] | stop" >&2
+  echo "usage: $0 start [--unlock-keychain] [--agent claude|codex] | restart [--unlock-keychain] [--agent claude|codex] | stop" >&2
   exit 2
 }
 
@@ -45,24 +46,52 @@ start_broker() {
   sh "$here/token-broker.sh" status
 }
 
-start() {
+parse_options() {
   unlock=0
-  for arg in "$@"; do
-    case "$arg" in
-      --unlock-keychain) unlock=1 ;;
+  agent=claude
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --unlock-keychain) unlock=1; shift ;;
+      --agent)
+        [ "$#" -ge 2 ] || {
+          echo "sandbox-session: warning: --agent requires a value (claude or codex)." >&2
+          usage
+        }
+        case "$2" in
+          claude|codex) agent=$2 ;;
+          *) echo "sandbox-session: warning: --agent must be claude or codex." >&2; usage ;;
+        esac
+        shift 2
+        ;;
       *) usage ;;
     esac
   done
+}
+
+launch_agent() {
+  case "$agent" in
+    claude) sbx run --name "$SANDBOX" ;;
+    # bash sources the VM environment first, then override the kit's Claude
+    # trailer default. This fixed command runs only inside the existing VM.
+    codex) sbx exec -it "$SANDBOX" bash -c 'export AGENT_TOOL=codex; exec codex --sandbox workspace-write --approve-for-me' ;;
+  esac
+}
+
+start() {
+  parse_options "$@"
   if [ -z "${SANDBOX_SESSION_UPDATED:-}" ]; then
     update_main
     SANDBOX_SESSION_UPDATED=1 exec sh "$here/sandbox-session.sh" start "$@"
   fi
   [ "$unlock" -eq 0 ] || security unlock-keychain "$KEYCHAIN"
   start_broker
-  echo "sandbox-session: keep the Mac awake from your own account (caffeinate -ims); then paste the coordinator prompt and type /remote-control."
-  sbx run --name "$SANDBOX" || {
+  echo "sandbox-session: keep the Mac awake from your own account (caffeinate -ims); then paste the coordinator prompt."
+  if [ "$agent" = claude ]; then
+    echo "sandbox-session: type /remote-control for phone access."
+  fi
+  launch_agent || {
     rc=$?
-    echo "sandbox-session: sbx run failed (exit $rc); stopping the broker; its current tokens expire within the hour." >&2
+    echo "sandbox-session: $agent launch failed (exit $rc); stopping the broker; its current tokens expire within the hour." >&2
     sh "$here/token-broker.sh" stop
     exit "$rc"
   }
@@ -79,9 +108,9 @@ main() {
   case "$cmd" in
     start) start "$@" ;;
     restart)
+      parse_options "$@"
       # Update first, so a failed fast-forward leaves the VM running.
       if [ -z "${SANDBOX_SESSION_UPDATED:-}" ]; then
-        for arg in "$@"; do [ "$arg" = --unlock-keychain ] || usage; done
         update_main
         SANDBOX_SESSION_UPDATED=1 exec sh "$here/sandbox-session.sh" restart "$@"
       fi
