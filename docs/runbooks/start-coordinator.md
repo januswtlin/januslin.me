@@ -1,7 +1,7 @@
 # Start, stop, or restart the coordinator
 Where: your own Terminal, then `agent-session` · Time: about 5 min
 
-`scripts/sandbox-session.sh` does the host part in one command: it fast-forwards the host clone to `main` and re-runs itself from there, restarts the token broker, mints both App tokens (and stops if that fails), then opens `sbx run --name agent-vm` (if that fails, it stops the broker again). Leaving the session with `/exit` leaves the VM and the broker running; `stop` ends both. Keep the `agent-session` window open while the coordinator runs: the broker belongs to it, and closing the window stops token refresh within the hour.
+`scripts/sandbox-session.sh` does the host part in one command: it fast-forwards the host clone to `main` and re-runs itself from there, restarts the token broker, mints both App tokens (and stops if that fails), then opens Claude Code by default with `sbx run --name agent-vm` (if the agent launch fails, it stops the broker again). Leaving the session with `/exit` leaves the VM and the broker running; `stop` ends both. Keep the `agent-session` window open while the coordinator runs: the broker belongs to it, and closing the window stops token refresh within the hour.
 
 ## Start
 1. In your own Terminal:
@@ -12,13 +12,21 @@ Where: your own Terminal, then `agent-session` · Time: about 5 min
    ```sh
    scripts/sandbox-session.sh start
    ```
-   It prints both tokens' expiry, about an hour ahead, then the session opens. The status line must say `auto mode on`.
+   To use Codex instead, pass `--agent codex`:
+   ```sh
+   scripts/sandbox-session.sh start --agent codex
+   ```
+   `--agent claude` explicitly selects the default. Both `start` and `restart` accept `--agent` together with `--unlock-keychain`, in either order. A missing value or any value other than `claude` or `codex` prints a warning and exits with status 2 before updating the host clone, stopping the VM, unlocking the keychain, or starting the broker.
+
+   Codex must already be installed and authenticated in `agent-vm` (T06). The script uses `sbx exec -it agent-vm` to launch it in the same VM with `--sandbox workspace-write --approve-for-me`; it sets `AGENT_TOOL=codex` for the launched process after loading the VM's shell environment. The current kit can reset that variable in child Bash shells, so Codex commits must explicitly include the required `Agent: codex` trailer. A stopped VM is started by `sbx exec`; a missing VM or Codex installation fails and stops the broker. This does not install tools or change credentials or network policy. See [Docker's exec reference](https://docs.docker.com/reference/cli/sbx/exec/).
+
+   It prints both tokens' expiry, about an hour ahead, then the session opens. For Claude, the status line must say `auto mode on`; for Codex, confirm workspace-write and automatic review.
 3. In a second Terminal, in your own account, keep the Mac awake (Ctrl-C when you stop):
    ```sh
    caffeinate -ims
    ```
 4. Paste the coordinator prompt from [`docs/agents/coordinator.md`](../agents/coordinator.md) verbatim.
-5. For the phone: type `/remote-control` and open the link.
+5. For the phone with Claude: type `/remote-control` and open the link.
 
 ## Stop
 1. Tell it to stop, then type `/exit`.
@@ -36,7 +44,8 @@ After a merge that changes the prompt or a host script, or after an `sbx` upgrad
    ```sh
    scripts/sandbox-session.sh restart
    ```
-3. Start steps 4 and 5.
+   To restart into Codex, use `scripts/sandbox-session.sh restart --agent codex`. Agent selection is per invocation; omitting it selects Claude again.
+3. Start steps 4 and 5 (step 5 is Claude only).
 
 ## Initialize a missing main watcher state
 Only when the coordinator reports missing state, including after VM re-creation. In the sandbox session, tell the coordinator: "I authorize main-watch init at the repository root, then a complete check of main." The coordinator runs the reviewed `scripts/main-watch.sh init` and `check`; it must report a verified history before dispatch resumes. Never authorize an alternate baseline or reset the state to suppress a suspicious report. An unexpected SHA needs separate explicit author review and acceptance.
