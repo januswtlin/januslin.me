@@ -4,6 +4,21 @@ One file per decision: `ADR-NNNN-<slug>.md`. Status: `proposed` · `accepted` ·
 
 These records start on 2026-10-29 with the move to a public repository.
 
+## Reading guide
+
+Use this topic summary to find the relevant rationale. For day-to-day work, follow the linked current guide; the chronological records below preserve alternatives, amendments, and their original statuses. This summary changes no decision or approval status.
+
+| Topic | Summary | Current guide | Decision history |
+|---|---|---|---|
+| Site and content | Static Astro with vendored Retypeset; posts organized by topics and tags; zh-TW at the root, English under `/en/`. | [Overview](../overview.md), [content model](../content-model.md) | [0001](ADR-0001-astro-and-retypeset.md), [0005](ADR-0005-i18n-urls.md), [0007](ADR-0007-information-architecture.md) |
+| Publishing and ownership | Public repository, Markdown and Git, one editor who merges, people write content. | [Authoring](../authoring-guide.md), [roles](../agents/roles.md) | [0004](ADR-0004-single-repo-no-cms.md), [0012](ADR-0012-public-repository.md), [0016](ADR-0016-one-editor-many-developers.md) |
+| Hosting and releases | Workers static assets; Actions builds and deploys; protected `main` and environment secrets. | [Deployment](../deployment.md) | [0002](ADR-0002-cloudflare-workers-static-assets.md), [0003](ADR-0003-github-actions-rulesets-environments.md) |
+| Search and AI access | Allow search, agent, and training access; publish Markdown alternates. | [SEO/AEO](../seo-aeo.md) | [0006](ADR-0006-ai-access-policy.md) |
+| Identities and isolation | Local AI stays in the sandbox; role Apps act locally, a machine account acts in the cloud; the author controls active key sets. | [Security](../security.md), [sandbox](../agents/sandbox.md), [admin guide](../admin-guide.md) | [0009](ADR-0009-agent-identity.md), [0013](ADR-0013-local-ai-in-docker-sandboxes.md), [0015](ADR-0015-app-key-sets.md), [0016](ADR-0016-one-editor-many-developers.md) |
+| Work and automation | Issues carry tasks and notifications; the local coordinator dispatches; verification and independent review precede author merges. | [Workflow](../agents/workflow.md), [coordinator](../agents/coordinator.md), [automation](../automation.md) | [0008](ADR-0008-event-driven-automation.md), [0010](ADR-0010-local-coordinator-and-verify.md), [0014](ADR-0014-github-issues-for-work-and-the-author.md), [0017](ADR-0017-task-context-and-token-efficiency.md) |
+
+## Chronological records
+
 Agents propose new ADRs in their PR when they make a decision a future agent would otherwise question. The author accepts or rejects them. Never rewrite an accepted ADR's decision; supersede it with a new one. Addenda that record what a task found (for example ADR-0002's Markdown negotiation result) are allowed when the ADR asks for them. References to removed components (the earlier chat-app notification channel, the earlier repository) were taken out of accepted ADRs on 2026-10-31 at the author's request; no decision changed.
 
 | ADR | Title | Status |

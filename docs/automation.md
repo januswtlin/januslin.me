@@ -55,7 +55,7 @@ Scheduled tasks can be triggered by GitHub pull request, issue, and release even
 
 | Workflow | On | Does |
 |---|---|---|
-| `english-versions.yml` | push to `main` touching `content/**`; weekly schedule | Deterministic, no agent: for each published zh-TW entry with no `index.en.md`, open an issue `english: <collection>/<slug>` labelled `translation-needed` (no duplicates, never reopens one the author closed); close it when the English version lands (`docs/i18n-and-translation.md`). |
+| `english-versions.yml` | push to `main` touching `content/**`; weekly schedule | Reconcile `translation-needed` issues deterministically, without an agent; matching, closure, and opt-out rules: [content model](content-model.md#missing-english-versions-t19). |
 | `monthly-maintenance.yml` | schedule, 1st of the month | Open a "Monthly maintenance" issue with the checklist from `docs/operations.md`, including the Retypeset upstream watch, label `maintenance`; and open a `human-task` issue assigned to the author for each calendar item due within 35 days. Takes over from the coordinator. |
 
 ### Claude Code cloud scheduled tasks (T20, [#69](https://github.com/januswtlin/januslin.me/issues/69))

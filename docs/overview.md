@@ -2,36 +2,7 @@
 
 Last reviewed: 2026-11-03
 
-**What exists today:** the repository, its rules and settings, the agent identities, and the local AI sandbox with its coordinator (`docs/infra-current-state.md`). The site, the Worker, CI/CD, and the automation described below are the **target architecture**, built by the tasks in the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53); the old site still serves `januslin.me` until cutover (T17).
-
-## Progress
-
-Snapshot: 2026-11-03. Repository setup, agent identities, and the sandbox are in place; see [current infrastructure](infra-current-state.md) for the earlier setup history. The table summarizes every task in [plan #53](https://github.com/januswtlin/januslin.me/issues/53), with completed supporting work first, then the plan's execution order. Dependencies may allow parallel work; the plan and linked issues carry live status. Update this snapshot when tasks merge or the plan changes.
-
-**Now:** T06 has an open [implementation PR #105](https://github.com/januswtlin/januslin.me/pull/105). The latest agent reports say [watcher initialization #104](https://github.com/januswtlin/januslin.me/issues/104#issuecomment-6573048249) and [history acceptance #103](https://github.com/januswtlin/januslin.me/issues/103#issuecomment-6573048809) completed with a passing check; both issues remain open for the author to close.
-
-| Status | Task |
-|---|---|
-| Done | [#99](https://github.com/januswtlin/januslin.me/issues/99): Correct the sandbox name to `agent-vm`. |
-| Done | [#97](https://github.com/januswtlin/januslin.me/issues/97): Streamline agent guidance and document model evaluation. |
-| Done | [T08 · #54](https://github.com/januswtlin/januslin.me/issues/54): Read trusted task status and the author's queue from GitHub issues. |
-| Done | [T04 · #55](https://github.com/januswtlin/januslin.me/issues/55): Verify every commit on `main` with a persistent watcher. |
-| In progress | [T06 · #56](https://github.com/januswtlin/januslin.me/issues/56): Add Codex to sandbox and cloud workflows. |
-| Planned | [T07 · #57](https://github.com/januswtlin/januslin.me/issues/57): Bootstrap Node, pnpm, and the verification gate. |
-| Planned | [T09 · #58](https://github.com/januswtlin/januslin.me/issues/58): Vendor Retypeset and upgrade it to Astro 7. |
-| Planned | [T10 · #59](https://github.com/januswtlin/januslin.me/issues/59): Build content collections, schemas, and validation. |
-| Planned | [T14 · #60](https://github.com/januswtlin/januslin.me/issues/60): Add the Worker, Cloudflare configuration, and response headers. |
-| Planned | [T11 · #61](https://github.com/januswtlin/januslin.me/issues/61): Build routes, topic hubs, tags, and bilingual navigation. |
-| Planned | [T15 · #62](https://github.com/januswtlin/januslin.me/issues/62): Protect preview URLs with Cloudflare Access. |
-| Planned | [T12 · #63](https://github.com/januswtlin/januslin.me/issues/63): Add image processing, rich content, and search. |
-| Planned | [T13 · #64](https://github.com/januswtlin/januslin.me/issues/64): Generate search and AI discovery outputs. |
-| Planned | [T16 · #65](https://github.com/januswtlin/januslin.me/issues/65): Add CI, protected previews, and production deployment. |
-| Planned | [T17 · #66](https://github.com/januswtlin/januslin.me/issues/66): Cut over from the old site and go live. |
-| Planned | [T18 · #67](https://github.com/januswtlin/januslin.me/issues/67): Run an independent post-launch audit. |
-| Planned | [T19 · #68](https://github.com/januswtlin/januslin.me/issues/68): Add Renovate, maintenance tooling, and missing-English checks. |
-| Planned | [T20 · #69](https://github.com/januswtlin/januslin.me/issues/69): Configure scheduled agent tasks and their prompts. |
-
-Later ideas beyond this plan live in the [roadmap](roadmap.md).
+Implementation status, completed work, and upcoming tasks: [Roadmap → Progress](roadmap.md#progress). The architecture below is the target; the roadmap distinguishes what exists today.
 
 ## Purpose
 
@@ -45,7 +16,7 @@ The site should read like a well-typeset book: typography-first, calm, fast, and
 2. **Write anywhere.** Laptop (iA Writer, Obsidian) and, when needed, mobile (iA Writer and Working Copy on iOS). Plain Markdown and Git on every device; no CMS (ADR-0004).
 3. **Preview before release.** Every PR gets a protected preview URL; the author's merge to `main` is the release.
 4. **Readable by humans and machines.** Static HTML, structured data, sitemap, RSS, a Markdown version of every published page, and a permissive AI access policy (ADR-0006).
-5. **Bilingual.** `zh-TW` first; `en` versions written by each entry's writer. A deterministic check opens an issue for each missing English version (`docs/i18n-and-translation.md`).
+5. **Bilingual.** `zh-TW` first; `en` versions written by each entry's writer. A deterministic check opens an issue for each missing English version ([content model](content-model.md#localization-and-english-versions)).
 6. **Near-zero cost.** Free tiers only.
 
 ## Non-goals (for now)
@@ -99,29 +70,13 @@ Key property: **all writes go to GitHub, never to Cloudflare**, and only the aut
 
 ## Components
 
-### Astro site (`src/`, `content/`)
-- Astro 7, `output: 'static'`, no SSR adapter.
-- Theme: Retypeset, vendored at upstream `a636b6d` and kept to its original design (fonts including Snell Roundhand, UI sound effects, styles). UnoCSS. ADR-0001.
-- Content collections load from `content/` with the glob loader (`docs/content-model.md`).
-- Markdown: the unified (remark/rehype) pipeline through `@astrojs/markdown-remark`, because KaTeX, Mermaid, and the theme's directive plugins are unified-only. Mermaid renders to inline SVG at build time with headless Chromium, so every environment that runs `pnpm build` needs `pnpm exec playwright install chromium` (ADR-0001).
-- Tests (`pnpm test`): Vitest unit tests, shell script tests, checks over the built `dist/`, and Playwright tests against a local static server (page loads, cross-origin requests, accessibility, visual snapshots).
-- Build outputs besides HTML: per-page `index.md`, `sitemap-index.xml`, per-locale RSS, `robots.txt`, `llms.txt`, Pagefind index, OG images (`docs/seo-aeo.md`).
-
-### Worker (`worker/`, `wrangler.jsonc`)
-- Name `januslin-me`. Serves `dist/` as static assets.
-- The script exists only for what static assets cannot do: Markdown content negotiation and per-page `Link` headers. Security headers and redirects use `public/_headers` and `public/_redirects`.
-- **Keep `run_worker_first` narrow.** Only article and page HTML paths invoke the script; `/_astro/*`, `/fonts/*`, images, and feeds never do. ADR-0002.
-
-### CI/CD (`.github/workflows/`)
-- `ci.yml` on every PR and on push to `main`: install, check, lint, validate, build, test, secret scan; uploads the built site. No secrets. On `main`, a `deploy` job in the `production` environment deploys the artifact, smoke-tests it, and rolls back on failure.
-- `preview.yml` (`workflow_run` after `ci` on a PR): uploads the PR's built site as a preview version with `main`'s Worker and config, in the `preview` environment, and comments the URL.
-- The Cloudflare token is an environment secret that only `main` can use. A `main` ruleset lets only the author merge and blocks direct and force pushes. ADR-0003, `docs/deployment.md`.
-
-### Automation
-Renovate and GitHub Actions detect work; scheduled agent tasks perform it; the author merges. `docs/automation.md`, ADR-0008.
-
-### Cloudflare zone configuration (outside the repo)
-Access applications, AI Crawl Control, the `www` redirect rule, Web Analytics, and Crawler Hints cannot live in `wrangler.jsonc`. The Platform Engineer manages them through the Cloudflare API with a short-lived token from the author and records the desired and current state in `docs/infra-current-state.md`; any change updates that file in the same PR.
+| Component | Responsibility and detailed specification |
+|---|---|
+| Astro site (`src/`, `content/`) | Static Astro 7; vendored Retypeset, original design and UnoCSS; unified Markdown pipeline. Mermaid renders at build time using Chromium ([ADR-0001](decisions/ADR-0001-astro-and-retypeset.md)). Collections, URLs, images, rich content, and locales: [content model](content-model.md). |
+| Worker (`worker/`, `wrangler.jsonc`) | `januslin-me` serves static assets with Markdown negotiation and `Link` headers. Keep `run_worker_first` limited to HTML entry paths; assets skip script invocations. Configuration, headers, previews, and CI/CD: [deployment](deployment.md). |
+| Discovery outputs | Static metadata, Markdown alternates, sitemap, feeds, robots.txt, llms.txt, and search: [SEO/AEO checklist](seo-aeo.md). Features live outside theme code so replacing the theme preserves them. |
+| Automation | Renovate and Actions detect work; scheduled agents act; the author merges. Triggers and ownership: [automation](automation.md). |
+| Cloudflare zone | Access, AI Crawl Control, redirects, Web Analytics, and Crawler Hints live outside `wrangler.jsonc`. The Platform Engineer records changes in [infrastructure state](infra-current-state.md). |
 
 ## Request flows
 
@@ -152,5 +107,5 @@ Entries with `draft: true` are committed and therefore public in the repository;
 - Technology and process choices: [`docs/decisions/`](decisions/README.md) (ADRs).
 - Work to do now: the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53) and its task and human-task sub-issues (ADR-0014).
 - Steps for the author: [`docs/admin-guide.md`](admin-guide.md).
-- Ideas and future work: [`docs/roadmap.md`](roadmap.md).
+- Progress, task/PR links, and future ideas: [roadmap](roadmap.md).
 - Writing and publishing: [`docs/authoring-guide.md`](authoring-guide.md).
