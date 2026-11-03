@@ -25,9 +25,27 @@ echo "$name $*" >> "$FAKE_LOG"
 if [ "$name ${1:-}" = "git merge" ] && [ -n "${FAKE_REWRITE:-}" ]; then
   printf '#!/bin/sh\necho "updated-script $*" >> "$FAKE_LOG"\n' > "$FAKE_REWRITE"
 fi
+# Exercise the VM command with a fake Codex parser when requested.
+if [ "$name ${1:-}" = "sbx exec" ] && [ "${FAKE_EXEC_CODEX:-}" = 1 ]; then
+  shift 3 # exec -it agent-vm
+  exec "$@"
+fi
 exit 0
 EOF
 for c in git sbx security; do cp "$tmp/fake" "$tmp/fakebin/$c"; chmod +x "$tmp/fakebin/$c"; done
+cat > "$tmp/fakebin/codex" <<'EOF'
+#!/bin/sh
+# --approve-for-me supplies workspace-write and conflicts with --sandbox.
+for arg do
+  case "$arg" in
+    --sandbox|-s|--dangerously-bypass-approvals-and-sandbox|--yolo)
+      echo "codex: conflicting permission flag: $arg" >&2; exit 2 ;;
+  esac
+done
+[ "$#" -eq 1 ] && [ "$1" = --approve-for-me ] && [ "$AGENT_TOOL" = codex ] || exit 2
+echo 'codex: automatic review with workspace-write' >> "$FAKE_LOG"
+EOF
+chmod +x "$tmp/fakebin/codex"
 cp "$tmp/fake" "$tmp/clone/scripts/token-broker.sh"
 export PATH="$tmp/fakebin:$PATH"
 
@@ -97,8 +115,12 @@ FAKE_FAIL="sbx stop" run restart; rc=$?
 check "restart: starts even when the VM was not running" $?
 
 # ---- agent selection --------------------------------------------------------
-codex_call='sbx exec -it agent-vm bash -c export AGENT_TOOL=codex; exec codex --sandbox workspace-write --approve-for-me'
+codex_call='sbx exec -it agent-vm bash -c export AGENT_TOOL=codex; exec codex --approve-for-me'
 for cmd in start restart; do
+  FAKE_EXEC_CODEX=1 run "$cmd" --agent codex; rc=$?
+  [ "$rc" -eq 0 ] && grep -Fxq 'codex: automatic review with workspace-write' "$FAKE_LOG"
+  check "$cmd --agent codex: executes automatic review without conflicting sandbox flags" $?
+
   run "$cmd" --agent claude; rc=$?
   [ "$rc" -eq 0 ] && grep -qx 'sbx run --name agent-vm' "$FAKE_LOG"
   check "$cmd --agent claude: uses the existing Claude entrypoint" $?
