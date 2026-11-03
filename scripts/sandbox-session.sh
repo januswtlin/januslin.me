@@ -73,7 +73,8 @@ launch_agent() {
     claude) sbx run --name "$SANDBOX" ;;
     # bash sources the VM environment first, then override the kit's Claude
     # trailer default. This fixed command runs only inside the existing VM.
-    codex) sbx exec -it "$SANDBOX" bash -c 'export AGENT_TOOL=codex; exec codex --sandbox workspace-write --approve-for-me' ;;
+    # --approve-for-me selects workspace-write and conflicts with --sandbox.
+    codex) sbx exec -it "$SANDBOX" bash -c 'export AGENT_TOOL=codex; exec codex --approve-for-me' ;;
   esac
 }
 
