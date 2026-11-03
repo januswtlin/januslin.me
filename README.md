@@ -18,7 +18,11 @@ Start here:
 
 ## For the author
 
-Everything done by hand, from starting the coordinator to answering a human task: [`docs/admin-guide.md`](docs/admin-guide.md). Work in progress: the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53) and the issues assigned to you.
+Returning after a break:
+
+- **Catch up:** [Progress](docs/overview.md#progress) summarizes completed, current, and planned tasks; [plan #53](https://github.com/januswtlin/januslin.me/issues/53) has the live execution order.
+- **Resume coordination:** [Start the coordinator](docs/admin-guide.md#start-the-coordinator) explains the sandbox session; the [runbook](docs/runbooks/start-coordinator.md) covers starting, stopping, and restarting it, and the [coordinator procedure](docs/agents/coordinator.md) contains its prompt and loop.
+- **Your part:** approve tasks, merge reviewed PRs, and complete assigned human tasks. Follow [your queue](docs/admin-guide.md#your-queue) for the details and [after a Mac restart](docs/admin-guide.md#after-a-restart-of-the-mac) to restore the setup.
 
 ## Contributing
 

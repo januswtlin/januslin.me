@@ -1,8 +1,37 @@
 # Overview and architecture
 
-Last reviewed: 2026-10-31
+Last reviewed: 2026-11-03
 
 **What exists today:** the repository, its rules and settings, the agent identities, and the local AI sandbox with its coordinator (`docs/infra-current-state.md`). The site, the Worker, CI/CD, and the automation described below are the **target architecture**, built by the tasks in the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53); the old site still serves `januslin.me` until cutover (T17).
+
+## Progress
+
+Snapshot: 2026-11-03. Repository setup, agent identities, and the sandbox are in place; see [current infrastructure](infra-current-state.md) for the earlier setup history. The table summarizes every task in [plan #53](https://github.com/januswtlin/januslin.me/issues/53), with completed supporting work first, then the plan's execution order. Dependencies may allow parallel work; the plan and linked issues carry live status. Update this snapshot when tasks merge or the plan changes.
+
+**Now:** T06 has an open [implementation PR #105](https://github.com/januswtlin/januslin.me/pull/105). Further coordinator dispatch waits for [watcher initialization #104](https://github.com/januswtlin/januslin.me/issues/104) and resolution of [history verification #103](https://github.com/januswtlin/januslin.me/issues/103).
+
+| Status | Task |
+|---|---|
+| Done | [#99](https://github.com/januswtlin/januslin.me/issues/99): Correct the sandbox name to `agent-vm`. |
+| Done | [#97](https://github.com/januswtlin/januslin.me/issues/97): Streamline agent guidance and document model evaluation. |
+| Done | [T08 · #54](https://github.com/januswtlin/januslin.me/issues/54): Read trusted task status and the author's queue from GitHub issues. |
+| Done | [T04 · #55](https://github.com/januswtlin/januslin.me/issues/55): Verify every commit on `main` with a persistent watcher. |
+| In progress | [T06 · #56](https://github.com/januswtlin/januslin.me/issues/56): Add Codex to sandbox and cloud workflows. |
+| Planned | [T07 · #57](https://github.com/januswtlin/januslin.me/issues/57): Bootstrap Node, pnpm, and the verification gate. |
+| Planned | [T09 · #58](https://github.com/januswtlin/januslin.me/issues/58): Vendor Retypeset and upgrade it to Astro 7. |
+| Planned | [T10 · #59](https://github.com/januswtlin/januslin.me/issues/59): Build content collections, schemas, and validation. |
+| Planned | [T14 · #60](https://github.com/januswtlin/januslin.me/issues/60): Add the Worker, Cloudflare configuration, and response headers. |
+| Planned | [T11 · #61](https://github.com/januswtlin/januslin.me/issues/61): Build routes, topic hubs, tags, and bilingual navigation. |
+| Planned | [T15 · #62](https://github.com/januswtlin/januslin.me/issues/62): Protect preview URLs with Cloudflare Access. |
+| Planned | [T12 · #63](https://github.com/januswtlin/januslin.me/issues/63): Add image processing, rich content, and search. |
+| Planned | [T13 · #64](https://github.com/januswtlin/januslin.me/issues/64): Generate search and AI discovery outputs. |
+| Planned | [T16 · #65](https://github.com/januswtlin/januslin.me/issues/65): Add CI, protected previews, and production deployment. |
+| Planned | [T17 · #66](https://github.com/januswtlin/januslin.me/issues/66): Cut over from the old site and go live. |
+| Planned | [T18 · #67](https://github.com/januswtlin/januslin.me/issues/67): Run an independent post-launch audit. |
+| Planned | [T19 · #68](https://github.com/januswtlin/januslin.me/issues/68): Add Renovate, maintenance tooling, and missing-English checks. |
+| Planned | [T20 · #69](https://github.com/januswtlin/januslin.me/issues/69): Configure scheduled agent tasks and their prompts. |
+
+Later ideas beyond this plan live in the [roadmap](roadmap.md).
 
 ## Purpose
 
