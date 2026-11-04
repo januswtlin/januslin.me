@@ -25,9 +25,27 @@ echo "$name $*" >> "$FAKE_LOG"
 if [ "$name ${1:-}" = "git merge" ] && [ -n "${FAKE_REWRITE:-}" ]; then
   printf '#!/bin/sh\necho "updated-script $*" >> "$FAKE_LOG"\n' > "$FAKE_REWRITE"
 fi
+# Exercise the VM command with a fake Codex parser when requested.
+if [ "$name ${1:-}" = "sbx exec" ] && [ "${FAKE_EXEC_CODEX:-}" = 1 ]; then
+  shift 3 # exec -it agent-vm
+  exec "$@"
+fi
 exit 0
 EOF
 for c in git sbx security; do cp "$tmp/fake" "$tmp/fakebin/$c"; chmod +x "$tmp/fakebin/$c"; done
+cat > "$tmp/fakebin/codex" <<'EOF'
+#!/bin/sh
+# --approve-for-me supplies workspace-write and conflicts with --sandbox.
+for arg do
+  case "$arg" in
+    --sandbox|-s|--dangerously-bypass-approvals-and-sandbox|--yolo)
+      echo "codex: conflicting permission flag: $arg" >&2; exit 2 ;;
+  esac
+done
+[ "$#" -eq 1 ] && [ "$1" = --approve-for-me ] && [ "$AGENT_TOOL" = codex ] || exit 2
+echo 'codex: automatic review with workspace-write' >> "$FAKE_LOG"
+EOF
+chmod +x "$tmp/fakebin/codex"
 cp "$tmp/fake" "$tmp/clone/scripts/token-broker.sh"
 export PATH="$tmp/fakebin:$PATH"
 
@@ -35,7 +53,7 @@ fails=0
 pass() { echo "ok   - $1"; }
 fail() { echo "FAIL - $1"; fails=$((fails + 1)); }
 check() { if [ "$2" = 0 ]; then pass "$1"; else fail "$1"; fi; }
-run() { : > "$FAKE_LOG"; (unset SANDBOX_SESSION_UPDATED; sh "$script" "$@") >/dev/null 2>&1; }
+run() { : > "$FAKE_LOG"; (unset SANDBOX_SESSION_UPDATED; sh "$script" "$@") >"$tmp/output" 2>&1; }
 log() { tr '\n' '|' < "$FAKE_LOG"; }
 
 start_calls="git checkout -q main|git fetch -q origin|git merge -q --ff-only origin/main|token-broker stop|token-broker once|token-broker start|token-broker status|sbx run --name agent-vm|"
@@ -95,6 +113,62 @@ check "restart --unlock-keychain: passes the option to start" $?
 FAKE_FAIL="sbx stop" run restart; rc=$?
 [ $rc -eq 0 ] && grep -q '^sbx run' "$FAKE_LOG"
 check "restart: starts even when the VM was not running" $?
+
+# ---- agent selection --------------------------------------------------------
+codex_call='sbx exec -it agent-vm bash -c export AGENT_TOOL=codex; exec codex --approve-for-me'
+for cmd in start restart; do
+  FAKE_EXEC_CODEX=1 run "$cmd" --agent codex; rc=$?
+  [ "$rc" -eq 0 ] && grep -Fxq 'codex: automatic review with workspace-write' "$FAKE_LOG"
+  check "$cmd --agent codex: executes automatic review without conflicting sandbox flags" $?
+
+  run "$cmd" --agent claude; rc=$?
+  [ "$rc" -eq 0 ] && grep -qx 'sbx run --name agent-vm' "$FAKE_LOG"
+  check "$cmd --agent claude: uses the existing Claude entrypoint" $?
+
+  for order in before after; do
+    if [ "$order" = before ]; then
+      run "$cmd" --unlock-keychain --agent codex
+    else
+      run "$cmd" --agent codex --unlock-keychain
+    fi
+    rc=$?
+    [ "$rc" -eq 0 ] && grep -Fxq "$codex_call" "$FAKE_LOG" \
+      && grep -q '^security unlock-keychain' "$FAKE_LOG" \
+      && ! grep -q '^sbx run' "$FAKE_LOG" \
+      && ! grep -q '/remote-control' "$tmp/output"
+    check "$cmd --agent codex: launches in the same VM with safe permissions (unlock $order)" $?
+  done
+
+  for invalid in gemini Claude '' '--unlock-keychain' 'codex; touch /tmp/invalid-agent'; do
+    run "$cmd" --agent "$invalid"; rc=$?
+    [ "$rc" -eq 2 ] && [ ! -s "$FAKE_LOG" ] \
+      && grep -q 'warning: --agent must be claude or codex' "$tmp/output"
+    check "$cmd: rejects invalid agent '$invalid' before any side effects" $?
+  done
+  run "$cmd" --agent; rc=$?
+  [ "$rc" -eq 2 ] && [ ! -s "$FAKE_LOG" ] \
+    && grep -q 'warning: --agent requires a value' "$tmp/output"
+  check "$cmd: warns and stops when --agent has no value" $?
+
+  # Even the internal re-exec path must validate before stopping the VM.
+  : > "$FAKE_LOG"
+  SANDBOX_SESSION_UPDATED=1 sh "$script" "$cmd" --agent invalid >"$tmp/output" 2>&1; rc=$?
+  [ "$rc" -eq 2 ] && [ ! -s "$FAKE_LOG" ]
+  check "$cmd: validates agent even after re-exec" $?
+done
+
+FAKE_FAIL='sbx exec' run start --agent codex; rc=$?
+[ "$rc" -ne 0 ] && [ "$(tail -n 1 "$FAKE_LOG")" = 'token-broker stop' ]
+check "codex: stops broker and returns failure when sandbox exec fails" $?
+
+FAKE_REWRITE="$script" run restart --agent codex --unlock-keychain; rc=$?
+[ "$rc" -eq 0 ] && [ "$(log)" = "${update}updated-script restart --agent codex --unlock-keychain|" ]
+check "restart: preserves agent and unlock options when re-executing reviewed main" $?
+cp "$root/scripts/sandbox-session.sh" "$script"
+
+run stop --agent codex; rc=$?
+[ "$rc" -eq 2 ] && [ ! -s "$FAKE_LOG" ]
+check "stop: rejects agent options" $?
 
 # ---- stop -------------------------------------------------------------------
 run stop; rc=$?

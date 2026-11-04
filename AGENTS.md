@@ -23,14 +23,14 @@ Two hard constraints shape every decision:
 | A dispatched task | your task issue and the plan issue [#53](https://github.com/januswtlin/januslin.me/issues/53); "Work items" in `docs/agents/workflow.md` |
 | Content schema, topics, tags, images, URLs | `docs/content-model.md` |
 | Scheduled agents, Renovate, event triggers | `docs/automation.md` |
-| Locales, URLs, translation | `docs/i18n-and-translation.md` |
+| Locales, URLs, translation | `docs/content-model.md` ("Localization and English versions") |
 | SEO, AI crawlers, machine-readable outputs | `docs/seo-aeo.md` |
 | CI/CD, Cloudflare, previews, rollback | `docs/deployment.md`, `docs/infra-current-state.md` |
 | Security, identities, tokens, the sandbox | `docs/security.md`, `docs/agents/sandbox.md` |
 | Runbooks and recurring maintenance | `docs/operations.md` |
 | Steps only the author can do | `human-task` issues (format in `docs/agents/workflow.md`); their commands are runbooks in `docs/runbooks/`; the author's overview is `docs/admin-guide.md` |
 | Why something is the way it is | `docs/decisions/` (decision records) |
-| Future ideas | `docs/roadmap.md` |
+| Progress, task/PR links, future ideas | `docs/roadmap.md` |
 
 ## Architecture
 
