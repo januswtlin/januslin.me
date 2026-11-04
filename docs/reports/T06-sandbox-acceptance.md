@@ -25,6 +25,26 @@ save/#74 moved to #112; #73 is no longer needed. The designated follow-up machin
 account is `isweichen`, restricted to this repository. Its connection is not
 proved by this local run. Only the author closes tasks or merges PRs.
 
+## OpenAI egress inventory gap
+
+Working in-VM Codex login/inference requires OpenAI destinations permitted by
+the live policy. Those hosts and their rule scope are not yet listed in the
+sandbox allowlist. V19/V22/V28 explicitly retain this inventory gap alongside
+the recorded authentication decision. The coordinator requests the author's
+`sbx policy ls agent-vm --wide` output through a human task using the existing
+read-only Check in `allow-sandbox-host.md`. No host rows were guessed or policy
+changes performed; successful inference alone does not identify the rules.
+
+## Login recovery command verification (round two)
+
+`codex login --help` lists `--device-auth` in 0.166.0. Official authentication
+guidance recommends it for a headless environment; completing device-code login
+here remains untested. The implementer ran only the read-only
+`codex login status`: exit 0, `Logged in using ChatGPT`, no email or token in that
+output. No login or authentication-file read was performed. The revised runbook
+uses the established host `agent-session` then `sbx exec -it agent-vm bash -l`
+route; this author-only entry route was inspected, not executed by the agent.
+
 ## V8: measured defaults and their limits
 
 `codex --version` returned `codex-cli 0.166.0`. Non-model local checks:

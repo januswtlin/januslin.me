@@ -1,7 +1,11 @@
 # ADR-0018: Codex login inside the VM and active role identities
-- Status: accepted by the author's 2026-11-04 spec amendment; acceptance evidence awaits the author's verification
+- Status: proposed
 - Date: 2026-11-04
 - Deciders: Janus (author)
+
+The author approved in-VM Codex login in the verified 2026-11-04 spec comment.
+This proposed record documents that approval; acceptance of the record and the
+remaining T06 evidence still awaits the author's verification.
 
 ## Context
 ADR-0009 and ADR-0013 planned host-managed OpenAI OAuth through `sbx` so the VM
@@ -25,7 +29,7 @@ GitHub uses the existing mounted one-hour token-file fallback through
 header replacement would collapse the reviewer into the implementer identity.
 The role aliases stay `januslin-agent` and `januslin-reviewer`; their current
 bots come from the read-only `sandbox-config/identity.json` (ADR-0015).
-The checked `isweichen` set names implementer `isweichen-agent[bot]` (352218417)
+As of 2026-11-04, the checked `isweichen` set names implementer `isweichen-agent[bot]` (352218417)
 and reviewer `isweichen-reviewer[bot]` (352219106). The author designates
 `isweichen` as the machine account for the ChatGPT/cloud connection, limited to
 this repository. That connection is follow-up #112, not a claim of tested access.
@@ -51,8 +55,14 @@ the one-hour GitHub token lifetime does not limit a stolen subscription login.
 The author accepts this risk in approving in-VM login. Never read, print, copy,
 commit, or publish authentication files; inspect only non-secret status/config.
 
-The host still runs no AI and exposes no App keys. Egress remains allowlisted;
-no network policy or credential setting changes in this PR. Project defaults
+The host still runs no AI and exposes no App keys. In-VM Codex login/inference
+depend on OpenAI egress permitted by the live policy, but those destinations and
+their rule scope are not yet recorded in the allowlist. This is an open inventory
+gap in V19/V22/V28. The coordinator requests the author's read-only
+`sbx policy ls agent-vm --wide` output through a human task; add rows only from
+that output. Until then, the OpenAI rules cannot be compared with the documented
+baseline. Allowed destinations remain possible exfiltration channels.
+No network policy or credential setting changes in this PR. Project defaults
 and automatic review reduce accidental actions, but are not enforced personal-
 account policy against VM root. Identity is checked from API actors, separately
 from the configured commit author; do not change global git identity to hide it.

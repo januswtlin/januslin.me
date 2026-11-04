@@ -63,7 +63,15 @@ The App keys are never mounted. The agent inside the VM cannot run `sbx`; every 
 
 ## Egress allowlist
 
-Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. The current sandbox is `agent-vm`; the global rules also apply during creation. Each host is limited to port 443 (or 80 for Ubuntu's mirror). `sbx policy ls agent-vm --wide` must show exactly this table.
+Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. The current sandbox is `agent-vm`; the global rules also apply during creation. Each host is limited to port 443 (or 80 for Ubuntu's mirror). The table below is the recorded baseline, with an open Codex egress inventory gap:
+in-VM Codex login/inference work, so OpenAI destinations are allowed by the live
+policy but are not yet listed here. Their hostnames, ports and rule scope await
+the author's `sbx policy ls agent-vm --wide` output. The coordinator requests that
+read-only output through a human task using the Check block in
+[allow-sandbox-host.md](../runbooks/allow-sandbox-host.md); no policy change is
+requested. Add OpenAI rows only from that output, never from guessed destinations.
+Until reconciled, do not claim the live policy exactly matches this table.
+The gap is tracked in V19/V22/V28 of `docs/infra-current-state.md`.
 
 | Host | Rule | Why |
 |---|---|---|
@@ -132,9 +140,11 @@ admin-enforced policy. Config/requirements checks are recorded under V8.
 The former `sandbox/codex-proxy/` mixin and transport config remain historical,
 unselected candidates. Do not install them as part of the accepted in-VM route.
 No host binding, policy, or allowlist changes were performed by this implementer.
-The live OpenAI destination inventory must be checked by the author through the
-existing host-policy procedure; successful inference alone does not prove the
-proxy sentinel design or justify wildcard network access.
+OpenAI destinations are permitted in the live policy but their actual rules are
+missing from the allowlist table. V19/V22/V28 track this open inventory gap,
+pending the author's policy listing through a coordinator-created human task.
+Successful inference does not identify the hosts or their scope, prove the
+proxy sentinel design, or justify wildcard network access.
 
 Runtime/recovery: [codex-runtime.md](../runbooks/codex-runtime.md) and
 [codex-login.md](../runbooks/codex-login.md) on reviewed `main`. #73 is no longer

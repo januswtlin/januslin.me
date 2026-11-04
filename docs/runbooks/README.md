@@ -51,8 +51,8 @@ Expected: <what the output shows>
 | [quarterly-host-checks.md](quarterly-host-checks.md) | The quarterly security checks only the author can run |
 | [delete-slack-app.md](delete-slack-app.md) | Delete the unused Slack app and its token |
 | [connect-chatgpt-github.md](connect-chatgpt-github.md) | Connect ChatGPT to GitHub as the machine account (T06) |
-| [codex-login.md](codex-login.md) | Codex login through `sbx` (T06) |
-| [codex-runtime.md](codex-runtime.md) | Candidate same-VM Codex install/proxy setup; live acceptance pending (T06) |
+| [codex-login.md](codex-login.md) | Author-only headless Codex login recovery inside the existing VM (T06) |
+| [codex-runtime.md](codex-runtime.md) | Check the installed in-VM Codex runtime and record acceptance evidence (T06) |
 | [codex-cloud.md](codex-cloud.md) | Author-created Codex cloud environment and phone/identity probes (T06) |
 | [save-sandbox-template.md](save-sandbox-template.md) | Save the sandbox as a template after the Codex install (T06) |
 | [enable-zero-trust.md](enable-zero-trust.md) | Turn on Cloudflare Zero Trust (T15) |

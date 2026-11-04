@@ -183,6 +183,7 @@ completion decision.
 | Probe | Required evidence under the amended spec | Status / evidence |
 |---|---|---|
 | Human connection | Machine account `isweichen`, repository restriction, author grant revocation, permissions, connector decisions | MOVED to #112 (criteria 1–2, #72); not a local dispatch gate |
+| OpenAI egress | Actual permitted hosts, ports and rule scope from the author's policy listing | OPEN INVENTORY GAP: in-VM Codex uses OpenAI destinations allowed by the live policy but absent from the allowlist; V19/V22/V28; coordinator requests read-only policy output through a human task, no guessed rows |
 | V8 | Config/requirements paths, effective defaults, disabled apps/plugins/gateway, ordinary override and personal-account limits | RECORDED: 0.166.0 feature/MCP checks and both turn contexts; no requirements at checked paths; CLI overrides succeed; author verification pending |
 | V22/V28 | Approved in-VM login, mounted GitHub token fallback and risk | RESOLVED BY RECORDING: ADR-0018; no sentinel-isolation claim; #73 no longer needed; author verification pending; template persistence moved to #112/#74 |
 | V29 | Start and this exact-session resume workspace-write/on-request/auto_review, git denial and reviewed commit/push, API actor IDs | RECORDED in report and PR handoff; start actor 352218417; resumed decision commit 9c8cceb and its push verified as actor 352218417; author verification pending |

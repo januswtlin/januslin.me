@@ -14,7 +14,7 @@ Use this topic summary to find the relevant rationale. For day-to-day work, foll
 | Publishing and ownership | Public repository, Markdown and Git, one editor who merges, people write content. | [Authoring](../authoring-guide.md), [roles](../agents/roles.md) | [0004](ADR-0004-single-repo-no-cms.md), [0012](ADR-0012-public-repository.md), [0016](ADR-0016-one-editor-many-developers.md) |
 | Hosting and releases | Workers static assets; Actions builds and deploys; protected `main` and environment secrets. | [Deployment](../deployment.md) | [0002](ADR-0002-cloudflare-workers-static-assets.md), [0003](ADR-0003-github-actions-rulesets-environments.md) |
 | Search and AI access | Allow search, agent, and training access; publish Markdown alternates. | [SEO/AEO](../seo-aeo.md) | [0006](ADR-0006-ai-access-policy.md) |
-| Identities and isolation | Local AI stays in the sandbox; role Apps act locally, a machine account acts in the cloud; the author controls active key sets. | [Security](../security.md), [sandbox](../agents/sandbox.md), [admin guide](../admin-guide.md) | [0009](ADR-0009-agent-identity.md), [0013](ADR-0013-local-ai-in-docker-sandboxes.md), [0015](ADR-0015-app-key-sets.md), [0016](ADR-0016-one-editor-many-developers.md) |
+| Identities and isolation | Local AI stays in the sandbox; role Apps act locally, a machine account acts in the cloud; the author controls active key sets. | [Security](../security.md), [sandbox](../agents/sandbox.md), [admin guide](../admin-guide.md) | [0009](ADR-0009-agent-identity.md), [0013](ADR-0013-local-ai-in-docker-sandboxes.md), [0015](ADR-0015-app-key-sets.md), [0016](ADR-0016-one-editor-many-developers.md), [0018](ADR-0018-codex-in-vm-login.md) |
 | Work and automation | Issues carry tasks and notifications; the local coordinator dispatches; verification and independent review precede author merges. | [Workflow](../agents/workflow.md), [coordinator](../agents/coordinator.md), [automation](../automation.md) | [0008](ADR-0008-event-driven-automation.md), [0010](ADR-0010-local-coordinator-and-verify.md), [0014](ADR-0014-github-issues-for-work-and-the-author.md), [0017](ADR-0017-task-context-and-token-efficiency.md) |
 
 ## Chronological records
@@ -31,16 +31,16 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 | [0006](ADR-0006-ai-access-policy.md) | Open AI access policy | accepted |
 | [0007](ADR-0007-information-architecture.md) | Posts, topics, and tags, with topic-based URLs | accepted |
 | [0008](ADR-0008-event-driven-automation.md) | Event-driven automation with Renovate, GitHub Actions, and scheduled agent tasks | accepted |
-| [0009](ADR-0009-agent-identity.md) | Agent identity: an isolated macOS account, two role Apps, and a machine account | accepted; App ownership and key storage amended by ADR-0015; collaborators by ADR-0016 |
+| [0009](ADR-0009-agent-identity.md) | Agent identity: an isolated macOS account, two role Apps, and a machine account | accepted; App ownership and key storage amended by ADR-0015; collaborators by ADR-0016; Codex login amendment recorded in proposed ADR-0018 |
 | [0010](ADR-0010-local-coordinator-and-verify.md) | A local coordinator session dispatches subagents, and `pnpm verify` gates every task | accepted; task-board state superseded by ADR-0014 |
 | 0011 | How the coordinator reaches the author (file removed; see git history) | superseded by ADR-0014 |
 | [0012](ADR-0012-public-repository.md) | The repository is public | accepted |
-| [0013](ADR-0013-local-ai-in-docker-sandboxes.md) | Local AI runs only inside a Docker Sandbox | accepted |
+| [0013](ADR-0013-local-ai-in-docker-sandboxes.md) | Local AI runs only inside a Docker Sandbox | accepted; Codex login amendment recorded in proposed ADR-0018 |
 | [0014](ADR-0014-github-issues-for-work-and-the-author.md) | GitHub issues carry the work and reach the author | proposed; startable amended by ADR-0016 |
 | [0015](ADR-0015-app-key-sets.md) | App key sets, kept in the author's account, one active on the host | proposed; developers' own sets amended by ADR-0016 |
 | [0016](ADR-0016-one-editor-many-developers.md) | One editor, any number of developers | proposed |
 | [0017](ADR-0017-task-context-and-token-efficiency.md) | Reduce task context while preserving completion gates | proposed |
-| [0018](ADR-0018-codex-in-vm-login.md) | Codex login inside the VM and active role identities | author-approved decision; human acceptance verification pending |
+| [0018](ADR-0018-codex-in-vm-login.md) | Codex login inside the VM and active role identities | proposed; records the author's 2026-11-04 in-VM login approval; human verification pending |
 
 ## Template
 
