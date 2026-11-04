@@ -43,10 +43,10 @@ done
 field '.scripts.test' | grep -Eq '^sh tests/scripts/run\.sh && .*vitest run'
 check "test runs the script tests first, then Vitest" $?
 
-# verify chains check, lint, test with && so the first failure stops it.
+# verify chains check, lint, build (T09), test with && so the first failure stops it.
 verify=$(field '.scripts.verify')
-printf '%s\n' "$verify" | grep -Eq '^pnpm (run )?check && pnpm (run )?lint && pnpm (run )?test$'
-check "verify runs check, lint, test in order and stops on the first failure" $?
+printf '%s\n' "$verify" | grep -Eq '^pnpm (run )?check && pnpm (run )?lint && pnpm (run )?build && pnpm (run )?test$'
+check "verify runs check, lint, build, test in order and stops on the first failure" $?
 
 [ -f "$root/.editorconfig" ] && grep -q '^root = true' "$root/.editorconfig"
 check ".editorconfig exists with root = true" $?
