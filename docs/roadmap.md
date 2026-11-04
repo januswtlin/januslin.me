@@ -1,6 +1,6 @@
 # Roadmap
 
-Progress snapshot: 2026-11-03 · Idea assessments last reviewed: 2026-10-31 · Next idea review: first week of each month ([operations](operations.md)).
+Progress snapshot: 2026-11-04 · Idea assessments last reviewed: 2026-10-31 · Next idea review: first week of each month ([operations](operations.md)).
 
 Completed work, the execution plan, and later ideas live here. [Plan #53](https://github.com/januswtlin/januslin.me/issues/53) and its issues/PRs are the live work record; this document is a dated summary.
 
@@ -10,7 +10,7 @@ Completed work, the execution plan, and later ideas live here. [Plan #53](https:
 
 The table summarizes every task in [plan #53](https://github.com/januswtlin/januslin.me/issues/53), with completed supporting work first, then the plan's execution order. Dependencies may allow parallel work; the plan and linked issues carry live status. A dash means no linked PR yet.
 
-**Now:** T06 has an open [implementation PR #105](https://github.com/januswtlin/januslin.me/pull/105). The latest agent reports say [watcher initialization #104](https://github.com/januswtlin/januslin.me/issues/104#issuecomment-6573048249) and [history acceptance #103](https://github.com/januswtlin/januslin.me/issues/103#issuecomment-6573048809) completed with a passing check; both issues remain open for the author to close.
+**Now:** T06's PRs [#105](https://github.com/januswtlin/januslin.me/pull/105), [#113](https://github.com/januswtlin/januslin.me/pull/113), and [#114](https://github.com/januswtlin/januslin.me/pull/114) are merged; [T06 #56](https://github.com/januswtlin/januslin.me/issues/56) awaits the author's verification. The latest agent reports say [watcher initialization #104](https://github.com/januswtlin/januslin.me/issues/104#issuecomment-6573048249) and [history acceptance #103](https://github.com/januswtlin/januslin.me/issues/103#issuecomment-6573048809) completed with a passing check; both issues remain open for the author to close.
 
 | Status | Task | Issue | PR |
 |---|---|---|---|
@@ -18,7 +18,7 @@ The table summarizes every task in [plan #53](https://github.com/januswtlin/janu
 | Done | Streamline agent guidance and document model evaluation. | [#97](https://github.com/januswtlin/januslin.me/issues/97) | [#98](https://github.com/januswtlin/januslin.me/pull/98) |
 | Done | T08: Read trusted task status and the author's queue from GitHub issues. | [#54](https://github.com/januswtlin/januslin.me/issues/54) | [#101](https://github.com/januswtlin/januslin.me/pull/101) |
 | Done | T04: Verify every commit on `main` with a persistent watcher. | [#55](https://github.com/januswtlin/januslin.me/issues/55) | [#102](https://github.com/januswtlin/januslin.me/pull/102) |
-| In progress | T06: Add Codex to sandbox and cloud workflows. | [#56](https://github.com/januswtlin/januslin.me/issues/56) | [#105](https://github.com/januswtlin/januslin.me/pull/105) |
+| In progress | T06: Add Codex to sandbox and cloud workflows. | [#56](https://github.com/januswtlin/januslin.me/issues/56) | [#105](https://github.com/januswtlin/januslin.me/pull/105), [#113](https://github.com/januswtlin/januslin.me/pull/113), [#114](https://github.com/januswtlin/januslin.me/pull/114) |
 | Planned | T07: Bootstrap Node, pnpm, and the verification gate. | [#57](https://github.com/januswtlin/januslin.me/issues/57) | — |
 | Planned | T09: Vendor Retypeset and upgrade it to Astro 7. | [#58](https://github.com/januswtlin/januslin.me/issues/58) | — |
 | Planned | T10: Build content collections, schemas, and validation. | [#59](https://github.com/januswtlin/januslin.me/issues/59) | — |

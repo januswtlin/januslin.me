@@ -46,7 +46,7 @@ This Check does not restore Codex: base-kit recreation removes both its
 installation and login. Codex dispatch stays stopped until a reviewed restore
 procedure exists and Codex is restored. Reinstall or template restoration is
 not documented yet; follow-up #112/#74 must provide it before login recovery
-can apply. The OpenAI rules used by in-VM Codex remain an inventory gap in
-V19/V22/V28, tracked by [#116](https://github.com/januswtlin/januslin.me/issues/116).
-Add destination rows only from the author's policy listing. This Check does not
-establish OpenAI rule scope or template persistence.
+can apply. The OpenAI rules used by in-VM Codex (`auth.openai.com`, `chatgpt.com`)
+are scoped to `agent-vm`, so re-creation deletes them too; until Codex is restored,
+their absence from this Check's output is expected. This Check does not establish
+template persistence.
