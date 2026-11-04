@@ -227,8 +227,11 @@ function writeDevStylesheet(root: URL): string {
   return file;
 }
 
-/** The font stack Mermaid draws its labels with (astro.config.ts), the site's serif stack. */
-export const MERMAID_FONT_FAMILY = `"Source Serif 4", "${FAMILY}", serif`;
+/**
+ * The font stack Mermaid draws its labels with (astro.config.ts): the zh serif stack, with the
+ * punctuation family first so `——` and `……` in Chinese labels take the CJK glyphs.
+ */
+export const MERMAID_FONT_FAMILY = `"${PUNCT_FAMILY}", "Source Serif 4", "${FAMILY}", serif`;
 
 /**
  * Writes the stylesheet that rehype-mermaid loads into its headless Chromium at build time, and
