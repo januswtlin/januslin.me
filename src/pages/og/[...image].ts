@@ -3,7 +3,6 @@ import { OGImageRoute } from 'astro-og-canvas'
 import { getCollection } from 'astro:content'
 import { getPostDescription } from '@/utils/description'
 
-// eslint-disable-next-line antfu/no-top-level-await
 const posts = await getCollection('posts')
 
 // Create slug-to-metadata lookup object for blog posts
@@ -18,9 +17,7 @@ const pages = Object.fromEntries(
 )
 
 // Configure Open Graph image generation route
-// eslint-disable-next-line antfu/no-top-level-await
 export const { getStaticPaths, GET } = await OGImageRoute({
-  param: 'image',
   pages,
   getImageOptions: (_path, page) => ({
     title: page.title,

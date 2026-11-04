@@ -16,16 +16,9 @@ const clickTargets = [
   '#theme-toggle-button',
 ] as const
 
-const typingTargets = [
-  // Twikoo
-  '.el-input__inner',
-  '.el-textarea__inner',
-  // Waline
-  '#wl-nick',
-  '#wl-mail',
-  '#wl-link',
-  '#wl-edit',
-] as const
+// Upstream's typing targets were the comment systems' input fields, removed in T09 (#58).
+// The typing sounds stay in public/sounds/ for any future input field.
+const typingTargets: readonly string[] = []
 
 const ignoredKeys = new Set([
   'Shift',
@@ -167,7 +160,7 @@ function handleGlobalKeydown(event: KeyboardEvent) {
   }
 
   const target = event.target as Element | null
-  if (!target?.closest(typingSelector)) {
+  if (!typingSelector || !target?.closest(typingSelector)) {
     return
   }
 

@@ -14,7 +14,6 @@ import { getPostDescription } from '@/utils/description'
 
 const markdownParser = new MarkdownIt()
 const { title, description, i18nTitle, url, author } = themeConfig.site
-const { folo } = themeConfig.seo ?? {}
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // Dynamically import all images from /src/content/posts/_images
@@ -190,17 +189,6 @@ export async function generateFeed({ lang }: { lang?: Language } = {}) {
       }],
       published: publishDate,
       date: updateDate,
-    })
-  }
-
-  // Add folo verification if available
-  if (folo?.feedID && folo?.userID) {
-    feed.addExtension({
-      name: 'folo_challenge',
-      objects: {
-        feedId: folo.feedID,
-        userId: folo.userID,
-      },
     })
   }
 

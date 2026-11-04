@@ -33,7 +33,9 @@ export default defineConfig({
   theme: {
     colors: {
       ...light,
-      note: 'oklch(48.8% 0.243 264.376 / 0.8)', // blue-700
+      // Upstream: / 0.8 (4.22:1 on the light background); 0.85 gives 4.67:1, the WCAG AA
+      // minimum for the NOTE title (T09, #58; the author decides the other callout colors)
+      note: 'oklch(48.8% 0.243 264.376 / 0.85)', // blue-700
       tip: 'oklch(50.8% 0.118 165.612 / 0.8)', // emerald-700
       important: 'oklch(49.6% 0.265 301.924 / 0.8)', // purple-700
       warning: 'oklch(55.5% 0.163 48.998 / 0.8)', // amber-700

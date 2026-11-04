@@ -1,5 +1,4 @@
 import type { APIRoute } from 'astro'
-import { base } from '@/config'
 
 export const GET: APIRoute = ({ site }) => {
   const sitemapURL = new URL('sitemap-index.xml', site)
@@ -7,7 +6,6 @@ export const GET: APIRoute = ({ site }) => {
   const robotsTxt = [
     'User-agent: *',
     'Allow: /',
-    `Disallow: ${base}/~partytown/`,
     '',
     `Sitemap: ${sitemapURL.href}`,
   ].join('\n')

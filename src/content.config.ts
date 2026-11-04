@@ -3,8 +3,12 @@ import { z } from 'astro/zod'
 import { defineCollection } from 'astro:content'
 import { allLocales, themeConfig } from '@/config'
 
+// Until T10 moves the collections to content/, they read the test fixtures in
+// tests/fixtures/site/, never content/ (T09, #58).
+const fixtures = './tests/fixtures/site'
+
 const posts = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/posts' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: `${fixtures}/posts` }),
   schema: z.object({
     // required
     title: z.string(),
@@ -29,7 +33,7 @@ const posts = defineCollection({
 })
 
 const about = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/about' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: `${fixtures}/about` }),
   schema: z.object({
     lang: z.enum(['', ...allLocales]).optional().default(''),
   }),

@@ -7,10 +7,6 @@ export function rehypeExternalLinks() {
         if (/^(?:https?:|\/\/)/.test(node.properties.href)) {
           node.properties.target = '_blank'
           node.properties.rel = ['noopener', 'noreferrer']
-
-          // Add Umami outbound link tracking
-          node.properties.dataUmamiEvent = 'outbound-link-click'
-          node.properties.dataUmamiEventUrl = node.properties.href
         }
       }
     })

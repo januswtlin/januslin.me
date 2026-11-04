@@ -1,55 +1,3 @@
-/* GitHub Card */
-.gc-container {
-  --at-apply: 'my-6 block overflow-x-auto uno-round-border bg-secondary/5 px-5 py-4 transition-colors ease-out hover:(bg-secondary/10 c-primary) lg:(px-6 py-5)';
-  scrollbar-width: thin;
-  scrollbar-color: oklch(var(--un-preset-theme-colors-secondary) / 0.15) transparent;
-}
-:is(h1, h2, h3, h4, h5, h6, .gc-container) + .gc-container {
-  --at-apply: 'mt-4';
-}
-.gc-container:has(+ .gc-container) {
-  --at-apply: 'mb-4';
-}
-
-/* Title Bar */
-.gc-title-bar {
-  --at-apply: 'flex items-center gap-2.5 lg:gap-3';
-}
-.gc-owner-avatar {
-  --at-apply: 'aspect-square w-5.5 flex-shrink-0 rounded-full bg-secondary/20';
-}
-.gc-repo-title {
-  --at-apply: 'flex items-center leading-normal lg:text-lg';
-}
-.gc-slash {
-  --at-apply: 'mx-1 op-40 lg:mx-1.2';
-}
-.gc-github-icon {
-  --at-apply: 'ml-auto w-5.5 flex-shrink-0 lg:w-6';
-}
-
-/* Repo Description */
-.gc-repo-description.gc-repo-description {
-  --at-apply: 'mb-3.5 mt-2.45 text-start text-sm lg:(mb-4 mt-2.8 text-base)';
-}
-
-/* Info Bar */
-.gc-info-bar {
-  --at-apply: 'flex items-center gap-1.75 text-xs lg:(gap-2 text-sm)';
-}
-.gc-info-icon {
-  --at-apply: 'flex-shrink-0';
-}
-.gc-stars-count {
-  --at-apply: 'mr-3 lg:mr-4';
-}
-.gc-forks-count {
-  --at-apply: 'mr-3.75 lg:mr-5';
-}
-.gc-license-info {
-  --at-apply: 'ml-0.5 mr-4';
-}
-
 /* Admonition >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> */
 .admonition-title {
   --at-apply: 'mb-4 flex items-center font-semibold';
@@ -149,26 +97,14 @@ details[open] summary::before {
   --at-apply: 'mb-4';
 }
 
-/* Medium Embed */
-lite-youtube > .lty-playbtn {
-  --at-apply: 'filter-none';
-}
-.bilibili-player {
-  --at-apply: 'aspect-video w-full';
-}
-.spotify-embed {
-  --at-apply: 'w-full rounded-3';
-}
-.twitter-tweet {
-  --at-apply: 'mx-auto';
-}
-.codepen-embed {
-  --at-apply: 'aspect-video min-h-75 w-full';
-}
-
 /* Mermaid */
-pre.mermaid svg {
-  --at-apply: 'mx-auto';
+/* Rendered at build time as inline SVG (rehype-mermaid inline-svg, T09 #58), which has no
+   dark variant: dark mode inverts it (ADR-0001) */
+svg[id^='mermaid-'] {
+  --at-apply: 'mx-auto block';
+}
+.dark svg[id^='mermaid-'] {
+  filter: invert(0.88) hue-rotate(180deg);
 }
 
 /* KaTeX Overflow Fix */

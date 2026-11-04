@@ -42,29 +42,6 @@ export interface ThemeConfig {
     katex: boolean
     reduceMotion: boolean
   }
-  comment: {
-    enabled: boolean
-    giscus?: {
-      repo?: string
-      repoId?: string
-      category?: string
-      categoryId?: string
-      mapping?: 'pathname' | 'url' | 'title' | 'og:title'
-      strict?: '0' | '1'
-      reactionsEnabled?: '0' | '1'
-      emitMetadata?: '0' | '1'
-      inputPosition?: 'top' | 'bottom'
-    }
-    twikoo?: {
-      envId?: string
-    }
-    waline?: {
-      serverURL?: string
-      emoji?: string[]
-      search?: boolean
-      imageUploader?: boolean
-    }
-  }
   seo?: {
     twitterID?: string
     verification?: {
@@ -73,13 +50,6 @@ export interface ThemeConfig {
       yandex?: string
       baidu?: string
     }
-    googleAnalyticsID?: string
-    umamiAnalyticsID?: string
-    folo?: {
-      feedID?: string
-      userID?: string
-    }
-    apiflashKey?: string
   }
   footer: {
     links: {
@@ -87,10 +57,5 @@ export interface ThemeConfig {
       url: string
     }[]
     startYear: number
-  }
-  preload?: {
-    imageHostURL?: string
-    customGoogleAnalyticsJS?: string
-    customUmamiAnalyticsJS?: string
   }
 }
