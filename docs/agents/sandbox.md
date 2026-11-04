@@ -66,8 +66,8 @@ The App keys are never mounted. The agent inside the VM cannot run `sbx`; every 
 Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. The current sandbox is `agent-vm`; the global rules also apply during creation. Each host is limited to port 443 (or 80 for Ubuntu's mirror). The table below is the recorded baseline, with an open Codex egress inventory gap:
 in-VM Codex login/inference work, so OpenAI destinations are allowed by the live
 policy but are not yet listed here. Their hostnames, ports and rule scope await
-the author's `sbx policy ls agent-vm --wide` output. The coordinator requests that
-read-only output through a human task using the Check block in
+the author's `sbx policy ls agent-vm --wide` output, requested in
+[#116](https://github.com/januswtlin/januslin.me/issues/116) using the Check block in
 [allow-sandbox-host.md](../runbooks/allow-sandbox-host.md); no policy change is
 requested. Add OpenAI rows only from that output, never from guessed destinations.
 Until reconciled, do not claim the live policy exactly matches this table.
@@ -142,7 +142,7 @@ unselected candidates. Do not install them as part of the accepted in-VM route.
 No host binding, policy, or allowlist changes were performed by this implementer.
 OpenAI destinations are permitted in the live policy but their actual rules are
 missing from the allowlist table. V19/V22/V28 track this open inventory gap,
-pending the author's policy listing through a coordinator-created human task.
+pending the author's policy listing in [#116](https://github.com/januswtlin/januslin.me/issues/116).
 Successful inference does not identify the hosts or their scope, prove the
 proxy sentinel design, or justify wildcard network access.
 

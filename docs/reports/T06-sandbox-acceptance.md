@@ -30,8 +30,8 @@ proved by this local run. Only the author closes tasks or merges PRs.
 Working in-VM Codex login/inference requires OpenAI destinations permitted by
 the live policy. Those hosts and their rule scope are not yet listed in the
 sandbox allowlist. V19/V22/V28 explicitly retain this inventory gap alongside
-the recorded authentication decision. The coordinator requests the author's
-`sbx policy ls agent-vm --wide` output through a human task using the existing
+the recorded authentication decision. The author's policy-listing human task is
+[#116](https://github.com/januswtlin/januslin.me/issues/116), using the existing
 read-only Check in `allow-sandbox-host.md`. No host rows were guessed or policy
 changes performed; successful inference alone does not identify the rules.
 

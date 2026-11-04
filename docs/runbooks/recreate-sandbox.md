@@ -1,12 +1,14 @@
 # Create or re-create the sandbox `agent-vm`
 Where: `agent-session` · Time: about 20 min
 
-Re-creating the VM from the base kit drops its in-VM Codex login. Recover it
-through the reviewed [codex-login.md](codex-login.md) when the coordinator raises
-the author-only recovery task; do not copy authentication files. Template save
-and persistence measurements are follow-up #112/#74, not T06's original host-OAuth
-gate. Retain all work/session IDs before re-creation. This runbook does not select
-or install the superseded OpenAI proxy mixin.
+Re-creating the VM from the base kit removes both the Codex installation and
+its in-VM login: `sandbox/kit/spec.yaml` does not install Codex. Keep Codex
+dispatch stopped until Codex is restored. Reinstall or template restoration is
+not documented yet and belongs to follow-up #112/#74, along with persistence
+measurements. The login runbook alone cannot restore a missing binary. Retain
+all work/session IDs before re-creation; do not copy authentication files or
+invent install commands. This runbook does not select or install the superseded
+OpenAI proxy mixin.
 
 1. Re-creating deletes the VM's clone and its scoped rules: make sure every branch is pushed. Then:
    ```sh
@@ -40,8 +42,11 @@ the old proxy-mixin/template command for the base-kit creation above.
 sbx ls; sbx secret ls; sbx policy ls agent-vm --wide; sbx settings get ssh.agentForwardingEnabled; sbx settings get claude.remoteControl
 ```
 Expected: `agent-vm` exists; `anthropic` (oauth configured); the allowlist in `docs/agents/sandbox.md`; `false`; `true`.
-Codex recovery is a separate author-only step after base-kit recreation;
-check it using `codex-login.md`. The OpenAI rules used by in-VM Codex are still
-an inventory gap in V19/V22/V28: the coordinator requests the actual policy
-listing through a human task before any destination rows are added. Do not
-assume that this Check establishes OpenAI rule scope or template persistence.
+This Check does not restore Codex: base-kit recreation removes both its
+installation and login. Codex dispatch stays stopped until a reviewed restore
+procedure exists and Codex is restored. Reinstall or template restoration is
+not documented yet; follow-up #112/#74 must provide it before login recovery
+can apply. The OpenAI rules used by in-VM Codex remain an inventory gap in
+V19/V22/V28, tracked by [#116](https://github.com/januswtlin/januslin.me/issues/116).
+Add destination rows only from the author's policy listing. This Check does not
+establish OpenAI rule scope or template persistence.
