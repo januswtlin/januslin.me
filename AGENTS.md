@@ -78,7 +78,7 @@ Architecture and component paths: `docs/overview.md`. Current versus planned inf
 - If you make a decision a future agent would otherwise question, add a decision record in `docs/decisions/` (template in its README).
 
 ### Definition of done (every PR)
-1. `pnpm verify` passes locally (once the bootstrap task has created it) and `ci` passes (once the CI task exists). Acceptance tests are written first and never weakened quietly ("Verification and self-repair" in `docs/agents/workflow.md`).
+1. `pnpm verify` passes locally and `ci` passes (once the CI task exists). Acceptance tests are written first and never weakened quietly ("Verification and self-repair" in `docs/agents/workflow.md`).
 2. The task issue's acceptance criteria are met, each with evidence in the PR description.
 3. Relevant docs are updated, and the PR body says `Closes #<task issue>`.
 4. The PR description uses `.github/pull_request_template.md`, including the handoff report.
@@ -86,27 +86,29 @@ Architecture and component paths: `docs/overview.md`. Current versus planned inf
 
 ## Commands
 
-Today:
+Today (T07):
 
 ```
-sh tests/scripts/run.sh   # script tests; the gate until pnpm verify exists
+pnpm install          # install (CI and cloud setup: pnpm install --frozen-lockfile)
+pnpm check            # tsc --noEmit over the JavaScript in scripts/ and tests/
+pnpm lint             # ESLint + Prettier format check
+pnpm format           # apply Prettier formatting
+pnpm test             # script tests (sh tests/scripts/run.sh), then Vitest unit tests
+pnpm verify           # the gate before review: check, lint, test; stops on the first failure
 ```
 
-Once the bootstrap (T07) and site tasks have created them:
+Once the site tasks have created them (T09 adds `build` and `astro check`; T10 adds `validate`):
 
 ```
-pnpm install          # install
 pnpm dev              # local dev server (includes draft: true entries)
 pnpm dev:drafts       # same, plus the local-only drafts/ folder
 pnpm build            # production build to dist/ (excludes drafts)
 pnpm build:preview    # build including drafts (used for PR previews)
-pnpm check            # astro check + tsc
-pnpm lint             # lint + format check
-pnpm test             # unit, script, dist, and Playwright tests
 pnpm validate         # content validation (schema, tags, images, file types)
-pnpm verify           # the gate before review: check, lint, validate, build, test
 pnpm wrangler dev     # run the Worker and assets locally
 ```
+
+When complete, `pnpm check` is astro check + tsc, `pnpm test` adds dist and Playwright tests, and `pnpm verify` runs check, lint, validate, build, test.
 
 ## Before changing a rule or design
 

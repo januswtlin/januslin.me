@@ -1,0 +1,16 @@
+# The format check covers the Node project's own files only (T07, #57): JavaScript and
+# JSON in scripts/ and tests/, and the root config files. Docs, content, and the sandbox
+# kit are not reformatted. T09 adds src/.
+/*
+!/scripts/
+!/tests/
+!/package.json
+!/tsconfig.json
+!/*.config.js
+!/.prettierrc.json
+**/*.md
+**/*.yaml
+**/*.yml
+# Existing JSON kept byte-for-byte (a fixture and the Codex result schema).
+/scripts/codex-result.schema.json
+/tests/scripts/main-watch/fixtures/
