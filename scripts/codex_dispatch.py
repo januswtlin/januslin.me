@@ -290,7 +290,9 @@ def run(record, directory, prompt, resume=False):
         finally:
             for sig, handler in previous.items():
                 signal.signal(sig, handler)
-        if code == 0 and done and not failed and not bad and not interrupted and record.get('session_id'):
+        if interrupted:
+            status = 'interrupted'
+        elif code == 0 and done and not failed and not bad and record.get('session_id'):
             try:
                 result = read_private(output)
                 validate(result, json.loads(schema.read_text()))

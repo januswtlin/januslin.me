@@ -3,6 +3,12 @@
 - Date: 2026-10-29
 - Deciders: Janus, coordinator session
 
+Codex amendment (2026-11-04): [ADR-0018](ADR-0018-codex-in-vm-login.md)
+supersedes the Codex host-OAuth/sentinel choice below with author-approved in-VM
+login. Active-set role identities come from ADR-0015. The original decision
+text below is historical; all other isolation, GitHub-token, and approval
+boundaries remain.
+
 ## Context
 Agents should not act with the author's GitHub identity: PR threads would read like one person arguing with themselves, GitHub refuses self-approval, and an agent would hold admin rights. They also should not reach the author's local credentials (SSH keys, `gh`, Keychain, browser sessions).
 

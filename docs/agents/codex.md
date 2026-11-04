@@ -1,26 +1,30 @@
 # Codex dispatch and pending sandbox acceptance
 
-Updated: 2026-11-02 · Task: [#56](https://github.com/januswtlin/januslin.me/issues/56)
+Updated: 2026-11-04 · Task: [#56](https://github.com/januswtlin/januslin.me/issues/56)
 
-This preparation PR delivers code, fake tests, and reviewable runbooks for #56;
-it does not complete T06. #55 is now completed and merged. The author confirmed
-on 2026-11-02 that ChatGPT still connects to the primary GitHub account
-`januswtlin` ([#72 evidence](https://github.com/januswtlin/januslin.me/issues/72#issuecomment-6573097069)).
-Until #72's machine-account connection is checked, no Codex dispatch/model call,
-login, or identity-dependent runtime/cloud probe is authorized. Independent code,
-fake CLI tests, and non-secret read-only checks may continue. Do not infer live
-acceptance from the presence of Codex or from fake tests, and do not close #56.
+The author's verified 2026-11-04 comment on #56 amends the original body:
+Codex logs in inside the existing VM; GitHub uses the mounted role-token fallback;
+role bot names come from `identity.json`. [ADR-0018](../decisions/ADR-0018-codex-in-vm-login.md)
+records that decision and the risk of a VM-readable subscription credential.
+#72 no longer gates local dispatch. Criteria 1–2/#72, cloud/V10/#75, phone
+steering, and template save/#74 belong to follow-up #112; #73 is no longer needed.
+
+T06 closes only after the author's human verification of V8, V22/V28, V29,
+V30, and the reverse review using the PR evidence. The current evidence and its
+limits are in [the acceptance report](../reports/T06-sandbox-acceptance.md).
+The coordinator supplies V30/reverse-review links and arranges independent
+review of the final head. Reports and fake tests do not authorize closing #56.
 
 ## Runtime candidate and sources
 
-The preferred candidate installs Codex in the existing Claude-template VM,
+The installed runtime is Codex 0.166.0 in the existing Claude-template VM,
 `agent-vm`. The coordinator calls it there; no AI binary or login runs in the host
 `agent` shell. The host only uses `sbx` and the reviewed token-broker scripts.
 Python 3.11 or later is a dispatcher/test prerequisite (stdlib only), along with
 git and the existing `agent-gh`/T08 scripts. Check it before installation.
 
-Official documentation rechecked on 2026-11-02 (release metadata below retains
-its original preparation date):
+Historical source comparison (rechecked 2026-11-02; release metadata retains
+its preparation date). The host-proxy candidate below is superseded by ADR-0018:
 
 - [Official non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode)
   documents stdin prompts, JSONL, schema output, and exact-session resume.
@@ -50,8 +54,9 @@ its original preparation date):
   as OAuth endpoints; it adds no API-key path or network rule.
   Its transport config uses the proxy sentinel approach described in
   [Docker's Codex kit](https://github.com/docker/sbx-kits-contrib/blob/main/codex/spec.yaml).
-  Compatibility with this Claude kit, automatic review, subscription entitlement,
-  selected model, and sbx 0.50.1 remains unproven until V22/V28/V29.
+  That preparation did not establish compatibility or proxy isolation. ADR-0018
+  now selects the in-VM login route; this mixin was not selected or installed
+  by this implementer.
 
 The current [codex-plugin-cc README](https://github.com/openai/codex-plugin-cc)
 describes an app-server wrapper, not the older direct-exec implementation. It
@@ -77,7 +82,7 @@ scripts/codex-dispatch.sh resume <recorded-session-uuid> /absolute/private/findi
 scripts/codex-dispatch.sh review <pr-number>
 ```
 
-These are interface examples, not permission to dispatch blocked #56. Supported
+These are interface examples; use the existing claim for in-progress #56. Supported
 implementer roles are `platform`, `site`, `upgrade`, and `seo`; the approved issue's
 Role and Branch must match. `start` calls T08 `work-status.sh check` immediately
 before claiming the task. Missing T08, an unapproved or blocked issue, an existing
@@ -130,6 +135,11 @@ claims until the task/PR is resolved; do not automatically delete a failed claim
 ## Recovery
 
 No failure automatically retries, creates a new thread, or falls back to bypass.
+An observed SIGINT, SIGTERM, or SIGHUP is reported as `interrupted` even if the
+child subsequently emits completion and exits zero. Its result is withheld;
+the retained UUID and claim still require deliberate coordinator recovery.
+Interruption also takes precedence over an earlier `login_required` or
+`quota_exhausted` event in that run.
 `interrupted`, `incomplete`, and `invalid_result` keep the claim and any observed
 UUID. Resume that exact UUID from its original worktree with a local findings
 file; never `--last`. The private record retains the original issue title/body/
@@ -141,9 +151,9 @@ branch absence again. Review resume rechecks the live PR head and local checkout
 a changed head requires a new exact-head review claim. The coordinator still
 rechecks main integrity and continuing authorization before resuming.
 
-`login_required` stops Codex routing. Queue the existing login human task or ask
-the coordinator to raise one; the author repeats the host OAuth runbook only after
-the connection is confirmed. `quota_exhausted` routes to Claude or waits, preserving
+`login_required` stops Codex routing. Ask the coordinator for an author-only
+in-VM login human task using [codex-login.md](../runbooks/codex-login.md) on reviewed
+`main`. Do not reuse retired #73, perform login as an agent, or work around it. `quota_exhausted` routes to Claude or waits, preserving
 the branch/PR and UUID. Errors that do not arrive as structured login/quota events
 remain `interrupted`; diagnose deliberately without dumping auth/session logs.
 If dispatch fails before an ID arrives, inspect the private claim, branch, PR, and
@@ -153,37 +163,37 @@ the existing PR and records which claim it supersedes; it does not start a secon
 implementation of the task. A `running` claim after a hard crash likewise requires
 checking the original process before resume.
 
-If V28 or V29 fails, record the exact failure, version, effective configuration,
-and sanitized evidence. The separate Codex-template sandbox and narrow host
-launcher described in #56 is a conditional fallback that has not been selected or
-built. The author must approve any move to danger-full-access; no script switches
-to it. The VM cannot create that second sandbox. Missing support for adding the
-OAuth mixin is a concrete blocker to resolve with the author, not evidence of
-Codex sandbox failure.
+If runtime sandbox/approval checks fail, record the exact failure, version,
+effective configuration, and sanitized evidence. No automatic full-access or
+second-sandbox fallback is selected. The author must approve a changed security
+boundary before it is used. The old OAuth mixin's availability no longer gates
+this approved in-VM route.
 
-Runtime setup requires the checked machine-account connection and a reviewed-main
-runbook. Inventory author-completed setup before repeating any step: Codex
-0.166.0 was observed in the current VM by the coordinator, but its presence does
-not resolve any acceptance row. #73/#74/#75 remain pending; the coordinator first
-records completed work and then requests only the remaining author steps through
-`docs/runbooks/codex-runtime.md` and `docs/runbooks/codex-cloud.md`.
+Inventory author-completed setup before repeating any step. Local runtime and
+recovery procedures are [codex-runtime.md](../runbooks/codex-runtime.md) and
+[codex-login.md](../runbooks/codex-login.md). #73 is retired by the amended spec;
+connection/cloud/template work is #112. Do not start a cloud task from the VM.
 
-## Acceptance ledger (all live rows pending)
+## Acceptance ledger
 
-Record sanitized evidence in the eventual PR/handoff and update
-`docs/infra-current-state.md` only after the observations exist.
+Evidence: [T06 sandbox acceptance](../reports/T06-sandbox-acceptance.md).
+Recorded observations await the author's human verification; they are not a
+completion decision.
 
-| Probe | Required evidence | Status / evidence |
+| Probe | Required evidence under the amended spec | Status / evidence |
 |---|---|---|
-| Human connection | GitHub connection machine account numeric ID 349746030; author grant revoked; permissions including Workflows, Secrets, Variables; connector names and decisions | BLOCKED: author confirmed primary-account connection; #72 |
-| V8 | Effective config/requirements paths, disabled app/plugin/gateway tools, attempted ordinary override outcome; personal account limitations | PENDING |
-| V22 | Host OAuth listing; whether current sbx accepts scoping (0.50.1 help says global only); approved binding domains; VM sentinel-only check without printing values | PENDING |
-| V28 | Stable version and subscription-backed inference in Claude kit; model retained; proxy replacement; no real auth token in VM; save/recreate preserves binary and measured config/session state | PENDING |
-| V29 | Start and exact-session resume both workspace-write/on-request/auto_review; file edit; `.git` write/commit/push escalation; push actor ID and Agent trailer; denial/interruption observed without bypass | PENDING |
-| V30 | Claude dispatch classifier allowed/blocked; real task PR; independent Claude review; exact-session findings resume; fix commit; coordinator report; exact-head CI URL once CI exists | PENDING |
-| Reverse review | Codex reviews a Claude PR; posted review actor equals active reviewer bot numeric ID | PENDING |
-| V10 | Author-started phone cloud task; push capability vs Create PR; API push/commit/PR identities; private repo denial; main push denial; harmless workflow branch push | PENDING |
-| Phone steering | Cloud UI on actual phone; local guidance through existing Claude Remote Control; any direct local Codex route tested and named | PENDING |
+| Human connection | Machine account `isweichen`, repository restriction, author grant revocation, permissions, connector decisions | MOVED to #112 (criteria 1–2, #72); not a local dispatch gate |
+| OpenAI egress | Actual permitted hosts, ports and rule scope from the author's policy listing | OPEN INVENTORY GAP: in-VM Codex uses OpenAI destinations allowed by the live policy but absent from the allowlist; V19/V22/V28; coordinator requests read-only policy output through a human task, no guessed rows |
+| V8 | Config/requirements paths, effective defaults, disabled apps/plugins/gateway, ordinary override and personal-account limits | RECORDED: 0.166.0 feature/MCP checks and both turn contexts; no requirements at checked paths; CLI overrides succeed; author verification pending |
+| V22/V28 | Approved in-VM login, mounted GitHub token fallback and risk | RESOLVED BY RECORDING: ADR-0018; no sentinel-isolation claim; #73 no longer needed; author verification pending; template persistence moved to #112/#74 |
+| V29 | Start and this exact-session resume workspace-write/on-request/auto_review, git denial and reviewed commit/push, API actor IDs | RECORDED in report and PR handoff; start actor 352218417; resumed decision commit 9c8cceb and its push verified as actor 352218417; author verification pending |
+| V30 | Dispatch report, independent Claude review, exact-session findings resume, fix, coordinator report, CI URL once CI exists | COORDINATOR EVIDENCE PENDING: PR #114, round-one review 5764059589, same UUID resumed; final coordinator report/re-review links outstanding; CI does not yet exist |
+| Reverse review | Codex reviews a Claude PR; API review actor matches active reviewer ID 352219106 | COORDINATOR EVIDENCE PENDING |
+| V10 | Author-started cloud identity/push/private-repo/main/workflow probes | MOVED to #112/#75 |
+| Phone steering | Tested phone cloud/local routes | MOVED to #112 |
+| Template | Save/re-create and persistence | MOVED to #112/#74 |
+
+
 
 `sh tests/scripts/codex-dispatch/test.sh` exercises only the fake CLI. It proves the
 wrapper's contract and refusal paths, not any live row. V30 requires the other

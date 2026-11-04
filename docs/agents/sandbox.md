@@ -54,6 +54,7 @@ Why tokens are files and not proxy-injected: an `sbx` `github` secret makes the 
 |---|---|---|
 | `januslin-agent` installation token | `sandbox-tokens/januslin-agent.token`, written by the broker on the host, mounted read-only | `scripts/agent-git-credential` and `scripts/agent-gh januslin-agent` |
 | `januslin-reviewer` installation token | `sandbox-tokens/januslin-reviewer.token`, the same way | `scripts/agent-gh januslin-reviewer` |
+| Codex subscription login | Inside the existing VM, author-approved 2026-11-04 (ADR-0018); may be readable there | ChatGPT-backed Codex; never inspect or publish authentication files |
 | Claude subscription login | `sbx`'s secret store on the host (`sbx secret ls`: `anthropic`, global, "oauth configured"). The VM's `~/.claude/.credentials.json` holds 26-character sentinels only. It survives `sbx stop` and `sbx run` | Injected by the proxy on Claude's hosts. The agent can use the login through the proxy but cannot read or copy the token |
 
 The App keys are never mounted. The agent inside the VM cannot run `sbx`; every `sbx secret` and `sbx policy` change is the author's, in the host shell. If a later `sbx` or kit change made the Claude login readable in the VM, the author has accepted that in advance (2026-10-30): no connector holding personal data is connected, egress is allowlisted, and Remote Control needs the full login.
@@ -62,7 +63,15 @@ The App keys are never mounted. The agent inside the VM cannot run `sbx`; every 
 
 ## Egress allowlist
 
-Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. The current sandbox is `agent-vm`; the global rules also apply during creation. Each host is limited to port 443 (or 80 for Ubuntu's mirror). `sbx policy ls agent-vm --wide` must show exactly this table.
+Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. The current sandbox is `agent-vm`; the global rules also apply during creation. Each host is limited to port 443 (or 80 for Ubuntu's mirror). The table below is the recorded baseline, with an open Codex egress inventory gap:
+in-VM Codex login/inference work, so OpenAI destinations are allowed by the live
+policy but are not yet listed here. Their hostnames, ports and rule scope await
+the author's `sbx policy ls agent-vm --wide` output, requested in
+[#116](https://github.com/januswtlin/januslin.me/issues/116) using the Check block in
+[allow-sandbox-host.md](../runbooks/allow-sandbox-host.md); no policy change is
+requested. Add OpenAI rows only from that output, never from guessed destinations.
+Until reconciled, do not claim the live policy exactly matches this table.
+The gap is tracked in V19/V22/V28 of `docs/infra-current-state.md`.
 
 | Host | Rule | Why |
 |---|---|---|
@@ -101,44 +110,47 @@ The repository's `.claude/settings.json` denies the claude.ai connector tools (`
 
 `pnpm verify`, Playwright, and visual snapshots run on Linux in the VM, the same platform as CI, so one set of baselines serves both. Dev servers started by agents bind inside the VM; a port is published to the host (`sbx ports agent-vm --publish <port>`) only when the author asks to see something.
 
-## Codex candidate (T06, live acceptance pending)
+## Codex runtime (T06 evidence awaiting author verification)
 
-`scripts/codex-dispatch.sh` is a VM-only wrapper for the coordinator, with Python
-3.11+ as a checked kit prerequisite. It dispatches in separate linked worktrees,
-uses stdin prompts, private claims/results, explicit session resume, and the role
-Apps. Its fake tests do not establish OAuth, Linux sandbox support, actual GitHub
-identity, or the cross-tool review/resume loop. Setup, contract, recovery, source
-comparison, and the pending V8/V10/V22/V28/V29/V30 ledger:
-[codex.md](codex.md).
+Codex 0.166.0 runs in the existing `agent-vm`, using the author's approved in-VM
+ChatGPT login. [ADR-0018](../decisions/ADR-0018-codex-in-vm-login.md) supersedes
+the planned host `sbx` OpenAI OAuth route. The subscription credential may be
+readable by VM processes; never read or copy authentication files. This is a
+recorded risk, not a sentinel-isolation success. GitHub uses the mounted one-hour
+role-token fallback described above, without a `github` proxy secret. Read the
+active bot IDs from `identity.json`; the measured `isweichen` set has implementer
+352218417 and reviewer 352219106. These are separate from the git commit author.
 
-The candidate project `.codex/config.toml` selects workspace-write/on-request/
-auto_review, network access through the existing VM proxy, and disables apps,
-plugins, and the template's MCP gateway. Codex 0.166.0 refuses to load a
-config whose `[mcp_servers.*]` table has neither `command` nor `url`, even a
-disabled one, so the gateway table names its URL next to `enabled = false`
-(`sandbox/codex-proxy/config.toml` likewise); `tests/scripts/codex-config`
-checks both files. The wrapper uses `--approve-for-me`
-without an explicit `--sandbox` (those flags conflict), also on exact-session
-resume. No model override or full-access fallback is passed. These are defaults;
-V8 and V29 must measure their effect before unattended use.
+`scripts/codex-dispatch.sh` is the VM-only coordinator wrapper (Python 3.11+).
+It uses dedicated linked worktrees, stdin prompts, private claims/results,
+explicit UUID resume, and role Apps. Start and exact-session resume observations,
+review links, and their limits are in [the acceptance report](../reports/T06-sandbox-acceptance.md).
+No tool report substitutes for the author's verification of T06.
 
-Installing the binary alone in the Claude kit does not declare OpenAI OAuth.
-`sandbox/codex-proxy/` is an uninstalled candidate v2 mixin plus a VM user-config
-example for ChatGPT-backed proxy transport. The author adds it only after the
-new runbook reaches reviewed `main`; no host kit or policy change was performed
-in local preparation. Proposed additions, not applied allowlist entries:
+The project `.codex/config.toml` loads in stable 0.166.0 after #113. It selects
+workspace-write/on-request/auto_review, allows network through the VM policy,
+and disables apps/plugins and the MCP gateway. The disabled gateway table still
+needs its URL for config parsing. The wrapper passes `--approve-for-me` without
+`--sandbox` (the flags conflict), including on exact-session resume. Both observed
+turn contexts retained these permissions; `.git` metadata was read-only until an
+automatically reviewed escalation. No bypass or full-access fallback was used.
+CLI feature overrides succeeded in a non-model probe: these defaults are not
+admin-enforced policy. Config/requirements checks are recorded under V8.
 
-| Host | Proposed rule | Reason / acceptance |
-|---|---|---|
-| `auth.openai.com` | `:443` | Host-managed OAuth refresh endpoint, V22/V28 |
-| `chatgpt.com` | `:443` | ChatGPT subscription-backed inference through proxy, V28/V29 |
+The former `sandbox/codex-proxy/` mixin and transport config remain historical,
+unselected candidates. Do not install them as part of the accepted in-VM route.
+No host binding, policy, or allowlist changes were performed by this implementer.
+OpenAI destinations are permitted in the live policy but their actual rules are
+missing from the allowlist table. V19/V22/V28 track this open inventory gap,
+pending the author's policy listing in [#116](https://github.com/januswtlin/januslin.me/issues/116).
+Successful inference does not identify the hosts or their scope, prove the
+proxy sentinel design, or justify wildcard network access.
 
-Do not add broad OpenAI/CDN wildcards in anticipation of a failure. Use blocked
-host evidence and the existing adding-a-host procedure for any extra destination.
-V22 must check the installed sbx version's OAuth scoping; 0.50.1 says global only.
-The second-sandbox launcher remains conditional on documented V28/V29 failure and
-the author's decision; this candidate has not selected it. The author's commands
-are in [codex-runtime.md](../runbooks/codex-runtime.md).
+Runtime/recovery: [codex-runtime.md](../runbooks/codex-runtime.md) and
+[codex-login.md](../runbooks/codex-login.md) on reviewed `main`. #73 is no longer
+needed. #72 connection/connector work, cloud/V10/#75, phone steering, and template
+save/#74 moved to #112; they no longer gate authorized local dispatch. T06 still
+requires the author's verification of V8, V22/V28, V29, V30, and the reverse review.
 
 ## Checks
 

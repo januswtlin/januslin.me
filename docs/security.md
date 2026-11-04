@@ -56,7 +56,7 @@ Every other App set (ADR-0015) has one implementer and one reviewer App with exa
 - Nothing an agent writes runs in the author's account or in a host working tree: the sandbox works on its own clone, the author never runs `pnpm install`, scripts, or hooks from it, and no folder is shared between the macOS accounts.
 - Reviewer and implementer identities are both reachable in the sandbox, so the split between them is advisory; an approval is not a security control here (only the author merges).
 
-### Prepared Codex defaults (not live-verified controls)
+### Codex defaults and measured limits
 
 The T06 candidate runs only in the existing VM, with workspace-write/on-request/
 auto_review on start and resume. The wrapper refuses the primary checkout and
@@ -70,11 +70,20 @@ helper and the coordinator must check the posted numeric actor against the activ
 identity configuration. No `github` proxy secret may replace the explicit token.
 
 Project config disables apps/plugins and Docker's MCP gateway as defaults.
-Personal-account managed requirements, proxy OAuth, sandbox behavior, and the
-selected model's automatic review are still V8/V22/V28/V29 questions. Do not call
-the config files proven controls or substitute full access when a probe fails.
-The candidate mixin has no passthrough/API-key path or egress allow rules; author
-approval and reviewed-main runbooks precede any host binding/policy/kit changes.
+The author's verified 2026-11-04 amendment (ADR-0018) selects in-VM Codex login,
+with the existing mounted GitHub role-token fallback, rather than host OpenAI
+OAuth/sentinel injection. The subscription credential may be readable and stolen
+inside the VM; one-hour App token expiry does not limit that risk. Agents never
+read, copy, or publish authentication files. No host keys or policy changes are
+part of this amendment. The old proxy mixin is unselected historical preparation.
+
+V8 measured disabled feature defaults and a successful ordinary CLI override;
+no requirements files existed at the checked locations. Both retained turn
+contexts use workspace-write/on-request/auto_review. See the acceptance report
+linked from the ledger for paths, commands, and limits. These observations await
+the author's verification and are not an enterprise-managed personal-account
+policy. Never substitute full access when a probe fails. Connection/cloud,
+phone, and template work moved to #112 and do not gate local dispatch.
 See [the contract and acceptance ledger](agents/codex.md).
 
 ### Cloud agents and tool logins (ADR-0009)

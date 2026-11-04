@@ -174,12 +174,16 @@ and never resume `--last`. A reviewer claim is per PR/head, separate from the
 implementation claim. Login/quota/interruption recovery, supported roles, and
 artifact handling: [codex.md](codex.md).
 
-This routing is prepared, not live-accepted: V22/V28/V29/V30 and the reverse review
-remain pending. The original 2026-11-01 preparation exception preceded #55
-completion. #55 is now merged; #72 connection confirmation and the live runtime
-checks still gate dispatch. New host procedures require a runbook-first merge
-before execution. Do not start cloud
-sessions, scheduled tasks, or a second sandbox from the local coordinator.
+The author's verified 2026-11-04 amendment on #56 authorizes Codex login inside
+`agent-vm` (ADR-0018), with GitHub through mounted role tokens. #55 is merged;
+#72 no longer gates local dispatch. Connection/connector work, cloud/V10, phone
+steering, and template persistence moved to #112. Use active role IDs from
+`identity.json`; the designated ChatGPT/cloud machine account is `isweichen`
+for T06's follow-up, not the author. T06 still needs the author's verification
+of V8, V22/V28, V29, V30, and the reverse review. Current evidence and limits:
+[codex.md](codex.md#acceptance-ledger). New host procedures still require a
+runbook-first merge. Do not start cloud sessions, scheduled tasks, or a second
+sandbox from the local coordinator.
 
 ## Verification and self-repair (ADR-0010)
 
