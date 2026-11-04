@@ -34,7 +34,7 @@ Two hard constraints shape every decision:
 
 ## Architecture
 
-Astro 7, static output; vendored Retypeset kept to its original design. pnpm and Node 24 active LTS are pinned in `package.json` and `.nvmrc`. Cloudflare Workers static assets host the site; only HTML entry paths invoke the minimal Worker. GitHub Actions builds and deploys the author's merges.
+Astro 7, static output; vendored Sumi kept to its layout, with Noto Serif TC (Taiwan glyph forms) subset at build time (ADR-0019). pnpm and Node 24 active LTS are pinned in `package.json` and `.nvmrc`. Cloudflare Workers static assets host the site; only HTML entry paths invoke the minimal Worker. GitHub Actions builds and deploys the author's merges.
 
 Architecture and component paths: `docs/overview.md`. Current versus planned infrastructure: `docs/infra-current-state.md`. Topic-specific docs above describe content, locales, SEO, deployment, and automation. All decisions remain in `docs/decisions/`.
 

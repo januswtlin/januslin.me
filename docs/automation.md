@@ -56,7 +56,7 @@ Scheduled tasks can be triggered by GitHub pull request, issue, and release even
 | Workflow | On | Does |
 |---|---|---|
 | `english-versions.yml` | push to `main` touching `content/**`; weekly schedule | Reconcile `translation-needed` issues deterministically, without an agent; matching, closure, and opt-out rules: [content model](content-model.md#missing-english-versions-t19). |
-| `monthly-maintenance.yml` | schedule, 1st of the month | Open a "Monthly maintenance" issue with the checklist from `docs/operations.md`, including the Retypeset upstream watch, label `maintenance`; and open a `human-task` issue assigned to the author for each calendar item due within 35 days. Takes over from the coordinator. |
+| `monthly-maintenance.yml` | schedule, 1st of the month | Open a "Monthly maintenance" issue with the checklist from `docs/operations.md`, including the Sumi upstream watch, label `maintenance`; and open a `human-task` issue assigned to the author for each calendar item due within 35 days. Takes over from the coordinator. |
 
 ### Claude Code cloud scheduled tasks (T20, [#69](https://github.com/januswtlin/januslin.me/issues/69))
 - Run on Anthropic's infrastructure; the author's laptop can be closed. Only the author creates them (ADR-0009).

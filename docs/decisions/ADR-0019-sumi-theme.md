@@ -1,8 +1,8 @@
 # ADR-0019: Sumi instead of Retypeset, on the unified pipeline, with a Taiwan-standard font
-- Status: proposed
+- Status: accepted (the author merged PR #123 and re-specified T09, #58, on 2026-11-04); applied in T09
 - Date: 2026-11-04
 - Deciders: Janus (author); proposed by the Site Engineer (task #122)
-- Supersedes, if accepted: [ADR-0001](ADR-0001-astro-and-retypeset.md) (the theme and its "keep the original design" rule). ADR-0001's Astro 7, static output, unified Markdown pipeline, and build-time Mermaid decisions carry over unchanged.
+- Supersedes: [ADR-0001](ADR-0001-astro-and-retypeset.md) (the theme and its "keep the original design" rule). ADR-0001's Astro 7, static output, unified Markdown pipeline, and build-time Mermaid decisions carry over unchanged.
 
 ## Context
 ADR-0001 chose Retypeset because it was the only theme reviewed with first-class Traditional Chinese support. Sumi, the author's first pick for its look, was set aside for lacking i18n, search, math, Mermaid, and a CJK font.
@@ -43,3 +43,15 @@ The re-evaluation is in [`docs/reports/theme-reevaluation.md`](../reports/theme-
 - The CJK typesetting port cannot reach the author's standard without large changes to Sumi's layout.
 - The font budget cannot be met with subsetting.
 - Sätteri gains KaTeX and diagram support (as in ADR-0001).
+
+## Applied in T09 (#58), 2026-11-04
+Choices made while applying this decision, so a later agent does not undo them by accident:
+- **Font subsetting.** The source is `@fontsource-variable/noto-serif-tc` (npm, OFL 1.1): the variable font (wght 200–900) in about 100 unicode-range slices. After `astro build`, `src/lib/fonts/cjk-font.ts` (an Astro integration) subsets each slice the built pages use to exactly their glyphs with `subset-font` (BSD-3-Clause; HarfBuzz through `harfbuzzjs`, MIT), writes one hashed stylesheet whose `@font-face` rules keep per-file `unicode-range`, and points every page at it. Slices instead of one merged file keep each page's download to the slices its own text needs as the site grows. Fontsource's Latin, Cyrillic, and Vietnamese slices are never used. No font file is committed. `astro dev` injects the full slices instead.
+- **Font budget.** First load of the fixture post: 336,403 font bytes (Source Serif 4, JetBrains Mono, KaTeX, and 13 Noto files of 132,248 bytes for 282 codepoints), under the 400,000-byte budget. The subset grows with the site's distinct characters; the budget test (`tests/e2e/font-bytes.spec.js`) will show when that matters (R11).
+- **CJK punctuation.** A second family, "Noto Serif TC Punct", covers only U+2014 and U+2026 and goes first in the serif stack on `:lang(zh)` pages, so English pages keep Source Serif's dashes and ellipses.
+- **No italics for Chinese**: `:lang(zh)` quotes and `em` are upright; `em` takes emphasis dots under the text (著重號) so emphasis stays visible.
+- **Code highlighting.** Sumi's vitesse pair is kept; token colors below 4.5:1 on Sumi's code background are darkened or lightened in place (`src/lib/markdown/code-contrast.ts`), which keeps their hue.
+- **Callouts** keep Retypeset's markup (`blockquote.admonition-<type>`, `.admonition-title`) and use Sumi's tokens: fg-muted for note and tip, fg for important, the vermilion accent for warning and caution.
+- **The ink** is off (`INK.hero`, `INK.divider` false). Its module (10,647 bytes, 3,783 gzipped) is still emitted to `dist/_astro/` but no page loads it.
+- **Removed from upstream**: the Japanese marks and rails (`墨`, `墨と水`, `墨と余白`, the `.tategaki` helper), the About page (theme demo copy; `pages` arrive with T10), MDX (`docs/content-model.md` allows none), and the demo posts. The 404 page's decorative `無` stays: it is also Chinese.
+- **Interim routing.** The home page and posts render in both locales (`src/pages/[...lang]/`); the blog and tag archives exist at the root only, and the English navigation links to them until T11.

@@ -184,7 +184,7 @@ Topic hubs render the intro, `startHere`, then all posts in the topic by date.
 
 - Math: `$inline$` and `$$block$$`, rendered to static HTML with KaTeX at build time.
 - Diagrams: fenced ```` ```mermaid ```` blocks, rendered to SVG at build time (no client JS).
-- Callouts: `:::note`, `:::tip`, `:::warning` directives (Retypeset convention).
+- Callouts: `:::note`, `:::tip`, `:::important`, `:::warning`, `:::caution` directives, with an optional title in brackets (`:::tip[Brewing]`). Any other `:name` or `::name` stays as written, so times and ratios such as `10:30` and `1:15` are safe.
 - Footnotes: standard Markdown footnotes.
 - Tables: standard GFM tables (useful for brew recipes and gear specs).
 - No MDX in `content/`. Interactive needs are met with directives handled by site code, documented here.

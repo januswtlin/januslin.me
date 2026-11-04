@@ -1,5 +1,5 @@
 # ADR-0001: Astro 7 with a vendored Retypeset theme, kept to its original design
-- Status: accepted
+- Status: superseded by [ADR-0019](ADR-0019-sumi-theme.md) (2026-11-04) for the theme, its fonts, and the "keep the original design" rule. Astro 7, static output, the unified Markdown pipeline, build-time Mermaid, and the vendoring approach carry over.
 - Date: 2026-10-29
 - Deciders: Janus (author), coordinator session
 

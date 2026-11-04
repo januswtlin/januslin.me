@@ -20,7 +20,7 @@ The table summarizes every task in [plan #53](https://github.com/januswtlin/janu
 | Done | T04: Verify every commit on `main` with a persistent watcher. | [#55](https://github.com/januswtlin/januslin.me/issues/55) | [#102](https://github.com/januswtlin/januslin.me/pull/102) |
 | In progress | T06: Add Codex to sandbox and cloud workflows. | [#56](https://github.com/januswtlin/januslin.me/issues/56) | [#105](https://github.com/januswtlin/januslin.me/pull/105), [#113](https://github.com/januswtlin/januslin.me/pull/113), [#114](https://github.com/januswtlin/januslin.me/pull/114) |
 | Planned | T07: Bootstrap Node, pnpm, and the verification gate. | [#57](https://github.com/januswtlin/januslin.me/issues/57) | — |
-| Planned | T09: Vendor Retypeset and upgrade it to Astro 7. | [#58](https://github.com/januswtlin/januslin.me/issues/58) | — |
+| Planned | T09: Vendor Sumi on Astro 7 with a Taiwan-standard Chinese font. | [#58](https://github.com/januswtlin/januslin.me/issues/58) | — |
 | Planned | T10: Build content collections, schemas, and validation. | [#59](https://github.com/januswtlin/januslin.me/issues/59) | — |
 | Planned | T14: Add the Worker, Cloudflare configuration, and response headers. | [#60](https://github.com/januswtlin/januslin.me/issues/60) | — |
 | Planned | T11: Build routes, topic hubs, tags, and bilingual navigation. | [#61](https://github.com/januswtlin/januslin.me/issues/61) | — |
@@ -67,7 +67,7 @@ Status values: `idea` · `evaluating` · `accepted` (→ task ID) · `deferred` 
 | R08 | Webmentions (receive/send) | idea | 1 | M | $0 | med | | — | — |
 | R09 | Maps: per-trip map and a site-wide map of places written about (travel, cafés) (static map tiles or SVG, no third-party JS) | idea | 2 | M | $0 if self-rendered | med | Needs `location.lat/lng` on posts. | — | — |
 | R10 | Photo essays / gallery layout and EXIF display (camera, lens; never GPS) | idea | 2 | M | $0 | low | | — | — |
-| R11 | Font refresh: a CJK font specimen and a possible change from Retypeset's default fonts | deferred | 1 | M | $0 | low | Retypeset's original design is kept for now (ADR-0001), so a font specimen task is not planned. Revisit after 3 months of publishing, or when the author asks. | — | — |
+| R11 | Font refresh: a CJK font specimen (for example Noto Serif TC against other Taiwan-standard faces, or a sans body) | deferred | 1 | M | $0 | low | Sumi with Noto Serif TC, subset at build time, is the current choice (ADR-0019). Revisit after 3 months of publishing, when the subset outgrows the font budget, or when the author asks. | — | — |
 | R12 | Sidenotes component (Patrika-style) and refined accents (Pilcrow-style) | idea | 2 | S | $0 | low | Port as MIT components with notices. Good for tech/AI essays. | — | — |
 | R13 | Agent Readiness Level 2+ items | rejected | 1 | n/a | n/a | n/a | No APIs, auth, or commerce on a blog; placeholders would game the score. Only via R02 if accepted. | — | — |
 | R14 | Web CMS (e.g. Sveltia, Pages CMS) for mobile publishing | rejected (for now) | 1 | M | $0 | high | ADR-0004: a content-only credential cannot be enforced by GitHub, and emulating it in CI leaks. Revisit if GitHub adds path-level write permissions or Working Copy proves too awkward. | — | — |

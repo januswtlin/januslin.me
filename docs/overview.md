@@ -8,7 +8,7 @@ Implementation status, completed work, and upcoming tasks: [Roadmap → Progress
 
 A personal publishing site for Janus Lin at `https://januslin.me`, covering every part of the author's life worth writing about. Initial topics: tech, AI, travel, third-wave coffee, and life. Topics will grow; one `posts` collection with curated topics and tags is designed for that (ADR-0007). Standalone pages (`pages`) start with About.
 
-The site should read like a well-typeset book: typography-first, calm, fast, and readable on a phone. Retypeset's original design delivers that (ADR-0001).
+The site should read like a well-typeset book: typography-first, calm, fast, and readable on a phone. Sumi's layout, with Chinese set in Noto Serif TC (Taiwan Ministry of Education glyph forms), delivers that (ADR-0019).
 
 ## Goals
 
@@ -72,7 +72,7 @@ Key property: **all writes go to GitHub, never to Cloudflare**, and only the aut
 
 | Component | Responsibility and detailed specification |
 |---|---|
-| Astro site (`src/`, `content/`) | Static Astro 7; vendored Retypeset, original design and UnoCSS; unified Markdown pipeline. Mermaid renders at build time using Chromium ([ADR-0001](decisions/ADR-0001-astro-and-retypeset.md)). Collections, URLs, images, rich content, and locales: [content model](content-model.md). |
+| Astro site (`src/`, `content/`) | Static Astro 7; vendored Sumi, its layout kept, plain CSS with design tokens; unified Markdown pipeline with KaTeX and callout directives. Mermaid renders at build time using Chromium. Chinese uses Noto Serif TC, subset at build time to the glyphs the site uses (`src/lib/fonts/cjk-font.ts`) ([ADR-0019](decisions/ADR-0019-sumi-theme.md), and [ADR-0001](decisions/ADR-0001-astro-and-retypeset.md) for the pipeline). Collections, URLs, images, rich content, and locales: [content model](content-model.md). |
 | Worker (`worker/`, `wrangler.jsonc`) | `januslin-me` serves static assets with Markdown negotiation and `Link` headers. Keep `run_worker_first` limited to HTML entry paths; assets skip script invocations. Configuration, headers, previews, and CI/CD: [deployment](deployment.md). |
 | Discovery outputs | Static metadata, Markdown alternates, sitemap, feeds, robots.txt, llms.txt, and search: [SEO/AEO checklist](seo-aeo.md). Features live outside theme code so replacing the theme preserves them. |
 | Automation | Renovate and Actions detect work; scheduled agents act; the author merges. Triggers and ownership: [automation](automation.md). |
