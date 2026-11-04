@@ -27,7 +27,6 @@ const TYPES = {
   ".woff": "font/woff",
   ".ttf": "font/ttf",
   ".otf": "font/otf",
-  ".wav": "audio/wav",
 };
 
 /** @param {string} file */

@@ -63,7 +63,7 @@ describe("cssUrls and jsRemoteLoads", () => {
   it("finds static and dynamic imports and fetch of absolute URLs only", () => {
     const js =
       'import a from"https://esm.example/a.js";import("https://esm.example/b.js");' +
-      'fetch(`//api.example/c`);fetch("/sounds/tap_01.wav");import("./chunk.js")';
+      'fetch(`//api.example/c`);fetch("/data.json");import("./chunk.js")';
     expect(jsRemoteLoads(js).sort()).toEqual(
       ["//api.example/c", "https://esm.example/a.js", "https://esm.example/b.js"].sort(),
     );

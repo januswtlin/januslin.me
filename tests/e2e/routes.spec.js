@@ -19,7 +19,7 @@ for (const route of routes) {
     const response = await page.goto(route, { waitUntil: "load" });
     expect(response?.status()).toBe(200);
     await page.waitForLoadState("networkidle");
-    // Let idle-time work (sound preloading, prefetch) run before counting requests.
+    // Let idle-time work (prefetch) run before counting requests.
     await page.evaluate(() => new Promise((done) => requestIdleCallback(() => done(undefined))));
     await page.waitForLoadState("networkidle");
     expect.soft(pageLog.consoleErrors).toEqual([]);

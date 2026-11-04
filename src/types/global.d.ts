@@ -5,9 +5,6 @@ declare global {
     interface HTMLAttributes extends AttributifyAttributes {}
   }
 
-  interface Window {
-    webkitAudioContext: typeof AudioContext
-  }
   interface Document {
     startViewTransition: (updateCallback: () => void) => ViewTransition
   }
