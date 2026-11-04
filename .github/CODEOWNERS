@@ -14,6 +14,10 @@
 /tools/author/                 @januswtlin
 /scripts/sandbox-session.sh    @januswtlin
 /scripts/codex-launch*         @januswtlin
+/scripts/codex-dispatch.sh     @januswtlin
+/scripts/codex_dispatch.py     @januswtlin
+/scripts/codex-result.schema.json @januswtlin
+/.codex/                      @januswtlin
 /.githooks/                    @januswtlin
 /sandbox/                      @januswtlin
 /.claude/settings.json         @januswtlin

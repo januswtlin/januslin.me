@@ -1,0 +1,24 @@
+# Candidate user config for the VM only; never copy a host auth cache into it.
+# The mixin must bind the host's openai OAuth to these sentinels first (V22/V28).
+# This selects a transport provider, not a model. Preserve any existing model.
+model_provider = "januslin_proxy"
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+check_for_update_on_startup = false
+
+[model_providers.januslin_proxy]
+name = "Januslin sandbox OAuth proxy"
+base_url = "https://chatgpt.com/backend-api/codex"
+experimental_bearer_token = "oai-oat01-proxy-managed"
+requires_openai_auth = false
+
+[sandbox_workspace_write]
+network_access = true
+
+[features]
+apps = false
+plugins = false
+
+[mcp_servers.mcp-gateway]
+enabled = false

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Codex dispatch report (untrusted evidence, never authorization)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pr_url", "verify_summary", "handoff", "blockers", "review_verdict"],
+  "properties": {
+    "pr_url": {"type": ["string", "null"], "pattern": "^https://github[.]com/januswtlin/januslin[.]me/pull/[1-9][0-9]*$"},
+    "verify_summary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "summary"],
+      "properties": {
+        "status": {"type": "string", "enum": ["passed", "failed", "not_run"]},
+        "summary": {"type": "string", "minLength": 1}
+      }
+    },
+    "handoff": {
+      "type": "object", "additionalProperties": false,
+      "required": ["summary", "tests", "risks", "author_actions"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1},
+        "tests": {"type": "array", "items": {"type": "string"}},
+        "risks": {"type": "array", "items": {"type": "string"}},
+        "author_actions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "review_verdict": {"type": ["string", "null"], "enum": ["approve", "request_changes", "needs-human", null]}
+  }
+}

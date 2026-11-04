@@ -58,6 +58,28 @@ Permissions of the Claude GitHub App on this repository (V6; from the author's s
 - Environment for this repository, created by the author on 2026-10-30 (T05; screenshot kept private by the author): name `januslin.me`; network access **Limited**; no environment variables and no secrets; setup script as in `docs/admin-guide.md` ("Tool logins"), which runs `corepack enable` and `pnpm install --frozen-lockfile` only once `pnpm-lock.yaml` exists.
 - The environment dialog offers only None, Limited, and Full. The docs (code.claude.com/docs/en/cloud-environments, read 2026-10-30) still list None, Trusted, Full, and Custom; Limited is the dialog's name for the default allowlist, which the docs call Trusted. The dialog has no Custom level, so hosts cannot be added one by one: if `pnpm install` needs a host beyond the default allowlist, T07 revisits this, and Full needs the author's decision.
 
+### Codex bootstrap preparation (2026-11-01; no live configuration changed)
+
+The author authorized local code/runbook preparation before #55 is completed.
+At that time the exception did not make #56 startable or complete. No Codex runtime was
+installed, OAuth login performed, host mixin/policy changed, App token accessed,
+cloud environment created, or live dispatch run during preparation.
+
+Prepared: VM-only dispatcher, JSON result schema, fake CLI tests, project defaults,
+and an uninstalled OpenAI OAuth proxy mixin/config candidate. Official release
+metadata identified stable 0.166.0 (2026-10-29); the desktop-bundled alpha is not
+the candidate stable runtime. Existing Claude-kit/sbx 0.50.1 compatibility is
+unverified, including experimental kit-add support and automatic review through
+the proxy provider. Details and evidence fields: `docs/agents/codex.md`.
+New host runbook commands wait for their merge to `main`; only preparation and
+new bootstrap-branch SSH pushes were authorized in this local session. Runtime
+continues to require role Apps and the unchanged T08 approval/dependency gates.
+
+Codex cloud remains unconfigured. Current official docs distinguish the current
+published Cloud environments from legacy GitHub-integration environments;
+`docs/runbooks/codex-cloud.md` requires recording which actual UI is available.
+V8/V10/V22/V28/V29/V30 and reverse cross-tool review remain PENDING; no placeholder
+in a config file or passing fake test resolves those rows.
 ## Main watcher acceptance evidence (T04, 2026-11-02)
 
 The isolated live test for #55 / PR #102 started at the confirmed root `422517b80a52ae51d849080ab01c5b6a60b22b91`. Its first complete check returned exit 3: 13 commits were verified through the API as author merges, and two historical commits returned `no-pr`. Their subjects reference PR #5 and #6, whose endpoints return 404 through the App. They remain API-unverified:
@@ -78,6 +100,31 @@ Subsequently the author checked the PRs while logged in as machine account `janu
 After that clarification, the implementer ran only `check` against the same private temporary journal: exit 0, no new commit reports, baseline still `cfb6c3481571101c2e68884ec2bcadb66b729684`, and exactly the same two accepted entries. No new `accept` or `init` ran. The two merges are now author-confirmed but remain API-unverified; the original `no-pr` reports, original authorization, withdrawal, and later clarification are all retained as the live evidence adjustment. This successful incremental check does not independently reverify already accepted historical commits.
 
 [Incident #103](https://github.com/januswtlin/januslin.me/issues/103) remains open for the author alone to close. Fresh-state initialization and exception handling remain author-controlled ([startup runbook](runbooks/start-coordinator.md#initialize-a-missing-main-watcher-state)); the historical test journal grants no permission to initialize permanent state or replay acceptance. #70 remains open and independently actionable; #71 becomes actionable after merge, with V27/V33 still pending.
+
+### Current coordinator handoff (2026-11-02)
+
+After the historical test above, the author explicitly authorized permanent
+initialization: [#104 initialization evidence](https://github.com/januswtlin/januslin.me/issues/104#issuecomment-6572983471)
+records `init` exit 0, then `check` exit 3 with 14 verified and the same two pending
+historical SHAs. The author subsequently approved accepting exactly
+`dbb73f6e3daec0a64156c527f12356ab70436dbe` and
+`8f47de99b693fa27dfa5b61568486037315a6b95`. The coordinator records both accepts
+exit 0, final `check` exit 0, baseline
+`afae1ebd6d644e8d305fb1031b76e6ee39ece184`, journal mode 0600, exactly those two
+acceptance entries, and no pending reports in
+[#104's result](https://github.com/januswtlin/januslin.me/issues/104#issuecomment-6573048249)
+and [#103's evidence](https://github.com/januswtlin/januslin.me/issues/103#issuecomment-6573048809).
+This supersedes the earlier pending initialization state; it preserves every
+historical withdrawal and does not independently API-verify the two old merges.
+The T06 implementer did not initialize or change watcher state.
+
+#55 is now completed. #70/#71 and V27/V33 remain pending follow-ups. For #56, the
+author confirms ChatGPT is still connected as `januswtlin`
+([#72](https://github.com/januswtlin/januslin.me/issues/72#issuecomment-6573097069)).
+Runtime dispatch/model calls, login, and identity-dependent probes wait for the
+machine-account connection and reviewed-main setup procedures. The coordinator
+observed Codex 0.166.0 in `agent-vm`; this is presence evidence only. No live T06
+acceptance row is resolved by this preparation PR.
 
 ## Planned state
 
@@ -137,6 +184,7 @@ Claims the docs rely on that nobody has tested yet. Whoever reaches the "When" s
 
 | Date | Change | By (task / PR) |
 |---|---|---|
+| 2026-11-01 | T06 local preparation only: fake-tested dispatcher/schema, candidate VM configuration and runbooks; no live acceptance or external configuration change. #55 dependency and #56 approval remain gates. | #56 bootstrap candidate |
 | 2026-11-01 | The work issues re-created by the author, because GitHub hid the machine account's: plan #53, tasks #54 to #69, human tasks #70 to #91, adoption #92 (old #11 to #49 and #51, in order; the originals are closed as not planned). Docs now cite the new numbers; older rows below keep the old ones. App set `januswtlin-agent` active: implementer `januswtlin-agent[bot]` (App 5563779, bot user 350971135), reviewer `januswtlin-reviewer[bot]` (App 5563788, bot user 350971406), owned by `januswtlin`. | Author; this PR |
 | 2026-10-31 | Work moved to GitHub issues (ADR-0014): plan #11, tasks #12 to #27, human tasks #28 to #49; labels `plan`, `task`, `human-task`, `approved` created. Slack dropped as the notification channel; V23 (Slack secret) dropped with it; the Slack app's deletion is #28. V32 and V33 added. | Cloud session (this docs PR) |
 | 2026-10-30 | T05 (in progress): the author confirmed the connector review, the Claude App scope, and the connection check were done before the T21 login (no personal-data connectors; Claude App on this repository only; claude.ai's GitHub connection is the machine account, `januswtlin` does not authorize Claude), so no new `/login` was needed. **V6 passed**, **V20 passed** (with the worktree-base finding), **V24 re-confirmed**, **V31 passed** (cron part not observable). V27 was moved to T04. T05: the author set `sbx settings set claude.remoteControl true`. T05: the cloud environment `januslin.me` created with network access Limited, no variables or secrets, the specified setup script; the dialog offers only None, Limited, and Full (no Trusted or Custom, unlike the docs). Also seen: the sandbox template configures a user-level MCP server `mcp-gateway` (`http://mcp-gateway.docker.internal/mcp`, `Authorization: Bearer proxy-managed`, in `~/.claude.json`), whose tools include `mcp-add` and `mcp-config-set`; not denied by the repository settings. T05: **V7 passed** (pushes and PRs as the machine account; commits authored by GitHub user `claude`; the session cannot delete branches; branch workflows can be pushed) and **V21 passed** (Remote Control, pushes stay `januslin-agent[bot]`, no new host). T05 names: GitHub only; "Claude Docs" is a built-in claude.ai MCP server, not a listed connector. The author decided to deny `mcp__mcp-gateway__*` (added to `.claude/settings.json`; `init` lists 23 tools in the repository, 29 outside it) and to keep the `Claude-Session:` commit trailer (`docs/agents/workflow.md`, "Cloud sessions"). Observed once in five `claude -p` runs in the repository: the `init` event listed "Claude Docs" and five other claude.ai built-in MCP servers (not connected), all `pending`, with no tools offered; the other runs listed only `mcp-gateway`. Resolved with the author (T05): these are claude.ai built-in defaults that cannot be removed and are not connected; only GitHub is connected; inside the repository `mcp__claude_ai_*` denies their tools. | T05 |
