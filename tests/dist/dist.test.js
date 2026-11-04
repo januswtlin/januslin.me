@@ -87,6 +87,18 @@ describe("dist/ references", () => {
   });
 });
 
+describe("removed assets (V14, the author's decision 2026-11-04)", () => {
+  test("ships no Snell Roundhand font and no UI sound files", () => {
+    expect(files.filter((f) => /snell/i.test(f) || /\.(?:wav|mp3|ogg)$/i.test(f))).toEqual([]);
+  });
+  test("no page, stylesheet, or script refers to them", () => {
+    const hits = files
+      .filter((f) => /\.(?:html|css|m?js)$/.test(f))
+      .filter((f) => /snell|\/sounds\//i.test(read(f)));
+    expect(hits).toEqual([]);
+  });
+});
+
 describe("build log", () => {
   test("has no warning outside the allowlist and no deprecation", () => {
     expect(existsSync(BUILD_LOG), `${BUILD_LOG} is missing; run \`pnpm build\``).toBe(true);

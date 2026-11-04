@@ -34,6 +34,14 @@ for (const route of [FIXTURE_POST, FIXTURE_POST_EN]) {
       await expect(callout.locator(".admonition-title")).toHaveText("NOTE");
     });
 
+    test("renders every callout type", async ({ page }) => {
+      for (const type of ["note", "tip", "important", "warning", "caution"]) {
+        const callout = page.locator(`#post-content blockquote.admonition-${type}`);
+        await expect(callout).toBeVisible();
+        await expect(callout.locator(".admonition-title")).toHaveText(type.toUpperCase());
+      }
+    });
+
     test("renders the footnote", async ({ page }) => {
       const ref = page.locator("#post-content sup a[data-footnote-ref]").first();
       await expect(ref).toBeVisible();

@@ -31,6 +31,18 @@ flowchart LR
 > [!NOTE]
 > 這是一則提示。This is a callout.
 
+> [!TIP]
+> 小技巧。A tip callout.
+
+> [!IMPORTANT]
+> 重要事項。An important callout.
+
+> [!WARNING]
+> 警告。A warning callout.
+
+> [!CAUTION]
+> 注意。A caution callout.
+
 ## 註腳 Footnote
 
 排版是一門古老的手藝。[^1]
