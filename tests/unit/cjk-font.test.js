@@ -7,6 +7,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   FAMILY,
+  MERMAID_FONT_FAMILY,
   PUNCT_FAMILY,
   ROUTED_PUNCTUATION,
   facesFor,
@@ -43,6 +44,11 @@ describe("glyph routing for —— and ……", () => {
       "U+2026,U+3002",
       "U+6587",
     ]);
+  });
+
+  it("Mermaid labels use the same order: punctuation, Source Serif 4, Noto Serif TC", () => {
+    const stack = MERMAID_FONT_FAMILY.split(",").map((s) => s.trim().replace(/^"|"$/g, ""));
+    expect(stack).toEqual([PUNCT_FAMILY, "Source Serif 4", FAMILY, "serif"]);
   });
 
   it("zh pages put the punctuation family first, before Source Serif 4 (src/styles/cjk.css)", () => {

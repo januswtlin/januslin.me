@@ -96,3 +96,44 @@ for (const scheme of ["light", "dark"]) {
     });
   });
 }
+
+/** Computed edge and arrowhead colors of the fixture's first diagram. @param {import("@playwright/test").Page} page */
+const edgeColors = async (page) => {
+  const svg = page.locator('.post__body svg[id^="mermaid"]').first();
+  const strokes = await svg
+    .locator(".flowchart-link")
+    .evaluateAll((els) => els.map((el) => getComputedStyle(el).stroke));
+  const heads = await svg
+    .locator("marker path")
+    .evaluateAll((els) => els.map((el) => getComputedStyle(el).fill));
+  return [...new Set([...strokes, ...heads])];
+};
+
+test("light mode keeps Mermaid's own edge color (an author's linkStyle stays in effect)", async ({
+  page,
+}) => {
+  await page.addInitScript(([key]) => localStorage.setItem(key, "light"), [THEME_KEY]);
+  await page.goto(FIXTURE_POST);
+  await settle(page);
+  expect(await edgeColors(page)).toEqual(["rgb(51, 51, 51)"]);
+  // `linkStyle 0 stroke:...` becomes an inline style on the edge; no site rule may override it.
+  const styled = await page
+    .locator('.post__body svg[id^="mermaid"] .flowchart-link')
+    .first()
+    .evaluate((el) => {
+      /** @type {SVGElement} */ (el).style.stroke = "rgb(200, 0, 0)";
+      return getComputedStyle(el).stroke;
+    });
+  expect(styled).toBe("rgb(200, 0, 0)");
+});
+
+test("an unpinned dark system theme also gets readable Mermaid edges", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto(FIXTURE_POST);
+  await settle(page);
+  expect(await page.evaluate(() => document.documentElement.dataset.theme)).toBeUndefined();
+  const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  for (const color of await edgeColors(page)) {
+    expect(await contrast(page, color, bg), `${color} on ${bg}`).toBeGreaterThanOrEqual(3);
+  }
+});
