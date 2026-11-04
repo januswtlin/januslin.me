@@ -4,7 +4,8 @@
 import { FIXTURE_POST } from "../dist/site.js";
 import { expect, test } from "./fixtures.js";
 
-const FONT_BUDGET_BYTES = 400 * 1024;
+// 400 KB as the task states it (#58), in decimal bytes.
+const FONT_BUDGET_BYTES = 400_000;
 
 test("font bytes on first load of the fixture post stay within the budget", async ({
   page,
@@ -27,7 +28,7 @@ test("font bytes on first load of the fixture post stay within the budget", asyn
   const fonts = await Promise.all(pending);
   const total = fonts.reduce((sum, f) => sum + f.bytes, 0);
   const report = [
-    `font bytes on first load of ${FIXTURE_POST}: ${total} (${(total / 1024).toFixed(1)} KiB), budget ${FONT_BUDGET_BYTES}`,
+    `font bytes on first load of ${FIXTURE_POST}: ${total} (${(total / 1000).toFixed(1)} KB), budget ${FONT_BUDGET_BYTES}`,
     ...fonts.map((f) => `  ${f.bytes}\t${f.url}`),
   ].join("\n");
   console.log(report);

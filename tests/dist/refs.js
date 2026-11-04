@@ -91,3 +91,25 @@ export function htmlRefs(html) {
   }
   return refs;
 }
+
+/**
+ * References in an XML or XSL file (feeds, sitemaps, feed stylesheets): xml-stylesheet
+ * processing instructions, plus every HTML position in the file once escaped HTML and CDATA
+ * sections (post content in feeds) are unwrapped.
+ * @param {string} xml
+ * @returns {{ url: string, loads: boolean, where: string }[]}
+ */
+export function xmlRefs(xml) {
+  const refs = [];
+  for (const m of xml.matchAll(/<\?xml-stylesheet\b[^?]*?\bhref\s*=\s*(["'])([^"']+)\1/gi)) {
+    refs.push({ url: m[2], loads: true, where: "<?xml-stylesheet href>" });
+  }
+  const unwrapped = xml
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+  return refs.concat(htmlRefs(unwrapped));
+}

@@ -2,7 +2,7 @@
 // to catch what they claim to catch.
 import { describe, expect, it } from "vitest";
 import { findWarnings } from "../dist/build-log.js";
-import { classify, cssUrls, htmlRefs, jsRemoteLoads } from "../dist/refs.js";
+import { classify, cssUrls, htmlRefs, jsRemoteLoads, xmlRefs } from "../dist/refs.js";
 
 describe("classify", () => {
   it("treats the site's own origin and relative paths as internal", () => {
@@ -66,6 +66,35 @@ describe("cssUrls and jsRemoteLoads", () => {
       'fetch(`//api.example/c`);fetch("/sounds/tap_01.wav");import("./chunk.js")';
     expect(jsRemoteLoads(js).sort()).toEqual(
       ["//api.example/c", "https://esm.example/a.js", "https://esm.example/b.js"].sort(),
+    );
+  });
+});
+
+describe("xmlRefs", () => {
+  it("reads xml-stylesheet instructions and escaped or CDATA HTML in feeds", () => {
+    const xml = `<?xml version="1.0"?>
+<?xml-stylesheet href="https://xsl.example.com/s.xsl" type="text/xsl"?>
+<rss><channel><item>
+  <description>&lt;img src="https://img.example.com/a.png"&gt;</description>
+  <content:encoded><![CDATA[<p><img src="/local.png"><script src="//cdn.example.com/x.js"></script></p>]]></content:encoded>
+</item></channel></rss>`;
+    const loads = xmlRefs(xml)
+      .filter((r) => r.loads)
+      .map((r) => r.url);
+    expect(loads).toEqual(
+      expect.arrayContaining([
+        "https://xsl.example.com/s.xsl",
+        "https://img.example.com/a.png",
+        "/local.png",
+        "//cdn.example.com/x.js",
+      ]),
+    );
+  });
+  it("ignores namespace URIs in XSL", () => {
+    const xsl = `<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<svg xmlns="http://www.w3.org/2000/svg"><path fill="url(#g)"/></svg></xsl:stylesheet>`;
+    expect(xmlRefs(xsl).filter((r) => classify(r.url, "/feeds/x.xsl").kind === "external")).toEqual(
+      [],
     );
   });
 });

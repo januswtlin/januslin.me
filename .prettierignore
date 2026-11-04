@@ -5,6 +5,9 @@
 # formatting (T09, #58): Prettier would rewrite 26 of its 31 TS/JS/CSS files and every
 # .astro file, which would bury our changes and make the monthly upstream comparison
 # unreadable. ESLint covers src/.
+# Project-owned directories created under src/ (e.g. src/lib/) are added in the PR that
+# creates them (docs/roadmap.md): the first adds `!/src/` and `/src/*`, then each adds
+# `!/src/<dir>/` (a child of an ignored directory cannot be re-included on its own).
 /*
 !/scripts/
 !/tests/

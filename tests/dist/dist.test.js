@@ -2,14 +2,15 @@
 // - every expected route exists;
 // - every internal link and asset reference resolves to a file in dist/;
 // - nothing loads a resource from another host (src, srcset, <link href>, CSS url() and
-//   @import, JS import and fetch); outbound <a href> is fine;
+//   @import, JS import and fetch, in HTML, CSS, JS, and the XML/XSL feeds, sitemaps, and
+//   feed stylesheets); outbound <a href> is fine;
 // - the build log has no warning outside the reasoned allowlist, and never a deprecation.
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeAll, describe, expect, test } from "vitest";
 import { resolveFile } from "../e2e/static-server.js";
 import { EXPECTED_ROUTES, listFiles } from "./site.js";
-import { classify, cssUrls, htmlRefs, jsRemoteLoads } from "./refs.js";
+import { classify, cssUrls, htmlRefs, jsRemoteLoads, xmlRefs } from "./refs.js";
 import { BUILD_LOG, WARNING_ALLOWLIST, findWarnings } from "./build-log.js";
 
 const DIST = resolve(process.env.DIST_DIR ?? "dist");
@@ -69,6 +70,7 @@ describe("dist/ references", () => {
       if (file.endsWith(".html")) refs = htmlRefs(read(file));
       else if (file.endsWith(".css"))
         refs = cssUrls(read(file)).map((url) => ({ url, loads: true, where: "css url()/@import" }));
+      else if (/\.(?:xml|xsl)$/.test(file)) refs = xmlRefs(read(file));
       else if (/\.m?js$/.test(file))
         refs = jsRemoteLoads(read(file)).map((url) => ({
           url,

@@ -16,11 +16,27 @@ describe("Astro", () => {
   });
 });
 
-// Word boundaries: "gtag" alone would match identifiers such as langTags.
-const BANNED = /\b(?:twikoo|waline|giscus|partytown|gtag|umami)\b/i;
+// Substring matches, so camelCase names such as umamiAnalyticsID count. Only "gtag" needs
+// word boundaries: as a substring it matches identifiers such as langTags.
+const BANNED = /twikoo|waline|giscus|partytown|umami|\bgtag\b/i;
 const TEXT = /\.(?:astro|ts|mts|js|mjs|cjs|json|css|md|mdx|html|svg|txt|ya?ml)$/i;
 
 describe("no comment system, analytics, or Partytown", () => {
+  it("the pattern catches camelCase names and gtag calls, not langTags", () => {
+    for (const hit of [
+      "umamiAnalyticsID: ''",
+      "const walineConfig = {}",
+      "giscusContainer",
+      "TwikooInit()",
+      "@astrojs/partytown",
+      "window.gtag('js', new Date())",
+      "googletagmanager.com/gtag/js",
+    ]) {
+      expect(BANNED.test(hit), hit).toBe(true);
+    }
+    expect(BANNED.test("const langTags = await getAllTags(lang)")).toBe(false);
+  });
+
   it("src/ and package.json do not mention twikoo, waline, giscus, partytown, gtag, umami", () => {
     /** @type {string[]} */
     const hits = [];

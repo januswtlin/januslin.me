@@ -42,20 +42,33 @@ export default [
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },
-    rules: {
-      // Off for the vendored theme, which follows its own conventions; each would only
-      // rewrite working upstream code:
-      // `cond ? a++ : b++` counters in scripts/apply-lqip.ts
-      "@typescript-eslint/no-unused-expressions": "off",
-      // `\-` inside a character class (src/content.config.ts)
-      "no-useless-escape": "off",
-      // Astro's generated `/// <reference path="../.astro/types.d.ts" />` (src/env.d.ts)
-      "@typescript-eslint/triple-slash-reference": "off",
-      // empty interfaces that merge UnoCSS attributify types into Astro's JSX (src/types/)
-      "@typescript-eslint/no-empty-object-type": "off",
-      // the generic memoize helper (src/utils/cache.ts)
-      "@typescript-eslint/no-explicit-any": "off",
-    },
+  },
+  // Rules off for single vendored files only, where the upstream code follows its own
+  // convention and a fix would only rewrite working code:
+  {
+    // `cond ? a++ : b++` counters
+    files: ["scripts/apply-lqip.ts"],
+    rules: { "@typescript-eslint/no-unused-expressions": "off" },
+  },
+  {
+    // `\-` inside a character class
+    files: ["src/content.config.ts"],
+    rules: { "no-useless-escape": "off" },
+  },
+  {
+    // Astro's generated `/// <reference path="../.astro/types.d.ts" />`
+    files: ["src/env.d.ts"],
+    rules: { "@typescript-eslint/triple-slash-reference": "off" },
+  },
+  {
+    // an empty interface that merges UnoCSS attributify types into Astro's JSX
+    files: ["src/types/global.d.ts"],
+    rules: { "@typescript-eslint/no-empty-object-type": "off" },
+  },
+  {
+    // the generic memoize helper
+    files: ["src/utils/cache.ts"],
+    rules: { "@typescript-eslint/no-explicit-any": "off" },
   },
   // Playwright tests run code in the page through page.evaluate.
   {

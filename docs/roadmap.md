@@ -33,6 +33,8 @@ The table summarizes every task in [plan #53](https://github.com/januswtlin/janu
 | Planned | T19: Add Renovate, maintenance tooling, and missing-English checks. | [#68](https://github.com/januswtlin/januslin.me/issues/68) | — |
 | Planned | T20: Configure scheduled agent tasks and their prompts. | [#69](https://github.com/januswtlin/januslin.me/issues/69) | — |
 
+**Follow-up from T09 ([#58](https://github.com/januswtlin/januslin.me/issues/58)):** the format check leaves the vendored Retypeset code alone. A task that creates a project-owned directory under `src/` (for example `src/lib/`) adds it to the Prettier allowlist in `.prettierignore` in the same PR. Vendored files are never reformatted.
+
 ## Future ideas
 
 These ideas are outside the execution plan until the author accepts them and approves a task issue. Issue and PR columns link existing work; a dash means none is linked yet. R07 is already included in T09 and T16 above.
