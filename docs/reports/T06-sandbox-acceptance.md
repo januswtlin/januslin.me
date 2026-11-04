@@ -25,15 +25,14 @@ save/#74 moved to #112; #73 is no longer needed. The designated follow-up machin
 account is `isweichen`, restricted to this repository. Its connection is not
 proved by this local run. Only the author closes tasks or merges PRs.
 
-## OpenAI egress inventory gap
+## OpenAI egress inventory (resolved)
 
-Working in-VM Codex login/inference requires OpenAI destinations permitted by
-the live policy. Those hosts and their rule scope are not yet listed in the
-sandbox allowlist. V19/V22/V28 explicitly retain this inventory gap alongside
-the recorded authentication decision. The author's policy-listing human task is
-[#116](https://github.com/januswtlin/januslin.me/issues/116), using the existing
-read-only Check in `allow-sandbox-host.md`. No host rows were guessed or policy
-changes performed; successful inference alone does not identify the rules.
+The gap left open by PR #114 is closed. The author's `sbx policy ls agent-vm --wide`
+listing (2026-11-04, [#116](https://github.com/januswtlin/januslin.me/issues/116)) shows two local rules scoped to `sandbox:agent-vm`,
+not global: network `tcp` `auth.openai.com:443` and `chatgpt.com:443`, used by
+in-VM Codex login and inference. All global rules matched the allowlist table.
+The rows were added to `docs/agents/sandbox.md` from that listing; no policy
+change was performed or requested.
 
 ## Login recovery command verification (round two)
 

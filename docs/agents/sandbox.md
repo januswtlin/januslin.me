@@ -63,15 +63,7 @@ The App keys are never mounted. The agent inside the VM cannot run `sbx`; every 
 
 ## Egress allowlist
 
-Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. The current sandbox is `agent-vm`; the global rules also apply during creation. Each host is limited to port 443 (or 80 for Ubuntu's mirror). The table below is the recorded baseline, with an open Codex egress inventory gap:
-in-VM Codex login/inference work, so OpenAI destinations are allowed by the live
-policy but are not yet listed here. Their hostnames, ports and rule scope await
-the author's `sbx policy ls agent-vm --wide` output, requested in
-[#116](https://github.com/januswtlin/januslin.me/issues/116) using the Check block in
-[allow-sandbox-host.md](../runbooks/allow-sandbox-host.md); no policy change is
-requested. Add OpenAI rows only from that output, never from guessed destinations.
-Until reconciled, do not claim the live policy exactly matches this table.
-The gap is tracked in V19/V22/V28 of `docs/infra-current-state.md`.
+Policy: `sbx policy init deny-all`, then these rules **global** (no `--sandbox`): removing a sandbox deletes its scoped rules, and the kit needs the network while the sandbox is created. The current sandbox is `agent-vm`; the global rules also apply during creation. Each host is limited to port 443 (or 80 for Ubuntu's mirror). The exceptions to global scope are the kit-provisioned Anthropic rules and the two OpenAI rules, which are scoped to `agent-vm`. The table was reconciled against the author's `sbx policy ls agent-vm --wide` listing on 2026-11-04 ([#116](https://github.com/januswtlin/januslin.me/issues/116)).
 
 | Host | Rule | Why |
 |---|---|---|
@@ -81,11 +73,12 @@ The gap is tracked in V19/V22/V28 of `docs/infra-current-state.md`.
 | `cdn.playwright.dev`, `playwright.download.prss.microsoft.com` | `:443` | `pnpm exec playwright install chromium` (Mermaid at build time, tests) |
 | `storage.googleapis.com` | `:443`, HTTP `GET,HEAD`, path `/chrome-for-testing-public/**` | `cdn.playwright.dev` redirects Chromium downloads to Google's Chrome for Testing bucket; other paths and methods are refused (403) |
 | `ports.ubuntu.com` | `:80`, HTTP `GET,HEAD`, path `/ubuntu-ports/**` | Chromium's system libraries, installed by the kit; `apt` verifies Ubuntu's signatures |
-| `api.anthropic.com`, `bridge.claudeusercontent.com`, `claude.com`, `code.claude.com`, `downloads.claude.ai`, `mcp-proxy.anthropic.com`, `platform.claude.com` | `:443`, added by the Claude Code kit (inherited by `sandbox/kit`) | Claude Code, including Remote Control |
+| `api.anthropic.com`, `bridge.claudeusercontent.com`, `claude.com`, `code.claude.com`, `downloads.claude.ai`, `mcp-proxy.anthropic.com`, `platform.claude.com` | `:443`, added by the Claude Code kit (inherited by `sandbox/kit`), scoped to `agent-vm` | Claude Code, including Remote Control |
+| `auth.openai.com`, `chatgpt.com` | `:443`, added by the author, scoped to `agent-vm` (not global) | In-VM Codex ChatGPT login and inference ([ADR-0018](../decisions/ADR-0018-codex-in-vm-login.md)). Removing or re-creating the sandbox deletes these rules, as re-creation also removes Codex (#112/#74); no policy change is requested |
 
 `WRANGLER_SEND_METRICS=false` and `ASTRO_TELEMETRY_DISABLED=1` are set in the sandbox so no telemetry host is needed.
 
-`sbx` stops listing the `default-deny-all` rule once other local rules exist, though the default deny still applies (`sbx diagnose`: "Global network policy — initialized"). Check the deny by behavior: `curl https://example.com` in the VM returns 403 "Approval required" and appears in `sbx policy approval ls`. The template's own start-up requests to `cli.github.com` and `download.docker.com` (its package sources, which the kit disables) can also appear there; dismiss them. The default filesystem rules (`read`/`write` allow `**`) govern which host paths `sbx` may mount; only the `agent` account runs `sbx create`, with the mounts above.
+`sbx policy ls agent-vm --wide` lists the `default-deny-all` rule (local, deny `tcp,udp` `**`) as "active — Implicit fallback when no applicable policy decides the request" (observed 2026-11-04). Also check the deny by behavior: `curl https://example.com` in the VM returns 403 "Approval required" and appears in `sbx policy approval ls`. The template's own start-up requests to `cli.github.com` and `download.docker.com` (its package sources, which the kit disables) can also appear there; dismiss them. The default filesystem rules (`read`/`write` allow `**`) govern which host paths `sbx` may mount; only the `agent` account runs `sbx create`, with the mounts above.
 
 **Adding a host:** the agent raises a `human-task` issue naming the blocked host (`sbx policy approval ls` on the host shows it) and why it is needed. The author decides and adds the rule (`docs/runbooks/allow-sandbox-host.md`); the same day a docs PR adds the row above. A rule without a row is a finding in the quarterly review. Never `allow-all` or `**`.
 
@@ -140,11 +133,10 @@ admin-enforced policy. Config/requirements checks are recorded under V8.
 The former `sandbox/codex-proxy/` mixin and transport config remain historical,
 unselected candidates. Do not install them as part of the accepted in-VM route.
 No host binding, policy, or allowlist changes were performed by this implementer.
-OpenAI destinations are permitted in the live policy but their actual rules are
-missing from the allowlist table. V19/V22/V28 track this open inventory gap,
-pending the author's policy listing in [#116](https://github.com/januswtlin/januslin.me/issues/116).
-Successful inference does not identify the hosts or their scope, prove the
-proxy sentinel design, or justify wildcard network access.
+The OpenAI rules Codex uses, `auth.openai.com:443` and `chatgpt.com:443` scoped
+to `agent-vm`, are in the allowlist table above, reconciled from the author's
+policy listing ([#116](https://github.com/januswtlin/januslin.me/issues/116)). Successful inference does not prove the proxy sentinel
+design or justify wildcard network access.
 
 Runtime/recovery: [codex-runtime.md](../runbooks/codex-runtime.md) and
 [codex-login.md](../runbooks/codex-login.md) on reviewed `main`. #73 is no longer

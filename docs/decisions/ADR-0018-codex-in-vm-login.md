@@ -56,12 +56,10 @@ The author accepts this risk in approving in-VM login. Never read, print, copy,
 commit, or publish authentication files; inspect only non-secret status/config.
 
 The host still runs no AI and exposes no App keys. In-VM Codex login/inference
-depend on OpenAI egress permitted by the live policy, but those destinations and
-their rule scope are not yet recorded in the allowlist. This is an open inventory
-gap in V19/V22/V28. The coordinator requests the author's read-only
-`sbx policy ls agent-vm --wide` output through a human task; add rows only from
-that output. Until then, the OpenAI rules cannot be compared with the documented
-baseline. Allowed destinations remain possible exfiltration channels.
+depend on two OpenAI rules, `auth.openai.com:443` and `chatgpt.com:443`, scoped
+to `agent-vm` rather than global, so removing or re-creating the sandbox deletes
+them. They are recorded in the allowlist from the author's policy listing
+(2026-11-04, [#116](https://github.com/januswtlin/januslin.me/issues/116)). Allowed destinations remain possible exfiltration channels.
 No network policy or credential setting changes in this PR. Project defaults
 and automatic review reduce accidental actions, but are not enforced personal-
 account policy against VM root. Identity is checked from API actors, separately
