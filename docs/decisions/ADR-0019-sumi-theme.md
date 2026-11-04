@@ -17,8 +17,8 @@ The re-evaluation is in [`docs/reports/theme-reevaluation.md`](../reports/theme-
 
 ## Decision
 - Vendor Sumi at `c6bbdd91417cb0a624e7abbb570544c951ac5c6f` (v1.0.0) in place of Retypeset. We own the code and never merge upstream, as with Retypeset.
-- Use the unified pipeline from ADR-0001: `markdown.processor: unified({ remarkPlugins, rehypePlugins })`, KaTeX, and `rehype-mermaid` with `strategy: 'inline-svg'`. Callouts use the `:::note` directives that `docs/content-model.md` names, ported from Retypeset's plugin.
-- Chinese text uses **Noto Serif TC** (SIL OFL 1.1, Taiwan forms), self-hosted and subset at build time to a measured font budget. Sumi's Latin faces (Source Serif 4, JetBrains Mono, OFL 1.1) stay first in the stack, except for CJK punctuation, which is routed to the CJK face.
+- Use the unified pipeline from ADR-0001: `markdown.processor: unified({ remarkPlugins, rehypePlugins })`, KaTeX, and `rehype-mermaid` with `strategy: 'inline-svg'`. Callouts use the `:::note` directives that `docs/content-model.md` names, ported from Retypeset's plugin. Text and leaf directives that no plugin handles are turned back into their source text, so `1:15` stays text instead of becoming an empty `<div>`.
+- Chinese text uses **Noto Serif TC** (SIL OFL 1.1, Taiwan forms), self-hosted and subset at build time to a measured font budget. Sumi's Latin faces (Source Serif 4, JetBrains Mono, OFL 1.1) stay first in the stack, except for CJK punctuation, which is routed to the CJK face. `THIRD_PARTY_NOTICES.md` also records Sumi's OG font, `src/assets/fonts/jetbrains-mono-latin-400.ttf`, which sits outside `public/fonts/` and its license file.
 - Keep Sumi's design: tokens, layout, header, TOC rail, and palettes. These changes are made to fit our requirements, and every other visible change needs the author's approval (`needs-human`):
   - CJK typesetting rules ported from Retypeset's heti-based styles;
   - no synthetic italics for Chinese;
