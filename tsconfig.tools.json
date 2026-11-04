@@ -1,0 +1,17 @@
+{
+  "//": "Type-checks the project's own JavaScript (scripts/, tests/, root *.config.js) with checkJs (T07, #57). Tests import site modules from src/lib/ as .ts (T09, #58). tsconfig.json is the Astro app's, checked by astro check.",
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["scripts/**/*.js", "tests/**/*.js", "*.config.js", "src/types/*.d.ts"],
+  "exclude": ["node_modules", "drafts", ".claude", ".pnpm-store"]
+}
