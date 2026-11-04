@@ -1,102 +1,56 @@
-# Prepare the candidate Codex runtime in the existing VM
-Where: first `agent-session` for sbx, then the existing sandbox shell for installation · Time: about 20 min plus probes
+# Check the Codex runtime in the existing VM
+Where: existing `agent-vm` shell · Time: about 10 min
 
-Candidate only. Run only after this runbook is reviewed on `main`, #55 is completed,
-the author approves #56, and the coordinator has verified the human connection
-task. No AI installation or execution takes place in the host `agent` shell.
-The live acceptance ledger is `docs/agents/codex.md`.
+The author's verified 2026-11-04 amendment on #56 selects in-VM subscription login
+(ADR-0018) and mounted GitHub role tokens. #72 no longer gates local dispatch;
+#73 is retired. Do not install the old OpenAI proxy mixin, repeat working login,
+change host policy, or recreate a sandbox as part of this check. Preserve the
+existing binary, model, UUID, branch, and PR. New author commands wait for reviewed
+`main`; agents only inventory completed setup and run the authorized task.
 
-#55 is completed. The remaining first gate is #72: confirm ChatGPT's GitHub
-connection is the machine account, revoke the author's grant, and record connector
-names/decisions and permissions. On 2026-11-02 the author confirmed that ChatGPT
-still connects as `januswtlin`. Until that is corrected and checked, stop all
-Codex dispatch/model calls, login, and identity-dependent acceptance probes.
-
-The author already reports Codex running in `agent-vm`. Inventory completed steps
-with the coordinator before changing anything; do not repeat an installation,
-login, binding, or restart merely because its evidence has not yet been recorded.
-The steps below cover missing setup only, after the connection gate and merge.
-Presence of a binary is not V8/V22/V28/V29 acceptance.
-
-1. In `agent-session`, confirm sbx version/help before changing anything:
+1. Check the existing runtime without starting a model session:
    ```sh
-   sbx version
-   sbx kit add --help
-   sbx secret set --help
-   ```
-   If kit-add is unavailable or the sandbox lacks its required recreate-aware
-   label, stop and report that exact blocker. Preserve the existing VM and session;
-   do not delete it or start a bypass-mode Codex sandbox.
-2. Complete `codex-login.md`. Approve only the OAuth binding domains
-   `auth.openai.com` and `chatgpt.com` for `openai` when sbx asks. No API key, no
-   passthrough, no `github` proxy secret (it would overwrite the reviewer identity).
-3. Ensure the host clone is reviewed, current `main`, then add the mixin. This
-   restarts the sandbox; stop the coordinator cleanly and retain its session ID.
-   ```sh
-   cd ~/januslin.me
-   git checkout main
-   git fetch origin main
-   git merge --ff-only origin/main
-   sbx kit add agent-vm ./sandbox/codex-proxy
-   ```
-   Through `allow-sandbox-host.md`, approve `auth.openai.com:443` for OAuth refresh
-   and `chatgpt.com:443` for subscription inference. Record them as applied only
-   after inspecting the actual policy. Do not add wildcard domains. Report other
-   blocked destinations individually with a reason before author approval.
-4. In the existing VM shell, verify prerequisites and the stable release before
-   installing any missing runtime. If the existing binary is already this stable
-   version, retain it and record its version; skip the install command. A changed
-   latest stable version needs a reviewed pin update first.
-   ```sh
-   test -d /run/sandbox/source
-   python3 -c 'import sys; assert sys.version_info >= (3, 11); print(sys.version.split()[0])'
-   node --version
-   npm view @openai/codex version
-   npm install --global @openai/codex@0.166.0
+   python3 --version
    codex --version
    codex exec --help
    codex exec resume --help
+   codex features list
+   codex mcp list
    ```
-   If Python is absent, stop: the kit check must be fixed through a reviewed
-   change, not an ad hoc host install. This candidate does not establish that these
-   checks have passed.
-5. Still inside the VM, create the candidate user transport config without
-   overwriting an existing one. Inspect existing config locally and merge by hand
-   if the check refuses. Preserve the user's model; do not copy any host auth cache.
-   ```sh
-   (set -euC
-     umask 077
-     mkdir -p "$HOME/.codex"
-     test ! -e "$HOME/.codex/config.toml"
-     test ! -L "$HOME/.codex/config.toml"
-     cat sandbox/codex-proxy/config.toml > "$HOME/.codex/config.toml"
-   )
-   ```
-6. Ask the coordinator in the VM to perform V8, V22, V28's initial proxy/inference
-   checks, and V29 with the ledger. V28's save/re-create portion is still pending.
-   Check sentinels by equality in code and report booleans only, never contents.
-   Do not infer protection from the existence of config files. In particular test
-   approval review with the custom proxy provider and the actual selected model.
-   A login check alone does not establish subscription inference or safe approvals.
-7. Only after those initial checks pass, save the template using `save-sandbox-template.md`
-   and measure re-creation persistence with `recreate-sandbox.md`. Then authorize
-   V30's small real task through the normal T08 gate and cross-tool workflow only
-   when that persistence evidence completes V28 and the repeated V29 checks pass.
+   Expected measured baseline: Python 3.11+, Codex 0.166.0, apps/plugins false,
+   gateway disabled. Preserve any different version and report it; do not silently
+   install or downgrade. Never read `auth.json` or dump user/session files.
+2. Read only non-secret config settings and requirements paths, recording sandbox,
+   approval policy/reviewer and tool flags in the acceptance ledger. Project
+   `.codex/config.toml` should load after #113. The project's defaults are not an
+   admin-enforced personal-account policy; a non-model CLI override can establish
+   that limit without invoking any connector or plugin.
+3. Use the coordinator's already-authorized dispatch/resume to measure V29. Record
+   the effective policy on both turns, a refused `.git` metadata write, and the
+   automatically reviewed commit/push outcome. No bypass or full-access fallback.
+   Compare API push/PR actor numeric IDs with mounted `identity.json`; commit
+   author can differ and must be recorded separately. Never edit global git
+   identity or read token files for this check.
+4. If login expires, stop routing and ask the coordinator for an author-only
+   recovery human task using `codex-login.md`. Do not invoke login as an agent.
+5. The coordinator supplies independent review, exact-session findings resume,
+   final report, and reverse-review evidence. The author verifies V8, V22/V28,
+   V29, V30, and reverse review before closing T06. Fake tests alone do not
+   establish live acceptance.
+
+Connection/connector review (#72), cloud/V10 (#75), phone steering, and template
+save/re-creation (#74) are follow-up #112. They no longer gate local task work.
+Only the author starts cloud tasks or changes host configuration. In-VM login
+may expose the subscription credential to VM processes; do not claim sentinel
+isolation. V22/V28 are resolved by recording that decision and risk, subject to
+the author's verification of the PR evidence.
 
 ## Check
 
-In the VM:
 ```sh
-python3 --version
-codex --version
 sh tests/scripts/codex-dispatch/test.sh
 ```
-In `agent-session`:
-```sh
-sbx secret ls
-sbx policy ls agent-vm --wide
-sbx policy approval ls
-```
-Expected: Python 3.11+, Codex 0.166.0, fake tests pass; `openai` OAuth configured;
-only approved hosts; completed ledger entries with real evidence. These outputs
-alone do not complete V8/V22/V28/V29 or #56. Never paste a secret or raw session log.
+
+Expected: fake tests pass; actual effective policy and API actors are separately
+recorded in `docs/reports/T06-sandbox-acceptance.md` and the PR handoff. No raw
+authentication/session/result files, login codes, or prompts are published.

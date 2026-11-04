@@ -1,26 +1,30 @@
-# Codex login through `sbx`
-Where: `agent-session`, and your browser for the ChatGPT sign-in · Time: about 10 min
+# Recover the Codex login inside the existing VM
+Where: the author's terminal in the existing `agent-vm` · Time: about 10 min
 
-1. Only after `connect-chatgpt-github.md` is done.
-   Confirm the machine-account connection and connector decisions first. This
-   login does not install Codex or prove that the Claude-template VM uses it.
-   If OAuth was already configured, record its non-secret service/status evidence
-   with the coordinator instead of repeating login.
-2. ```sh
-   sbx secret set openai --oauth
+This is the author-only recovery route approved in the verified 2026-11-04
+comment on #56 and recorded in ADR-0018. Use this runbook only after it is reviewed
+on `main` and the coordinator raises an actionable login-recovery human task.
+#73's old host-OAuth procedure is no longer needed. Do not repeat a working login.
+The ChatGPT/GitHub connection is follow-up #112/#72, not a local dispatch gate.
+
+1. The coordinator stops Codex routing, retains the UUID/claim/branch/PR, and tells
+   you that login has expired. Do not copy or inspect authentication files.
+2. In the existing VM terminal (never the host `agent` shell), run:
+   ```sh
+   codex login
    ```
-   Finish the ChatGPT sign-in in your browser; if none opens, open the URL it prints.
-3. Record the sbx version and OAuth scoping supported by its help. The existing
-   0.50.1 help says `openai/global only`: do not add `--sandbox agent-vm` unless a
-   newer installed version explicitly supports that combination. Do not fall back
-   to an API key or copy `auth.json` into the VM. Adding the new OAuth mixin/binding
-   follows the separately reviewed `codex-runtime.md`, not this login command.
+   Follow the displayed sign-in instructions privately. Never paste a login URL,
+   code, token, or authentication file into a public issue. If login fails, stop
+   and report only the sanitized error category; do not use an API key, another
+   account, or a host-credential workaround.
+3. Tell the coordinator whether login completed. It checks continuing task
+   authorization and resumes the existing UUID; it does not create another task
+   or session. GitHub remains on `agent-gh`/the credential helper and mounted
+   role tokens. No `github` proxy secret or global git identity change.
 
 ## Check
-```sh
-sbx secret ls; sbx secret ls --sandbox agent-vm
-```
-Expected: `openai` with OAuth configured.
-Reply with service name, configured status, version, and scoping outcome only;
-never tokens or the credential file. V22/V28 remain pending until proxy behavior
-and VM sentinel isolation are actually tested.
+
+Confirm the CLI reports a completed sign-in, without printing credential files.
+Reply with success/failure and the CLI version only. The login may be readable
+inside the VM (the author-approved risk); success is not a host sentinel-isolation
+result or proof of GitHub/cloud identity.

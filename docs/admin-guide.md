@@ -91,24 +91,30 @@ Monthly, when the release notes show a new version (`sbx` is early access): [`up
   Only you start cloud sessions and scheduled tasks.
 - Local agents act on GitHub only through the Apps, whatever the tool login can reach.
 
-### Codex preparation (pending T06 acceptance)
+### Codex runtime and acceptance
 
-The prepared runtime uses the existing `agent-vm` VM and the ChatGPT subscription;
-Codex is never installed or started in `agent-session`. Do the connection review
-first ([connect-chatgpt-github.md](runbooks/connect-chatgpt-github.md)), then host
-OAuth ([codex-login.md](runbooks/codex-login.md)). The additional proxy mixin and
-VM-only install are a candidate: [codex-runtime.md](runbooks/codex-runtime.md).
-New runbook commands wait for reviewed `main`, completed #55, and approved #56.
-The local preparation exception does not authorize executing an unmerged host kit.
+Codex 0.166.0 is installed inside `agent-vm`. Your verified 2026-11-04 amendment
+on #56 approves login inside the VM, replacing the proposed host OpenAI OAuth
+route ([ADR-0018](decisions/ADR-0018-codex-in-vm-login.md)). The subscription login
+may be readable inside the VM; do not paste, copy, or upload its files. The host
+still runs no AI. GitHub uses mounted role tokens through the existing helper,
+with bot identities from `identity.json`, independently of the Codex login.
 
-Save a template only after the initial OAuth/inference/sandbox checks pass
-([save-sandbox-template.md](runbooks/save-sandbox-template.md)); it does not by
-itself preserve credentials, kit bindings, network policy, or every user-config
-path. Re-creation completes V28's persistence checks separately
-([recreate-sandbox.md](runbooks/recreate-sandbox.md)). The cloud environment and
-phone probe are a separate sitting, [codex-cloud.md](runbooks/codex-cloud.md),
-started only by you. Full acceptance is still pending in
-[the ledger](agents/codex.md#acceptance-ledger-all-live-rows-pending).
+Inventory existing setup through [codex-runtime.md](runbooks/codex-runtime.md).
+If login expires, the coordinator stops routing and raises an author-only human
+task for [codex-login.md](runbooks/codex-login.md); agents never repeat login or
+work around credentials. #73 is no longer needed. #72 no longer gates local
+Codex dispatch. The designated follow-up ChatGPT/cloud account is `isweichen`,
+restricted to this repository; connection verification is still separate work.
+
+Connection/connector checks (#72), template save/re-creation (#74), cloud (#75,
+V10), and phone steering moved to #112. Their runbooks remain follow-up material,
+not prerequisites for the authorized local dispatch. Only you start cloud tasks.
+
+Before T06 closes, verify V8, V22/V28, V29, V30, and the reverse review using
+[the ledger](agents/codex.md#acceptance-ledger) and [acceptance evidence](reports/T06-sandbox-acceptance.md).
+The coordinator supplies the final cross-tool review/resume/report links. No
+model report or green fake test closes the task.
 
 ## Host managed settings
 
