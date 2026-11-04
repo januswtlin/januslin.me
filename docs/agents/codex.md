@@ -130,6 +130,9 @@ claims until the task/PR is resolved; do not automatically delete a failed claim
 ## Recovery
 
 No failure automatically retries, creates a new thread, or falls back to bypass.
+An observed SIGINT, SIGTERM, or SIGHUP is reported as `interrupted` even if the
+child subsequently emits completion and exits zero. Its result is withheld;
+the retained UUID and claim still require deliberate coordinator recovery.
 `interrupted`, `incomplete`, and `invalid_result` keep the claim and any observed
 UUID. Resume that exact UUID from its original worktree with a local findings
 file; never `--last`. The private record retains the original issue title/body/
