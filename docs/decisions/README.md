@@ -40,6 +40,7 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 | [0015](ADR-0015-app-key-sets.md) | App key sets, kept in the author's account, one active on the host | proposed; developers' own sets amended by ADR-0016 |
 | [0016](ADR-0016-one-editor-many-developers.md) | One editor, any number of developers | proposed |
 | [0017](ADR-0017-task-context-and-token-efficiency.md) | Reduce task context while preserving completion gates | proposed |
+| [0018](ADR-0018-codex-in-vm-login.md) | Codex login inside the VM and active role identities | author-approved decision; human acceptance verification pending |
 
 ## Template
 
