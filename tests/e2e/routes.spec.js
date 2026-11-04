@@ -22,7 +22,7 @@ for (const route of routes) {
     // Let idle-time work (sound preloading, prefetch) run before counting requests.
     await page.evaluate(() => new Promise((done) => requestIdleCallback(() => done(undefined))));
     await page.waitForLoadState("networkidle");
-    expect(pageLog.consoleErrors).toEqual([]);
-    expect(foreignRequests(pageLog.requests, String(baseURL))).toEqual([]);
+    expect.soft(pageLog.consoleErrors).toEqual([]);
+    expect.soft(foreignRequests(pageLog.requests, String(baseURL))).toEqual([]);
   });
 }
