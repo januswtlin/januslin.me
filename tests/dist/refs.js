@@ -31,7 +31,10 @@ const srcsetUrls = (srcset) =>
     .map((c) => c.trim().split(/\s+/)[0])
     .filter(Boolean);
 
-/** CSS url() and @import targets. @param {string} css */
+/**
+ * CSS url() targets and the targets of import rules.
+ * @param {string} css
+ */
 export function cssUrls(css) {
   const out = [];
   for (const m of css.matchAll(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi)) out.push(m[2]);
@@ -67,7 +70,9 @@ export function htmlRefs(html) {
     if (src) refs.push({ url: src, loads: true, where: `<${tag} src>` });
     for (const attr of ["srcset", "imagesrcset"]) {
       const v = el.getAttribute(attr);
-      if (v) for (const u of srcsetUrls(v)) refs.push({ url: u, loads: true, where: `<${tag} ${attr}>` });
+      if (v)
+        for (const u of srcsetUrls(v))
+          refs.push({ url: u, loads: true, where: `<${tag} ${attr}>` });
     }
     const href = el.getAttribute("href");
     if (href && tag === "link") refs.push({ url: href, loads: true, where: `<link href>` });
@@ -76,8 +81,10 @@ export function htmlRefs(html) {
       refs.push({ url: el.getAttribute("content") ?? "", loads: false, where: "og:image" });
     }
     const style = el.getAttribute("style");
-    if (style) for (const u of cssUrls(style)) refs.push({ url: u, loads: true, where: `<${tag} style>` });
-    if (tag === "style") for (const u of cssUrls(el.text)) refs.push({ url: u, loads: true, where: "<style>" });
+    if (style)
+      for (const u of cssUrls(style)) refs.push({ url: u, loads: true, where: `<${tag} style>` });
+    if (tag === "style")
+      for (const u of cssUrls(el.text)) refs.push({ url: u, loads: true, where: "<style>" });
     if (tag === "script" && !src) {
       for (const u of jsRemoteLoads(el.text)) refs.push({ url: u, loads: true, where: "<script>" });
     }

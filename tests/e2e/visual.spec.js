@@ -3,7 +3,7 @@
 // sandbox. The footer's copyright line is masked: it shows the current year, which would
 // change the snapshot every January without any change to the site.
 import { FIXTURE_POST } from "../dist/site.js";
-import { expect, test } from "./fixtures.js";
+import { expect, settle, test } from "./fixtures.js";
 
 const PAGES = [
   { name: "home", route: "/" },
@@ -20,10 +20,16 @@ for (const { name, route } of PAGES) {
         await page.addInitScript((s) => localStorage.setItem("theme", s), scheme);
         await page.setViewportSize({ width, height: 900 });
         await page.goto(route);
-        await page.waitForLoadState("networkidle");
-        await page.evaluate(() => document.fonts.ready);
+        // Retypeset fades content in with staggered delays from opacity 0; wait for the
+        // animations to end rather than letting Playwright cancel the ones not yet started.
+        await settle(page);
+        // Grow the viewport to the page height and capture it, instead of a full-page
+        // capture: Chromium's full-page capture leaves parts of this layout (fixed sidebar,
+        // view-transition names) unpainted.
+        const height = await page.evaluate(() => document.documentElement.scrollHeight);
+        await page.setViewportSize({ width, height });
+        await settle(page);
         await expect(page).toHaveScreenshot(`${name}-${width}-${scheme}.png`, {
-          fullPage: true,
           mask: [page.locator("footer p:nth-of-type(2)")],
         });
       });

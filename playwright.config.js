@@ -12,7 +12,10 @@ export default defineConfig({
   retries: 0,
   reporter: [["list"]],
   expect: {
-    toHaveScreenshot: { maxDiffPixelRatio: 0, threshold: 0.2, animations: "disabled" },
+    // "allow": the tests wait for Retypeset's entrance animations to finish (settle() in
+    // tests/e2e/fixtures.js). "disabled" cancels some finished fill-forwards animations and
+    // leaves their elements at opacity 0 in full-page captures.
+    toHaveScreenshot: { maxDiffPixelRatio: 0, threshold: 0.2, animations: "allow" },
   },
   use: {
     ...devices["Desktop Chrome"],

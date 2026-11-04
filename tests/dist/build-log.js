@@ -10,13 +10,22 @@ export const BUILD_LOG = resolve(process.env.BUILD_LOG ?? ".logs/build.log");
  * reason a reviewer can check; never add one for a deprecation.
  * @type {{ pattern: RegExp, reason: string }[]}
  */
-export const WARNING_ALLOWLIST = [];
+export const WARNING_ALLOWLIST = [
+  {
+    pattern: /\[lightningcss minify\] 'target-current' is not recognized as a valid pseudo-class/,
+    reason:
+      "Retypeset's TOC highlights the current section with a:target-current (CSS Overflow 5 " +
+      "scroll markers, supported in Chromium). lightningcss does not know the pseudo-class " +
+      "yet; it warns and keeps the rule as written (checked in dist/_astro/*.css).",
+  },
+];
 
 const WARNING = /\[warn\]|\bwarn(?:ing)?s?\b|\(!\)|deprecat/i;
 const DEPRECATION = /deprecat/i;
 
+// ANSI color codes start with ESC (\x1b).
 /** @param {string} s */
-const stripAnsi = (s) => s.replace(/\x1b\[[0-9;]*[A-Za-z]/g, "");
+const stripAnsi = (s) => s.replace(/\x1b\[[0-9;]*[A-Za-z]/g, ""); // eslint-disable-line no-control-regex
 
 /**
  * @param {string} log

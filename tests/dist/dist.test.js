@@ -29,7 +29,11 @@ const read = (file) => readFileSync(resolve(DIST, file), "utf8");
 
 /** URL path a dist file is served at. @param {string} file */
 const pagePath = (file) =>
-  file === "index.html" ? "/" : file.endsWith("/index.html") ? `/${file.slice(0, -10)}` : `/${file}`;
+  file === "index.html"
+    ? "/"
+    : file.endsWith("/index.html")
+      ? `/${file.slice(0, -10)}`
+      : `/${file}`;
 
 describe("dist/ routes", () => {
   test.each(EXPECTED_ROUTES)("expected route %s exists", async (route) => {
@@ -45,7 +49,8 @@ describe("dist/ references", () => {
       /** @type {{ url: string, where: string }[]} */
       let refs = [];
       if (file.endsWith(".html")) refs = htmlRefs(read(file));
-      else if (file.endsWith(".css")) refs = cssUrls(read(file)).map((url) => ({ url, where: "css" }));
+      else if (file.endsWith(".css"))
+        refs = cssUrls(read(file)).map((url) => ({ url, where: "css" }));
       for (const { url, where } of refs) {
         const c = classify(url, from);
         if (c.kind !== "internal") continue;
@@ -65,7 +70,11 @@ describe("dist/ references", () => {
       else if (file.endsWith(".css"))
         refs = cssUrls(read(file)).map((url) => ({ url, loads: true, where: "css url()/@import" }));
       else if (/\.m?js$/.test(file))
-        refs = jsRemoteLoads(read(file)).map((url) => ({ url, loads: true, where: "js import/fetch" }));
+        refs = jsRemoteLoads(read(file)).map((url) => ({
+          url,
+          loads: true,
+          where: "js import/fetch",
+        }));
       for (const { url, loads, where } of refs) {
         if (!loads) continue;
         const c = classify(url, from);

@@ -39,5 +39,7 @@ export function listFiles(dir) {
 export function htmlRoutes(dist) {
   return listFiles(dist)
     .filter((f) => f.endsWith(".html"))
-    .map((f) => (f === "index.html" ? "/" : f.endsWith("/index.html") ? `/${f.slice(0, -10)}` : `/${f}`));
+    .map((f) =>
+      f === "index.html" ? "/" : f.endsWith("/index.html") ? `/${f.slice(0, -10)}` : `/${f}`,
+    );
 }

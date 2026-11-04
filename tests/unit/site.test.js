@@ -16,7 +16,8 @@ describe("Astro", () => {
   });
 });
 
-const BANNED = /twikoo|waline|giscus|partytown|gtag|umami/i;
+// Word boundaries: "gtag" alone would match identifiers such as langTags.
+const BANNED = /\b(?:twikoo|waline|giscus|partytown|gtag|umami)\b/i;
 const TEXT = /\.(?:astro|ts|mts|js|mjs|cjs|json|css|md|mdx|html|svg|txt|ya?ml)$/i;
 
 describe("no comment system, analytics, or Partytown", () => {
