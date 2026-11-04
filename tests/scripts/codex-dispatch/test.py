@@ -163,6 +163,26 @@ class DispatchTests(unittest.TestCase):
             self.assertNotEqual(report['status'], 'reported', mode)
             self.assertEqual((self.base / 'victim').read_text(), 'untouched')
 
+    def test_interruption_survives_clean_child_exit(self):
+        def register(signum, handler):
+            if signum == DISPATCH.signal.SIGTERM and callable(handler):
+                handler(signum, None)
+            return DISPATCH.signal.SIG_DFL
+        # Deliver interruption through the registered handler; leave the fake
+        # child running so it can emit turn.completed and exit successfully.
+        with patch.object(DISPATCH.signal, 'signal', side_effect=register), \
+                patch.object(DISPATCH.os, 'killpg') as terminate:
+            rc, report = self.start()
+            terminate.assert_called_once()
+        self.assertEqual(rc, 1)
+        self.assertEqual(report['status'], 'interrupted')
+        self.assertEqual(report['session_id'], SID)
+        self.assertIsNone(report['result_file'])
+        record = json.loads(Path(report['record_file']).read_text())
+        self.assertEqual(record['status'], 'interrupted')
+        self.assertEqual(record['exit_code'], 0)
+        self.assertEqual(self.start()[0], 1)
+
     def test_rejects_symlink_or_public_state_and_unknown_session(self):
         other = self.base / 'other'
         other.mkdir()
