@@ -89,7 +89,7 @@ The API is read across multiple requests, rather than in a transaction. Re-run `
 1. **Spec.** A task issue exists under the plan, approved by the author.
 2. **Dispatch.** The coordinator session starts an implementer subagent with the dispatch prompt below. Without a coordinator, the author pastes the same prompt into a new local session in the sandbox, or starts a cloud session with it ("Cloud sessions").
 3. **Execute.** The agent works on a branch from an up-to-date `main`, writes the acceptance tests first ("Verification and self-repair"), commits in small logical steps, and opens a draft PR early with `Closes #<n>` in the body.
-4. **Verify.** `pnpm verify` passes (once T07 has created it). The agent proves every acceptance criterion with evidence: test names first; command output, preview URL, or screenshots for what cannot be automated.
+4. **Verify.** `pnpm verify` passes. The agent proves every acceptance criterion with evidence: test names first; command output, preview URL, or screenshots for what cannot be automated.
 5. **Hand off.** The agent marks the PR ready and fills the handoff report.
 6. **Review (mandatory, automatic).** As soon as the PR is ready, and again after any substantive change, the authoring session (or, in the coordinator loop, the coordinator) starts a separate reviewer with a fresh context and the review prompt below. It fixes or answers every blocking finding and reports the outcome. This applies to every PR, docs-only and coordinator PRs included.
 7. **Ready.** The agent requests the author's review on the PR (the notification) and comments the summary.
@@ -187,7 +187,7 @@ sandbox from the local coordinator.
 
 ## Verification and self-repair (ADR-0010)
 
-- `pnpm verify` is the single gate before review: `check`, `lint`, `validate` (from T10), `build` (from T09), and `test` (unit, script, dist, and Playwright tests). T07 creates it; each task extends it as its "Automated verification" section says. Until it exists, `sh tests/scripts/run.sh` is the gate for script changes. The CI task's `ci` runs the same checks.
+- `pnpm verify` is the single gate before review: `check`, `lint`, `validate` (from T10), `build` (from T09), and `test` (unit, script, dist, and Playwright tests). T07 created it with `check`, `lint`, and `test` (`sh tests/scripts/run.sh`, then Vitest); each task extends it as its "Automated verification" section says. The CI task's `ci` runs the same checks.
 - **Acceptance tests first.** Every acceptance criterion that can be automated gets its test before the implementation, in its own `test:` commit that fails on the base. Snapshot tests are the exception: the `test:` commit carries the test without a baseline, and the baseline is recorded after the implementation and justified in the PR. The PR maps each criterion to its test name. Criteria marked "manual" in the task get other evidence.
 - **Show that tests bite.** For each new class of check, break the thing once on purpose (not committed) and paste the failing output in the PR.
 - **Limit redundant work.** Use focused checks while editing, then run the full gate on the final implementation. After a change, rerun the gate; after success, repeat only for a new change, review requirement, or unresolved concern. Keep complete logs locally and return exit status, summary, and relevant failures to the model; inspect failures before fixing them. Never hide a failing exit status.

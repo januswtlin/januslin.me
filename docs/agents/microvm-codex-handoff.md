@@ -68,7 +68,7 @@ Finish #54 first:
    and test changes passed focused checks. Default macOS sh had 12 pre-existing
    sandbox-session fixture failures; existing tests were not changed.
 3. Run sh tests/scripts/run.sh in the actual supported VM environment, plus
-   any relevant focused/static checks. pnpm verify does not exist until T07.
+   any relevant focused/static checks, and pnpm verify (since T07).
    Record the actual head, platform, commands, exit codes, and failures.
 4. Execute scripts/work-status.sh next and human against the real repository
    using the implementer App. Verify the plan order and queue. Find a genuinely
