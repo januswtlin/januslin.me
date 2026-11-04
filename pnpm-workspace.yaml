@@ -1,0 +1,4 @@
+# pnpm settings (pnpm 11+ no longer reads the "pnpm" field in package.json).
+# Dependencies allowed to run install scripts (T09, #58).
+allowBuilds:
+  esbuild: true

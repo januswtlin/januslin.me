@@ -1,13 +1,19 @@
 # The format check covers the Node project's own files only (T07, #57): JavaScript and
 # JSON in scripts/ and tests/, and the root config files. Docs, content, and the sandbox
-# kit are not reformatted. T09 adds src/.
+# kit are not reformatted.
+# The vendored Retypeset code (src/, *.config.ts, scripts/*.ts, public/) keeps upstream's own
+# formatting (T09, #58): Prettier would rewrite 26 of its 31 TS/JS/CSS files and every
+# .astro file, which would bury our changes and make the monthly upstream comparison
+# unreadable. ESLint covers src/.
 /*
 !/scripts/
 !/tests/
 !/package.json
 !/tsconfig.json
+!/tsconfig.tools.json
 !/*.config.js
 !/.prettierrc.json
+/scripts/*.ts
 **/*.md
 **/*.yaml
 **/*.yml

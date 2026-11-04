@@ -1,15 +1,13 @@
 {
+  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "target": "es2024",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "allowJs": true,
-    "checkJs": true,
-    "strict": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "types": ["node"]
+    "lib": ["esnext", "dom"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "allowJs": true
   },
-  "include": ["scripts/**/*.js", "tests/**/*.js", "*.config.js"],
-  "exclude": ["node_modules", "drafts", ".claude"]
+  "include": [".astro/types.d.ts", "src/**/*", "*.config.ts", "scripts/**/*.ts"],
+  "exclude": ["dist", "node_modules", "drafts", ".claude", ".pnpm-store"]
 }

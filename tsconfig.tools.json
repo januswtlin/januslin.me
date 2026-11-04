@@ -1,0 +1,16 @@
+{
+  "//": "Type-checks the project's own JavaScript (scripts/, tests/, root *.config.js) with checkJs (T07, #57). tsconfig.json is the Astro app's, checked by astro check (T09, #58).",
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "include": ["scripts/**/*.js", "tests/**/*.js", "*.config.js"],
+  "exclude": ["node_modules", "drafts", ".claude"]
+}

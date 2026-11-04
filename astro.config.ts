@@ -1,5 +1,5 @@
+import { unified } from '@astrojs/markdown-remark'
 import mdx from '@astrojs/mdx'
-import partytown from '@astrojs/partytown'
 import sitemap from '@astrojs/sitemap'
 import Compress from 'astro-compress'
 import { defineConfig } from 'astro/config'
@@ -16,24 +16,22 @@ import { rehypeExternalLinks } from './src/plugins/rehype-external-links.mjs'
 import { rehypeHeadingAnchor } from './src/plugins/rehype-heading-anchor.mjs'
 import { rehypeImageProcessor } from './src/plugins/rehype-image-processor.mjs'
 import { remarkContainerDirectives } from './src/plugins/remark-container-directives.mjs'
-import { remarkLeafDirectives } from './src/plugins/remark-leaf-directives.mjs'
 import { remarkReadingTime } from './src/plugins/remark-reading-time.mjs'
 
 const { url: site } = themeConfig.site
-const { imageHostURL } = themeConfig.preload ?? {}
-const imageConfig = imageHostURL
-  ? { image: { domains: [imageHostURL], remotePatterns: [{ protocol: 'https' }] } }
-  : {}
 
 export default defineConfig({
   site,
   base,
   trailingSlash: 'always', // Not recommended to change
+  // Astro 7 defaults to JSX whitespace rules ('jsx'), which drop the spaces between inline
+  // elements that Retypeset's templates rely on. `true` keeps Astro 6's HTML-aware
+  // whitespace handling, so the original design renders unchanged (T09, #58).
+  compressHTML: true,
   prefetch: {
     prefetchAll: true,
     defaultStrategy: 'viewport', // hover, tap, viewport, load
   },
-  ...imageConfig,
   i18n: {
     locales: Object.entries(langMap).map(([path, codes]) => ({
       path,
@@ -46,11 +44,6 @@ export default defineConfig({
       injectReset: true,
     }),
     mdx(),
-    partytown({
-      config: {
-        forward: ['dataLayer.push', 'gtag'],
-      },
-    }),
     sitemap(),
     Compress({
       CSS: true,
@@ -61,22 +54,27 @@ export default defineConfig({
     }),
   ],
   markdown: {
-    remarkPlugins: [
-      remarkDirective,
-      remarkMath,
-      remarkContainerDirectives,
-      remarkLeafDirectives,
-      remarkReadingTime,
-    ],
-    rehypePlugins: [
-      rehypeKatex,
-      [rehypeMermaid, { strategy: 'pre-mermaid' }],
-      rehypeSlug,
-      rehypeHeadingAnchor,
-      rehypeImageProcessor,
-      rehypeExternalLinks,
-      rehypeCodeCopyButton,
-    ],
+    // The unified (remark/rehype) pipeline instead of Astro 7's default Sätteri: the theme's
+    // plugins, KaTeX, and build-time Mermaid are unified plugins (ADR-0001).
+    processor: unified({
+      remarkPlugins: [
+        remarkDirective,
+        remarkMath,
+        remarkContainerDirectives,
+        remarkReadingTime,
+      ],
+      rehypePlugins: [
+        rehypeKatex,
+        // Mermaid renders to inline SVG at build time (headless Chromium through
+        // Playwright), so pages ship no Mermaid JavaScript (ADR-0001).
+        [rehypeMermaid, { strategy: 'inline-svg' }],
+        rehypeSlug,
+        rehypeHeadingAnchor,
+        rehypeImageProcessor,
+        rehypeExternalLinks,
+        rehypeCodeCopyButton,
+      ],
+    }),
     syntaxHighlight: {
       type: 'shiki',
       excludeLangs: ['mermaid'],
