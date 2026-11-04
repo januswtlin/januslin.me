@@ -3,6 +3,13 @@
 - Date: 2026-10-29
 - Deciders: Janus (author), coordinator session
 
+V14 amendment (2026-11-04, the author's decision, applied in [PR #121](https://github.com/januswtlin/januslin.me/pull/121)):
+- Snell Roundhand (Linotype; no license to redistribute it was found) is replaced by Pinyon Script (SIL OFL 1.1) for the site title and dates.
+- The UI sound effects, whose source and license are unknown, are removed with the code that played them.
+- The callout title colors are adjusted to meet WCAG AA (4.5:1) in both themes.
+
+The rest of the original design is kept. Where the text below says Snell Roundhand and the sound effects are kept, it is historical. Licenses: `THIRD_PARTY_NOTICES.md`.
+
 ## Context
 Content is mostly Traditional Chinese, literary in tone (essays, travel memoir), with tech and AI writing that needs math and diagrams. CJK typography (serif fonts, punctuation, spacing between CJK and Latin) is the hardest thing to retrofit into a theme. Of the Astro themes reviewed on 2026-10-27 (Retypeset, Sumi, Astro Kami, Erudite, Pilcrow, Patrika), only Retypeset has first-class Traditional Chinese support (heti, EarlySummer Serif, a `zh-tw` locale), i18n with an unprefixed default locale, KaTeX, Mermaid, TOC, and OG images. The others are Latin-first and would fall back to system fonts for Chinese.
 

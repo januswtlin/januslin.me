@@ -23,7 +23,7 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 
 | ADR | Title | Status |
 |---|---|---|
-| [0001](ADR-0001-astro-and-retypeset.md) | Astro 7 with a vendored Retypeset theme, kept to its original design | accepted |
+| [0001](ADR-0001-astro-and-retypeset.md) | Astro 7 with a vendored Retypeset theme, kept to its original design | accepted; fonts, sounds, and callout colors amended 2026-11-04 (V14, PR #121) |
 | [0002](ADR-0002-cloudflare-workers-static-assets.md) | Cloudflare Workers static assets instead of Pages | accepted |
 | [0003](ADR-0003-github-actions-rulesets-environments.md) | GitHub Actions for CI/CD, protected by a `main` ruleset and environment secrets | accepted |
 | [0004](ADR-0004-single-repo-no-cms.md) | One repository with an author-owned `content/`, published with Git only | accepted |
