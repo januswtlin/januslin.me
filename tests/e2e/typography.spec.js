@@ -74,6 +74,22 @@ test.describe("Chinese text on zh-tw pages", () => {
     expect(fonts.map((f) => f.familyName)).toEqual(["Source Serif 4"]);
   });
 
+  test("Mermaid labels draw Chinese with Noto Serif TC and Latin with Source Serif 4", async ({
+    page,
+  }) => {
+    const label = page.locator('.post__body svg[id^="mermaid"] .nodeLabel', {
+      hasText: "作者",
+    });
+    await expect(label).toHaveCount(1);
+    await label.evaluate((el) => el.setAttribute("id", "mermaid-label-probe"));
+    const fonts = await platformFonts(page, "#mermaid-label-probe");
+    const families = fonts.map((f) => f.familyName).sort();
+    expect(families).toHaveLength(2);
+    expect(families[0]).toMatch(NOTO);
+    expect(families[1]).toBe("Source Serif 4");
+    expect(fonts.every((f) => f.isCustomFont)).toBe(true);
+  });
+
   test("quotes and emphasis are not italic", async ({ page }) => {
     const quote = page.locator(".post__body > blockquote:not([class])").first();
     await expect(quote).toBeVisible();
