@@ -6,6 +6,7 @@ import Pagination from "../../components/Pagination.astro";
 import PostCard from "../../components/PostCard.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { BLOG } from "../../config";
+import { DEFAULT_LOCALE, t } from "../../i18n";
 import { getPublishedPosts, type Post } from "../../utils/posts";
 
 export const getStaticPaths = (async ({ paginate }) => {
@@ -18,26 +19,26 @@ interface Props {
 }
 
 const { page } = Astro.props;
+// The archive exists in the default locale only until T11.
+const lang = DEFAULT_LOCALE;
+const strings = t(lang);
 
-const title = page.currentPage > 1 ? `Blog — page ${page.currentPage}` : "Blog";
+const title = page.currentPage > 1 ? strings.blogPage(page.currentPage) : strings.blogTitle;
 ---
 
-<BaseLayout
-  title={title}
-  description="Essays on design, typography and building for the web."
->
+<BaseLayout lang={lang} title={title} description={strings.blogLede}>
   <div class="wrap">
     <PageHeader
-      eyebrow="Writing"
-      title="Blog"
-      lede="Notes on design, typography, and the parts of building for the web that reward slowing down."
+      eyebrow={strings.blogEyebrow}
+      title={strings.blogTitle}
+      lede={strings.blogLede}
     />
 
     <div class="post-list">
-      {page.data.map((post) => <PostCard post={post} />)}
+      {page.data.map((post) => <PostCard lang={lang} post={post} />)}
     </div>
 
-    <Pagination page={page} label="Blog posts" />
+    <Pagination lang={lang} page={page} label={strings.blogPosts} />
   </div>
 </BaseLayout>
 

@@ -2,6 +2,7 @@ import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
 
 import { AUTHOR, SITE } from "../config";
+import { DEFAULT_LOCALE, HTML_LANG, t } from "../i18n";
 import { getPublishedPosts } from "../utils/posts";
 
 export const GET: APIRoute = async (context) => {
@@ -9,7 +10,7 @@ export const GET: APIRoute = async (context) => {
 
   return rss({
     title: SITE.title,
-    description: SITE.description,
+    description: t(DEFAULT_LOCALE).siteDescription,
     // Guaranteed by `site` in astro.config.ts.
     site: context.site!,
     // RSS 2.0 reserves <author> for an email address, so the byline goes in
@@ -25,6 +26,6 @@ export const GET: APIRoute = async (context) => {
       categories: post.data.tags,
       customData: `<dc:creator><![CDATA[${AUTHOR.name}]]></dc:creator>`,
     })),
-    customData: `<language>${SITE.lang}</language>`,
+    customData: `<language>${HTML_LANG[DEFAULT_LOCALE]}</language>`,
   });
 };

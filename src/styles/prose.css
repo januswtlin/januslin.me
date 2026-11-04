@@ -189,8 +189,8 @@
 }
 
 /* Monospace utility used by MDX authors, e.g. the config readout in the
-   sample post. */
-.prose .label {
+   sample post. Not inside SVG, where Mermaid uses the class (T09, #58). */
+.prose .label:where(:not(svg *)) {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-label);

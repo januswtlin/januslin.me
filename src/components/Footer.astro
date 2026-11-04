@@ -1,15 +1,19 @@
 ---
 import { AUTHOR, SITE, SOCIAL } from "../config";
+import { t, type Locale } from "../i18n";
 
+interface Props {
+  lang: Locale;
+}
+
+const strings = t(Astro.props.lang);
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
   <div class="wrap site-footer__inner">
     <p class="site-footer__mark">
-      {SITE.title}{SITE.titleMark && <span> {SITE.titleMark}</span>} — {
-        SITE.tagline
-      }
+      {SITE.title} — {strings.siteTagline}
     </p>
 
     <ul class="site-footer__social">
@@ -26,7 +30,7 @@ const year = new Date().getFullYear();
     </ul>
 
     <p class="site-footer__legal">
-      © {year} <a href={AUTHOR.url}>{AUTHOR.name}</a> · MIT
+      © {year} <a href={AUTHOR.url}>{AUTHOR.name}</a>
     </p>
   </div>
 </footer>

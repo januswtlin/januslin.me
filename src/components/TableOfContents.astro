@@ -2,10 +2,14 @@
 import type { MarkdownHeading } from "astro";
 
 import { BLOG } from "../config";
+import { t, type Locale } from "../i18n";
 
 interface Props {
+  lang: Locale;
   headings: MarkdownHeading[];
 }
+
+const strings = t(Astro.props.lang);
 
 // h1 is the article title, and anything below h3 is too granular to help.
 const items = Astro.props.headings.filter(
@@ -19,7 +23,7 @@ const show = BLOG.showTableOfContents && items.length >= BLOG.tocMinHeadings;
   show && (
     <nav class="toc" aria-labelledby="toc-heading">
       <h2 class="toc__heading label" id="toc-heading">
-        Contents
+        {strings.contents}
       </h2>
       <ol class="toc__list">
         {items.map((heading) => (

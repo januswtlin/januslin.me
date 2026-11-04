@@ -9,13 +9,22 @@
  * The script is inlined on purpose: it is a few hundred bytes, it has to run
  * before paint, and it keeps the number of external JS requests at zero.
  */
+import { t, type Locale } from "../i18n";
+
+interface Props {
+  lang: Locale;
+}
+
+const strings = t(Astro.props.lang);
 ---
 
 <button
   class="theme-toggle"
   type="button"
   data-theme-toggle
-  aria-label="Switch to dark theme"
+  data-label-dark={strings.themeToDark}
+  data-label-light={strings.themeToLight}
+  aria-label={strings.themeToDark}
 >
   <span class="theme-toggle__icon" aria-hidden="true"></span>
 </button>
@@ -32,7 +41,10 @@
 
     const syncLabel = () => {
       const next = resolve() === "dark" ? "light" : "dark";
-      button.setAttribute("aria-label", `Switch to ${next} theme`);
+      button.setAttribute(
+        "aria-label",
+        next === "dark" ? button.dataset.labelDark : button.dataset.labelLight,
+      );
     };
 
     /**

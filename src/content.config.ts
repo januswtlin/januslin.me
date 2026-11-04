@@ -3,9 +3,9 @@ import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
 const blog = defineCollection({
-  // Files starting with an underscore are ignored, which makes drafts easy to
-  // park outside the build entirely.
-  loader: glob({ base: "./src/content/blog", pattern: "**/[^_]*.{md,mdx}" }),
+  // Until T10 builds the content layer, posts come from the test fixtures, never
+  // from content/ (T09, #58). Files starting with an underscore are ignored.
+  loader: glob({ base: "./tests/fixtures/site/posts", pattern: "**/[^_]*.md" }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),

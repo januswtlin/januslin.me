@@ -1,24 +1,23 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { DEFAULT_LOCALE, t } from "../i18n";
+
+// One 404 page for the whole site, in the default locale.
+const strings = t(DEFAULT_LOCALE);
 ---
 
-<BaseLayout
-  title="Page not found"
-  description="That page does not exist, or has moved."
->
+<BaseLayout title={strings.notFoundTitle} description={strings.notFoundLede}>
   <section class="notfound wrap">
     <p class="notfound__code" aria-hidden="true">404</p>
     <p class="notfound__mark" aria-hidden="true">無</p>
 
-    <h1 class="notfound__title">Nothing here</h1>
-    <p class="lede notfound__lede">
-      The page you asked for does not exist, or has moved somewhere quieter.
-    </p>
+    <h1 class="notfound__title">{strings.notFoundHeading}</h1>
+    <p class="lede notfound__lede">{strings.notFoundLede}</p>
 
     <p class="notfound__actions label">
-      <a href="/">Home</a>
+      <a href="/">{strings.home}</a>
       <span aria-hidden="true">·</span>
-      <a href="/blog/">All posts</a>
+      <a href="/blog/">{strings.allPosts}</a>
     </p>
   </section>
 </BaseLayout>

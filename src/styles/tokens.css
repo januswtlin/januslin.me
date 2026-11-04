@@ -60,10 +60,11 @@
   --ink-accent: light-dark(var(--shu-500), var(--shu-400));
 
   /* ---- typography ---------------------------------------------------- */
-  --font-serif: "Source Serif 4", "Source Serif Pro", "Yu Mincho", YuMincho,
-    "Hiragino Mincho ProN", "Noto Serif JP", "Songti SC", serif;
+  /* Chinese falls through the Latin faces to Noto Serif TC (Taiwan glyph forms), subset at
+     build time (src/lib/fonts/cjk-font.ts). zh pages put CJK punctuation first (cjk.css). */
+  --font-serif: "Source Serif 4", "Source Serif Pro", "Noto Serif TC", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo,
-    Consolas, monospace;
+    Consolas, "Noto Serif TC", monospace;
 
   --text-xs: 0.6875rem; /* 11px — mono labels */
   --text-sm: 0.8125rem; /* 13px */

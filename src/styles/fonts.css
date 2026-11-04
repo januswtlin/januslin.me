@@ -1,9 +1,9 @@
 /*
  * Self-hosted Latin faces — no external requests, no layout shift beyond swap.
  *
- * Japanese text intentionally falls through to the system mincho stack declared
- * in `--font-serif`, which keeps the theme light instead of shipping a
- * multi-megabyte CJK face. Add your own @font-face here if you need one.
+ * Chinese text falls through to Noto Serif TC, declared in `--font-serif`. Its
+ * @font-face rules are generated at build time for the glyphs the site uses
+ * (src/lib/fonts/cjk-font.ts), so they are not in this file.
  *
  * Both families are variable fonts under the SIL Open Font License 1.1.
  * See public/fonts/LICENSE.txt.

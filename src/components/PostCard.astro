@@ -1,14 +1,17 @@
 ---
 import { BLOG } from "../config";
+import { localizePath, t, type Locale } from "../i18n";
 import { formatDateStamp, isoDate } from "../utils/date";
 import { readingTime } from "../utils/reading-time";
 import { tagSlug, type Post } from "../utils/posts";
 
 interface Props {
+  lang: Locale;
   post: Post;
 }
 
-const { post } = Astro.props;
+const { lang, post } = Astro.props;
+const strings = t(lang);
 const { title, description, pubDate, tags, draft } = post.data;
 const minutes = readingTime(post.body);
 ---
@@ -16,12 +19,12 @@ const minutes = readingTime(post.body);
 <article class="post-card">
   <p class="post-card__stamp label">
     <time datetime={isoDate(pubDate)}>{formatDateStamp(pubDate)}</time>
-    {draft && <span class="post-card__draft">Draft</span>}
+    {draft && <span class="post-card__draft">{strings.draft}</span>}
   </p>
 
   <div class="post-card__body">
     <h3 class="post-card__title">
-      <a href={`/blog/${post.id}/`}>{title}</a>
+      <a href={localizePath(lang, `/blog/${post.id}/`)}>{title}</a>
     </h3>
 
     <p class="post-card__description">{description}</p>
@@ -36,7 +39,7 @@ const minutes = readingTime(post.body);
       }
       {
         BLOG.showReadingTime && (
-          <span class="post-card__time">{minutes} min read</span>
+          <span class="post-card__time">{strings.minutesRead(minutes)}</span>
         )
       }
     </p>

@@ -6,6 +6,7 @@ import Pagination from "../../../components/Pagination.astro";
 import PostCard from "../../../components/PostCard.astro";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { BLOG } from "../../../config";
+import { DEFAULT_LOCALE, t } from "../../../i18n";
 import {
   collectTags,
   getPublishedPosts,
@@ -31,30 +32,34 @@ interface Props {
 }
 
 const { page, tagName } = Astro.props;
+// Tag archives exist in the default locale only until T11.
+const lang = DEFAULT_LOCALE;
+const strings = t(lang);
 
-const suffix = page.currentPage > 1 ? ` — page ${page.currentPage}` : "";
+const suffix = page.currentPage > 1 ? ` — ${page.currentPage}` : "";
 ---
 
 <BaseLayout
+  lang={lang}
   title={`#${tagName}${suffix}`}
-  description={`Posts tagged ${tagName}.`}
+  description={strings.taggedDescription(tagName)}
 >
   <div class="wrap">
     <PageHeader
-      eyebrow="Tagged"
+      eyebrow={strings.taggedEyebrow}
       title={`#${tagName}`}
-      lede={`${page.total} ${page.total === 1 ? "post" : "posts"} under this tag.`}
+      lede={strings.taggedLede(page.total)}
     >
       <p class="tag-page__back label">
-        <a href="/tags/">← All tags</a>
+        <a href="/tags/">{strings.allTags}</a>
       </p>
     </PageHeader>
 
     <div class="post-list">
-      {page.data.map((post) => <PostCard post={post} />)}
+      {page.data.map((post) => <PostCard lang={lang} post={post} />)}
     </div>
 
-    <Pagination page={page} label={`Posts tagged ${tagName}`} />
+    <Pagination lang={lang} page={page} label={strings.postsTagged(tagName)} />
   </div>
 </BaseLayout>
 

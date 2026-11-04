@@ -1,31 +1,31 @@
 ---
 import { NAV, SITE } from "../config";
+import { localizePath, t, type Locale } from "../i18n";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
+  lang: Locale;
   /** Lay the header over the hero instead of pushing it down. */
   overlay?: boolean;
 }
 
-const { overlay = false } = Astro.props;
+const { lang, overlay = false } = Astro.props;
+const strings = t(lang);
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 
-const isCurrent = (href: string) =>
-  path === href || (href !== "/" && path.startsWith(`${href}/`));
+const isCurrent = (href: string) => {
+  const base = href.replace(/\/$/, "") || "/";
+  return path === base || (base !== "/" && path.startsWith(`${base}/`));
+};
 ---
 
 <header class="site-header" data-overlay={overlay ? "" : undefined}>
-  <a class="brand" href="/">
+  <a class="brand" href={localizePath(lang, "/")}>
     <span class="brand__mark">{SITE.title}</span>
-    {
-      SITE.titleMark && (
-        <span class="brand__sub">{SITE.titleMark} — {SITE.tagline}</span>
-      )
-    }
   </a>
 
   <div class="site-header__end">
-    <nav class="nav" aria-label="Primary">
+    <nav class="nav" aria-label={strings.navPrimary}>
       <ul class="nav__list">
         {
           NAV.map((item) => (
@@ -34,14 +34,14 @@ const isCurrent = (href: string) =>
                 href={item.href}
                 aria-current={isCurrent(item.href) ? "page" : undefined}
               >
-                {item.label}
+                {strings[item.key]}
               </a>
             </li>
           ))
         }
       </ul>
     </nav>
-    <ThemeToggle />
+    <ThemeToggle lang={lang} />
   </div>
 </header>
 
@@ -81,12 +81,6 @@ const isCurrent = (href: string) =>
     text-transform: uppercase;
   }
 
-  .brand__sub {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--color-fg-faint);
-  }
-
   .site-header__end {
     display: flex;
     align-items: center;
@@ -124,10 +118,6 @@ const isCurrent = (href: string) =>
   }
 
   @media (max-width: 40rem) {
-    .brand__sub {
-      display: none;
-    }
-
     .site-header {
       padding-block: var(--space-4);
     }

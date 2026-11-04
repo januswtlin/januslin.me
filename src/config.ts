@@ -1,15 +1,9 @@
 /**
  * Sumi — site configuration
  *
- * This is the only file you need to edit to make the theme yours. Everything
- * else reads from here: metadata, navigation, feeds, OG images and the ink
- * simulation on the home page.
+ * Metadata, navigation, feeds, OG images and the ink simulation on the home
+ * page. Locale-specific text lives in src/i18n/ui.ts.
  */
-
-export interface NavItem {
-  label: string;
-  href: string;
-}
 
 export interface SocialLink {
   /** Shown as the link text, so keep it short. */
@@ -19,47 +13,34 @@ export interface SocialLink {
 
 export const SITE = {
   /** Absolute origin of the deployed site. No trailing slash. */
-  url: "https://sumi.p4ni.com",
-  title: "Sumi",
-  /**
-   * Short Japanese mark used for the vertical rail and the loading screen.
-   * Set to an empty string to drop the Japanese accents entirely.
-   */
-  titleMark: "墨",
-  tagline: "An Astro theme in ink and paper",
-  description:
-    "Sumi is a minimal Astro theme built around ink, washi paper and generous negative space. Dual light and dark themes, zero client JavaScript on article pages, and a WebGL ink simulation on the front page.",
-  /** BCP 47 language tag, written to <html lang>. */
-  lang: "en",
-  /** Used for og:locale. */
-  locale: "en_US",
+  url: "https://januslin.me",
+  title: "Janus Lin",
   /** Fallback OG image, relative to public/. Used for pages without one. */
   defaultOgImage: "/og-default.png",
 } as const;
 
 export const AUTHOR = {
-  name: "kpab",
-  url: "https://github.com/kpab",
-  /** One or two sentences. Shown on /about and in structured data. */
-  bio: "Designer and developer working on quiet interfaces. Sumi is an attempt to give a blog the pacing of a printed page.",
+  name: "Janus Lin",
+  url: "https://github.com/januswtlin",
 } as const;
 
-export const NAV: NavItem[] = [
-  { label: "Blog", href: "/blog" },
-  { label: "Tags", href: "/tags" },
-  { label: "About", href: "/about" },
-];
+/**
+ * Primary navigation. The tagline, description, and labels are per locale in src/i18n/ui.ts.
+ * T09 (#58) builds the blog and tag archives at the root only; T11 adds them under /en/, so the
+ * English navigation links to the root archives until then.
+ */
+export const NAV = [
+  { key: "navBlog", href: "/blog/" },
+  { key: "navTags", href: "/tags/" },
+] as const satisfies readonly { key: string; href: string }[];
 
 export const SOCIAL: SocialLink[] = [
-  { label: "GitHub", href: "https://github.com/kpab/astro-sumi" },
+  { label: "GitHub", href: "https://github.com/januswtlin" },
 ];
 
 export const BLOG = {
-  /**
-   * Posts per page on /blog and the tag archives. Deliberately low so that the
-   * bundled sample posts spill onto a second page; 8–12 suits a real archive.
-   */
-  postsPerPage: 4,
+  /** Posts per page on /blog and the tag archives. */
+  postsPerPage: 10,
   /** Latest posts shown on the home page. */
   postsOnHome: 4,
   /** Estimated reading speed used for the "N min read" label. */
@@ -79,10 +60,15 @@ export const BLOG = {
  * out of view. Turn both flags off for a completely JavaScript-free site.
  */
 export const INK = {
-  /** Full-bleed ink behind the hero. */
-  hero: true,
-  /** Narrow ink band used as a section transition. */
-  divider: true,
+  /**
+   * Full-bleed ink behind the hero. Off until the author decides after a real-phone test
+   * (ADR-0019): the hero shows the static gradient, and no page loads the ink script.
+   * Measured on 2026-11-04 (T09, #58): the module is 10,647 bytes (3,783 gzipped), on the home
+   * page only; Astro still emits it to dist/_astro/ unreferenced while both flags are off.
+   */
+  hero: false,
+  /** Narrow ink band used as a section transition. Off for the same reason. */
+  divider: false,
   /** Density of each ink splat. Sensible range is 0.3 – 2.5. */
   strength: 1,
   /** Let the ink drift on its own instead of only reacting to the cursor. */

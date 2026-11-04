@@ -147,7 +147,8 @@ hr {
 
 /* ---- type helpers ----------------------------------------------------- */
 
-.label {
+/* Not inside SVG: Mermaid's diagrams use class="label" for their own text (T09, #58). */
+.label:where(:not(svg *)) {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: 400;
@@ -173,15 +174,6 @@ hr {
   font-size: var(--text-md);
   line-height: var(--leading-normal);
   color: var(--color-fg-muted);
-}
-
-/* Vertical Japanese accent, borrowed from the mockup's side rail. */
-.tategaki {
-  writing-mode: vertical-rl;
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
-  color: var(--color-fg-faint);
 }
 
 /* ---- accessibility ---------------------------------------------------- */

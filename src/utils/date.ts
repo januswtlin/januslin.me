@@ -1,7 +1,5 @@
-import { SITE } from "../config";
-
 /** "5 August 2026" — used in prose contexts. */
-export function formatDate(date: Date, lang: string = SITE.lang): string {
+export function formatDate(date: Date, lang = "zh-TW"): string {
   return new Intl.DateTimeFormat(lang, {
     year: "numeric",
     month: "long",

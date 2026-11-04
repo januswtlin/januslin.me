@@ -1,42 +1,47 @@
 ---
 import type { Page } from "astro";
 
+import { t, type Locale } from "../i18n";
+
 interface Props {
+  lang: Locale;
   page: Page<unknown>;
   /** Accessible name, e.g. "Blog posts". */
-  label?: string;
+  label: string;
 }
 
-const { page, label = "Posts" } = Astro.props;
+const { lang, page, label } = Astro.props;
+const strings = t(lang);
 
 const pad = (n: number) => String(n).padStart(2, "0");
 ---
 
 {
   page.lastPage > 1 && (
-    <nav class="pagination" aria-label={`${label} pagination`}>
+    <nav class="pagination" aria-label={strings.pagination(label)}>
       {page.url.prev ? (
         <a class="pagination__step" href={page.url.prev} rel="prev">
-          ← Newer
+          {strings.newer}
         </a>
       ) : (
-        <span class="pagination__step pagination__step--off">← Newer</span>
+        <span class="pagination__step pagination__step--off">{strings.newer}</span>
       )}
 
       <p class="pagination__count">
-        <span class="visually-hidden">Page </span>
-        {pad(page.currentPage)}
-        <span aria-hidden="true"> / </span>
-        <span class="visually-hidden">of </span>
-        {pad(page.lastPage)}
+        <span class="visually-hidden">
+          {strings.pageOf(pad(page.currentPage), pad(page.lastPage))}
+        </span>
+        <span aria-hidden="true">
+          {pad(page.currentPage)} / {pad(page.lastPage)}
+        </span>
       </p>
 
       {page.url.next ? (
         <a class="pagination__step" href={page.url.next} rel="next">
-          Older →
+          {strings.older}
         </a>
       ) : (
-        <span class="pagination__step pagination__step--off">Older →</span>
+        <span class="pagination__step pagination__step--off">{strings.older}</span>
       )}
     </nav>
   )

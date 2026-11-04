@@ -2,24 +2,30 @@
 import type { MarkdownHeading } from "astro";
 import { Image } from "astro:assets";
 
+import "katex/dist/katex.min.css";
 import "../styles/prose.css";
+import "../styles/callouts.css";
 
 import PostNav from "../components/PostNav.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import BaseLayout from "./BaseLayout.astro";
 import { BLOG, OG } from "../config";
+import { HTML_LANG, t, type Locale } from "../i18n";
 import { formatDate, isoDate } from "../utils/date";
 import { readingTime } from "../utils/reading-time";
 import { tagSlug, type Post } from "../utils/posts";
 
 interface Props {
+  lang: Locale;
   post: Post;
   headings: MarkdownHeading[];
   previous?: Post;
   next?: Post;
 }
 
-const { post, headings, previous, next } = Astro.props;
+const { lang, post, headings, previous, next } = Astro.props;
+const strings = t(lang);
+const date = (d: Date) => formatDate(d, HTML_LANG[lang]);
 const {
   title,
   description,
@@ -40,6 +46,7 @@ const article = {
 ---
 
 <BaseLayout
+  lang={lang}
   title={title}
   description={description}
   ogImage={OG.enabled ? `/og/${post.id}.png` : undefined}
@@ -48,13 +55,13 @@ const article = {
   <article class="post wrap">
     <header class="post__header">
       <p class="post__stamp eyebrow">
-        <time datetime={isoDate(pubDate)}>{formatDate(pubDate)}</time>
+        <time datetime={isoDate(pubDate)}>{date(pubDate)}</time>
         {
           updatedDate && (
             <span class="post__updated">
-              · Updated{" "}
+              · {strings.updated}{" "}
               <time datetime={isoDate(updatedDate)}>
-                {formatDate(updatedDate)}
+                {date(updatedDate)}
               </time>
             </span>
           )
@@ -72,7 +79,7 @@ const article = {
             </a>
           ))
         }
-        {BLOG.showReadingTime && <span>{minutes} min read</span>}
+        {BLOG.showReadingTime && <span>{strings.minutesRead(minutes)}</span>}
       </p>
     </header>
 
@@ -92,7 +99,7 @@ const article = {
 
     <div class="post__grid">
       <aside class="post__aside">
-        <TableOfContents headings={headings} />
+        <TableOfContents lang={lang} headings={headings} />
       </aside>
 
       <div class="prose post__body">
@@ -100,7 +107,7 @@ const article = {
       </div>
     </div>
 
-    <PostNav previous={previous} next={next} />
+    <PostNav lang={lang} previous={previous} next={next} />
   </article>
 </BaseLayout>
 

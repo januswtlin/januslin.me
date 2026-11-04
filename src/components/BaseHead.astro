@@ -1,5 +1,7 @@
 ---
 import { AUTHOR, SITE } from "../config";
+import { HTML_LANG, OG_LOCALE, t, type Locale } from "../i18n";
+import { STYLESHEET_PLACEHOLDER } from "../lib/fonts/constants";
 
 export interface ArticleMeta {
   publishedTime: string;
@@ -8,6 +10,7 @@ export interface ArticleMeta {
 }
 
 interface Props {
+  lang: Locale;
   /** Already includes the site name. */
   title: string;
   description: string;
@@ -16,9 +19,12 @@ interface Props {
   article?: ArticleMeta;
 }
 
-const { title, description, ogImage, article } = Astro.props;
+const { lang, title, description, ogImage, article } = Astro.props;
+const strings = t(lang);
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
+// The 404 page is served for every missing URL, so it has no canonical URL of its own.
+const isNotFound = /^\/404(?:\.html|\/)?$/.test(Astro.url.pathname);
 const image = new URL(ogImage ?? SITE.defaultOgImage, Astro.site);
 
 const person = {
@@ -38,7 +44,7 @@ const structuredData = article
       datePublished: article.publishedTime,
       dateModified: article.modifiedTime ?? article.publishedTime,
       keywords: article.tags.join(", "),
-      inLanguage: SITE.lang,
+      inLanguage: HTML_LANG[lang],
       author: person,
       publisher: person,
       mainEntityOfPage: { "@type": "WebPage", "@id": canonical.href },
@@ -47,9 +53,9 @@ const structuredData = article
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: SITE.title,
-      description: SITE.description,
+      description: strings.siteDescription,
       url: SITE.url,
-      inLanguage: SITE.lang,
+      inLanguage: HTML_LANG[lang],
       author: person,
     };
 ---
@@ -71,13 +77,13 @@ const structuredData = article
 
 <title>{title}</title>
 <meta name="description" content={description} />
-<link rel="canonical" href={canonical} />
+{!isNotFound && <link rel="canonical" href={canonical} />}
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link
   rel="alternate"
   type="application/rss+xml"
-  title={`${SITE.title} — ${SITE.tagline}`}
+  title={`${SITE.title} — ${strings.siteTagline}`}
   href={new URL("rss.xml", Astro.site)}
 />
 <meta
@@ -106,13 +112,17 @@ const structuredData = article
   crossorigin
 />
 
+{/* Noto Serif TC, subset to the site's glyphs after the build, which points this link at the
+    hashed stylesheet (src/lib/fonts/cjk-font.ts). `astro dev` injects the full font instead. */}
+{import.meta.env.PROD && <link rel="stylesheet" href={STYLESHEET_PLACEHOLDER} />}
+
 <meta property="og:type" content={article ? "article" : "website"} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:url" content={canonical} />
+{!isNotFound && <meta property="og:url" content={canonical} />}
 <meta property="og:image" content={image} />
 <meta property="og:site_name" content={SITE.title} />
-<meta property="og:locale" content={SITE.locale} />
+<meta property="og:locale" content={OG_LOCALE[lang]} />
 
 {
   article && (

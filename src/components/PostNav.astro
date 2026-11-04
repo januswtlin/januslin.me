@@ -1,20 +1,24 @@
 ---
+import { localizePath, t, type Locale } from "../i18n";
 import type { Post } from "../utils/posts";
 
 interface Props {
+  lang: Locale;
   previous?: Post;
   next?: Post;
 }
 
-const { previous, next } = Astro.props;
+const { lang, previous, next } = Astro.props;
+const strings = t(lang);
+const href = (post: Post) => localizePath(lang, `/blog/${post.id}/`);
 ---
 
 {
   (previous || next) && (
-    <nav class="post-nav" aria-label="More posts">
+    <nav class="post-nav" aria-label={strings.morePosts}>
       {previous ? (
-        <a class="post-nav__link" href={`/blog/${previous.id}/`} rel="prev">
-          <span class="post-nav__label label">← Previous</span>
+        <a class="post-nav__link" href={href(previous)} rel="prev">
+          <span class="post-nav__label label">{strings.previous}</span>
           <span class="post-nav__title">{previous.data.title}</span>
         </a>
       ) : (
@@ -24,10 +28,10 @@ const { previous, next } = Astro.props;
       {next && (
         <a
           class="post-nav__link post-nav__link--next"
-          href={`/blog/${next.id}/`}
+          href={href(next)}
           rel="next"
         >
-          <span class="post-nav__label label">Next →</span>
+          <span class="post-nav__label label">{strings.next}</span>
           <span class="post-nav__title">{next.data.title}</span>
         </a>
       )}
