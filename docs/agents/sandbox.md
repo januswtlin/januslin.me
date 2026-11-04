@@ -113,7 +113,11 @@ comparison, and the pending V8/V10/V22/V28/V29/V30 ledger:
 
 The candidate project `.codex/config.toml` selects workspace-write/on-request/
 auto_review, network access through the existing VM proxy, and disables apps,
-plugins, and the template's MCP gateway. The wrapper uses `--approve-for-me`
+plugins, and the template's MCP gateway. Codex 0.166.0 refuses to load a
+config whose `[mcp_servers.*]` table has neither `command` nor `url`, even a
+disabled one, so the gateway table names its URL next to `enabled = false`
+(`sandbox/codex-proxy/config.toml` likewise); `tests/scripts/codex-config`
+checks both files. The wrapper uses `--approve-for-me`
 without an explicit `--sandbox` (those flags conflict), also on exact-session
 resume. No model override or full-access fallback is passed. These are defaults;
 V8 and V29 must measure their effect before unattended use.
