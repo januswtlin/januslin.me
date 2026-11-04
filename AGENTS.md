@@ -86,29 +86,31 @@ Architecture and component paths: `docs/overview.md`. Current versus planned inf
 
 ## Commands
 
-Today (T07):
+Today (T07, T09):
 
 ```
 pnpm install          # install (CI and cloud setup: pnpm install --frozen-lockfile)
-pnpm check            # tsc --noEmit over the JavaScript in scripts/ and tests/
-pnpm lint             # ESLint + Prettier format check
+pnpm exec playwright install chromium   # once per environment: pnpm build renders Mermaid with it
+pnpm dev              # local dev server
+pnpm build            # production build to dist/; the full log goes to .logs/build.log
+pnpm build:preview    # build with INCLUDE_DRAFTS=true (T10 makes the collections honour it)
+pnpm preview          # serve dist/ locally
+pnpm check            # astro check (src/) + tsc over the JavaScript in scripts/ and tests/
+pnpm lint             # ESLint (incl. src/) + Prettier format check (vendored theme code excluded)
 pnpm format           # apply Prettier formatting
-pnpm test             # script tests (sh tests/scripts/run.sh), then Vitest unit tests
-pnpm verify           # the gate before review: check, lint, test; stops on the first failure
+pnpm test             # script tests, Vitest (unit and dist/ checks), then Playwright over dist/
+pnpm verify           # the gate before review: check, lint, build, test; stops on the first failure
 ```
 
-Once the site tasks have created them (T09 adds `build` and `astro check`; T10 adds `validate`):
+Once the site tasks have created them (T10 adds `validate`):
 
 ```
-pnpm dev              # local dev server (includes draft: true entries)
-pnpm dev:drafts       # same, plus the local-only drafts/ folder
-pnpm build            # production build to dist/ (excludes drafts)
-pnpm build:preview    # build including drafts (used for PR previews)
+pnpm dev:drafts       # dev server plus the local-only drafts/ folder
 pnpm validate         # content validation (schema, tags, images, file types)
 pnpm wrangler dev     # run the Worker and assets locally
 ```
 
-When complete, `pnpm check` is astro check + tsc, `pnpm test` adds dist and Playwright tests, and `pnpm verify` runs check, lint, validate, build, test.
+When complete, `pnpm verify` runs check, lint, validate, build, test.
 
 ## Before changing a rule or design
 

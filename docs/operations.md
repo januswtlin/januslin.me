@@ -33,7 +33,7 @@ We vendor Retypeset and never merge upstream (ADR-0001). Once a month:
 2. For each change, decide: port (bug fix, security fix, accessibility fix, Astro compatibility), or skip (feature or design change we do not want). Ports become task issues or Upgrade PRs; record skips with one line each in the PR or report.
 3. Update the line below in the same PR, even when nothing was ported.
 
-Last reviewed upstream commit: `a636b6d393be714cab52d3fc4baddd3f3905f701` (2026-04-12), the vendoring base.
+Last reviewed upstream commit: `a636b6d393be714cab52d3fc4baddd3f3905f701` (2026-04-12), the vendoring base. On 2026-11-04 (T09) upstream `master` was still at this commit.
 
 ### Quarterly security review
 The agent opens a `human-task` issue linking `docs/runbooks/quarterly-host-checks.md` for the checks only the author can run (admin rights, the host shell, the browser profiles), runs the rest itself, and records all results in `docs/reports/`.
