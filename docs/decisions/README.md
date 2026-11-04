@@ -41,6 +41,7 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 | [0016](ADR-0016-one-editor-many-developers.md) | One editor, any number of developers | proposed |
 | [0017](ADR-0017-task-context-and-token-efficiency.md) | Reduce task context while preserving completion gates | proposed |
 | [0018](ADR-0018-codex-in-vm-login.md) | Codex login inside the VM and active role identities | proposed; records the author's 2026-11-04 in-VM login approval; human verification pending |
+| [0019](ADR-0019-sumi-theme.md) | Sumi instead of Retypeset, on the unified pipeline, with a Taiwan-standard font | proposed; would supersede ADR-0001's theme choice (task #122) |
 
 ## Template
 
