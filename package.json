@@ -1,0 +1,27 @@
+{
+  "name": "januslin.me",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": "^24.22.2",
+    "pnpm": "^12.16.1"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "test": "sh tests/scripts/run.sh && vitest run",
+    "verify": "pnpm check && pnpm lint && pnpm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "globals": "17.14.0",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

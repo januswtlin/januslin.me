@@ -2,14 +2,18 @@
 /drafts/*
 !/drafts/README.md
 
-# Dependencies
+# Dependencies (pnpm may place its store at the checkout root)
 node_modules/
+.pnpm-store/
 
 # Build output (anchored so tests/dist/ stays tracked)
 /dist/
 /.astro/
 /.wrangler/
 .logs/
+
+# Python bytecode from the script tests
+__pycache__/
 
 # Logs
 *.log
