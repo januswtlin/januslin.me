@@ -20,5 +20,8 @@ network_access = true
 apps = false
 plugins = false
 
+# Codex needs a transport (command or url) to load any MCP table, even a
+# disabled one; this is the Docker template's gateway address.
 [mcp_servers.mcp-gateway]
+url = "http://mcp-gateway.docker.internal/mcp"
 enabled = false
