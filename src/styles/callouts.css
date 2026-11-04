@@ -16,12 +16,13 @@
   color: var(--color-fg);
 }
 
-.prose .admonition-important {
+/* Same specificity as the rule above (0,2,1), and later, so the type's color wins. */
+.prose blockquote.admonition-important {
   --callout-color: var(--color-fg);
 }
 
-.prose .admonition-warning,
-.prose .admonition-caution {
+.prose blockquote.admonition-warning,
+.prose blockquote.admonition-caution {
   --callout-color: var(--color-accent);
 }
 

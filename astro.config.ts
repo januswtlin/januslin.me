@@ -9,7 +9,7 @@ import remarkMath from "remark-math";
 
 import { SITE } from "./src/config";
 import { DEFAULT_LOCALE, HTML_LANG, LOCALES } from "./src/i18n";
-import { cjkFont } from "./src/lib/fonts/cjk-font";
+import { MERMAID_FONT_FAMILY, cjkFont, writeMermaidStylesheet } from "./src/lib/fonts/cjk-font";
 import { codeThemes } from "./src/lib/markdown/code-contrast";
 import { remarkDirectives } from "./src/lib/markdown/directives";
 
@@ -32,8 +32,20 @@ export default defineConfig({
       rehypePlugins: [
         rehypeKatex,
         // Mermaid renders to inline SVG at build time (headless Chromium through
-        // Playwright), so pages ship no Mermaid JavaScript.
-        [rehypeMermaid, { strategy: "inline-svg" }],
+        // Playwright), so pages ship no Mermaid JavaScript. Labels use the site's serif stack,
+        // and the renderer loads those fonts first, so the label boxes it measures fit the text
+        // the reader's browser draws (src/lib/fonts/cjk-font.ts).
+        [
+          rehypeMermaid,
+          {
+            strategy: "inline-svg",
+            css: writeMermaidStylesheet(new URL("./", import.meta.url)),
+            mermaidConfig: {
+              fontFamily: MERMAID_FONT_FAMILY,
+              themeVariables: { fontFamily: MERMAID_FONT_FAMILY },
+            },
+          },
+        ],
       ],
     }),
     syntaxHighlight: {

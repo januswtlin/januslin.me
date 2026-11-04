@@ -30,7 +30,7 @@ import {
 } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, relative, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import type { AstroIntegration } from "astro";
 import { parse } from "node-html-parser";
 import subsetFont from "subset-font";
@@ -192,24 +192,62 @@ function packageDir(root: URL): string {
 }
 
 /** Writes the dev stylesheet (full slices) and returns its path. */
-function writeDevStylesheet(root: URL): string {
+/** Faces for every full Fontsource slice, with `url` mapping a font file path to its URL. */
+function fullSliceFaces(root: URL, url: (file: string) => string): Face[] {
   const pkg = packageDir(root);
   const slices = parseFontsourceSlices(readFileSync(join(pkg, "wght.css"), "utf8"));
-  const cacheDir = fileURLToPath(new URL("node_modules/.cache/cjk-font/", root));
-  mkdirSync(cacheDir, { recursive: true });
   const faces: Face[] = [];
   for (const slice of slices) {
-    const url = relative(cacheDir, join(pkg, "files", slice.file))
-      .split(sep)
-      .join("/");
-    faces.push({ family: FAMILY, url, unicodeRange: formatUnicodeRange(expand(slice.ranges)) });
+    const href = url(join(pkg, "files", slice.file));
+    faces.push({
+      family: FAMILY,
+      url: href,
+      unicodeRange: formatUnicodeRange(expand(slice.ranges)),
+    });
     const punct = ROUTED_PUNCTUATION.filter((cp) => inRanges(cp, slice.ranges));
-    if (punct.length)
-      faces.push({ family: PUNCT_FAMILY, url, unicodeRange: formatUnicodeRange(punct) });
+    if (punct.length) {
+      faces.push({ family: PUNCT_FAMILY, url: href, unicodeRange: formatUnicodeRange(punct) });
+    }
   }
-  const file = join(cacheDir, "dev.css");
+  return faces;
+}
+
+const cacheDir = (root: URL) => {
+  const dir = fileURLToPath(new URL("node_modules/.cache/cjk-font/", root));
+  mkdirSync(dir, { recursive: true });
+  return dir;
+};
+
+/** Writes the dev stylesheet (full slices, URLs relative to it for Vite) and returns its path. */
+function writeDevStylesheet(root: URL): string {
+  const dir = cacheDir(root);
+  const faces = fullSliceFaces(root, (file) => relative(dir, file).split(sep).join("/"));
+  const file = join(dir, "dev.css");
   writeFileSync(file, `${fontFaceCss(faces)}\n`);
   return file;
+}
+
+/** The font stack Mermaid draws its labels with (astro.config.ts), the site's serif stack. */
+export const MERMAID_FONT_FAMILY = `"Source Serif 4", "${FAMILY}", serif`;
+
+/**
+ * Writes the stylesheet that rehype-mermaid loads into its headless Chromium at build time, and
+ * returns its file URL. It declares the site's own faces (Sumi's Source Serif 4 from public/fonts
+ * and the full Noto Serif TC slices) with file: URLs, so Mermaid measures its label boxes with the
+ * fonts the reader's browser later draws them with. Without it, the labels are measured with
+ * whatever the build machine has installed.
+ */
+export function writeMermaidStylesheet(root: URL): string {
+  const dir = cacheDir(root);
+  const fontsCss = readFileSync(fileURLToPath(new URL("src/styles/fonts.css", root)), "utf8");
+  const latin = fontsCss.replace(
+    /url\("\/fonts\/([^"]+)"\)/g,
+    (_, name: string) => `url("${new URL(`public/fonts/${name}`, root).href}")`,
+  );
+  const cjk = fontFaceCss(fullSliceFaces(root, (file) => pathToFileURL(file).href));
+  const file = join(dir, "mermaid.css");
+  writeFileSync(file, `${latin}\n${cjk}\n`);
+  return pathToFileURL(file).href;
 }
 
 function expand(ranges: [number, number][]): number[] {

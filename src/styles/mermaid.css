@@ -1,0 +1,16 @@
+/*
+ * Mermaid diagrams (T09, #58). They are inline SVG rendered at build time with Mermaid's light
+ * default theme. Its edges and arrowheads are #333, about 1.5:1 on Sumi's dark page; WCAG asks
+ * 3:1 for graphics. In dark mode they take Sumi's muted foreground; light mode keeps Mermaid's
+ * #333. Mermaid's own rules are keyed on the diagram's id (#mermaid-0 .flowchart-link), so
+ * these need !important to win.
+ */
+
+.prose svg[id^="mermaid"] :is(.flowchart-link, .relation, .messageLine0, .messageLine1, .transition) {
+  stroke: light-dark(#333333, var(--color-fg-muted)) !important;
+}
+
+.prose svg[id^="mermaid"] :is(marker path, .marker, .arrowheadPath, .arrowMarkerPath) {
+  fill: light-dark(#333333, var(--color-fg-muted)) !important;
+  stroke: light-dark(#333333, var(--color-fg-muted)) !important;
+}
