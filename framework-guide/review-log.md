@@ -24,3 +24,17 @@ the six open questions.
 | R11 | Greenfield only; no worked example; junior judgment | Accepted | Section 3 intro, Section 0, Chapter 7 |
 | R12 | Reading matrix adjustments; minimum path | Accepted | Section 4 |
 | Q2 | Add a compliance/finance function | Not accepted as a thirteenth function: the author fixed the set at 12. Folded into the business owner instead | D7, Section 4 notes |
+
+## Round 2 (on draft 0.2, commit 6102fb7)
+
+Verdict: changes needed, one blocking finding (R15). R1, R2, R4, R5, R7 to R12 resolved; R3 and R6
+partly. Both counter-proposals and the R4 deferral accepted (the test-weakening one with
+conditions, R13).
+
+| Finding | Summary | Response | Where in 0.3 |
+|---|---|---|---|
+| R12 follow-on | Business owner holds compliance duties but skips Chapter 2 | Accepted: ○ | Section 4 |
+| R13 (non-blocking) | Test-weakening exception gameable: same mutant set, mutation testing must have run, not for non-skippable paths or baselines and tolerances; "thresholds raised" is ambiguous | Accepted in full | D4 item 11 |
+| R14 (non-blocking) | A Tier 1 revert does not undo data already written | Accepted: forward-compatible data changes, or the veto window closes before production deploy | Chapter 5 |
+| R15 (blocking) | D14 does not say who decides that examples cover a change; fail-open again | Accepted, with one refinement: requiring every mutant killed is unattainable when equivalent mutants exist, and letting an agent waive them is fail-open. So uncovered lines and surviving mutants are listed for the human, who approves an added example or reads only those lines | D14 |
+| R16 (non-blocking) | Operational actions have no boundary report to tier from; refunds contradict D4 item 1 | Accepted: runbooks declare tier and bound parameters; ad hoc actions are Tier 2; agents prepare refunds, the human executes, unless a human-approved refund policy applies | D15 |

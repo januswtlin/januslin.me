@@ -1,6 +1,6 @@
 # Design record: a development framework for one human supervisor and AI agents
 
-Status: draft 0.2, under review · Date: 2026-11-05 · Canonical language: English
+Status: draft 0.3, under review · Date: 2026-11-05 · Canonical language: English
 
 This record fixes the framework before any guide content is written. It states what the guide is
 for, the decisions behind it, the chapter structure and what each chapter must cover, the reading
@@ -11,6 +11,9 @@ classification fails closed (D13); reads and tenant scoping as boundaries (D5); 
 exception to "no human reads code" for money and access paths (D14); operational actions under the
 same control (D15); a tier table with merge authority (Chapter 5); failure modes of the agent
 system (Chapter 4); brownfield adoption and a worked example; accuracy and abstraction fixes.
+Changes from 0.2 follow round 2: measured coverage for D14; conditions on the test-weakening
+exception (D4 item 11); tier assignment for operational actions and a pre-approved refund policy
+(D15); forward-compatible data changes at Tier 1.
 
 ## 1. Purpose and scope
 
@@ -80,9 +83,12 @@ chapter refers to. Core members:
 10. Assurance tooling and its configuration: the verify gate, CI, architecture lint rules, the
     path ownership file, tier rules, and test-weakening detection. An agent that can change the
     classifier can change its own tier.
-11. Tests deleted or weakened (assertions removed, thresholds raised, baselines updated), unless
-    the mutation score of the affected code is unchanged or higher; then it counts as a boundary
-    touch (Tier 1) with the reason stated.
+11. Tests deleted or weakened (assertions removed, tolerances or thresholds loosened, baselines
+    updated). One exception, Tier 1 with the reason stated: the mutation score is unchanged or
+    higher, measured over the same mutant set (the same production code and the same mutation
+    operators on base and head). The exception does not apply when mutation testing did not run
+    (D13), to tests of paths that are themselves in this set (money, access), or to visual
+    baselines and numeric tolerances, which have no mutation score.
 
 Profiles may add members; they never remove core members.
 
@@ -149,16 +155,24 @@ in the non-skippable set (D4, item 10).
 **D14. The bounded exception: executable examples, then the diff.** For a Tier 2 change to a money
 path or an access-control path, the human approves executable examples: concrete inputs with the
 expected amounts, ledger entries, or allow and deny outcomes, run as tests, plus property tests on
-the relevant invariants. Only if the change is not covered by examples the human can approve does
-the human read the diff, and D5 keeps that diff small because those modules are small by design.
+the relevant invariants. Coverage is measured by tooling, never asserted by an agent: the approved
+examples and property tests must execute every changed line and branch of the money or access
+module, and kill the mutants generated on those lines. Lines not executed and mutants that survive
+are listed for the human, who either approves an added example that covers them or reads those
+lines. Equivalent mutants are not waived by an agent; the human sees them like any other survivor.
+D5 keeps what remains small because those modules are small by design.
 Errors inside an unchanged boundary (a rounding change, an inverted entitlement check, a dropped
 tenant filter) are invisible to boundary reports; this decision is what catches them.
 
 **D15. Control covers operational actions, not only changes.** Agents also act outside the change
 flow: flipping feature flags, running runbooks, backfilling data, one-off production queries,
-issuing refunds. These actions are classified on the same tiers, executed only through reviewed
-runbooks or scripts, and logged. In the payments profile, every money-moving operation is the
-human's.
+preparing refunds. These actions use the same tiers, assigned this way: each runbook or script
+declares its tier and bounds its parameters; that declaration is reviewed whenever the runbook
+changes, and the runbook change itself is classified under D4. An ad hoc action with no runbook is
+Tier 2. All actions are logged. Moving money is in the non-skippable set (D4 item 1), so agents
+prepare refunds and the human executes them, unless the profile has a refund policy the human
+approved in advance (an amount cap per refund, the allowed reasons, a daily total); within that
+policy an agent may execute, and changing the policy is itself Tier 2.
 
 ## 3. Structure
 
@@ -314,6 +328,10 @@ Must cover:
 | 1 | A boundary touched, nothing in the non-skippable set | Reads the boundary report | Agent for internal changes, with a veto window in which the human may revert; human acknowledgement first when the change is externally visible (an additive change to a published contract, a user-visible change) | Normal pipeline | Only when externally visible |
 | 2 | Anything in the non-skippable set | Approves executable examples (D14), reads the boundary report and invariants, decides | Human | Staged rollout where the profile requires it | Yes |
 
+  A revert undoes code, not data. So a Tier 1 change that adds a data write or a schema change
+  must be forward-compatible (expand-then-contract migrations, so that reverting leaves the data
+  usable); if it cannot be, its veto window closes before the production deploy.
+
   D4 and Tier 1 do not conflict: D4 says who decides (a two-way door is the agent's), the tier says
   how much attention the decision receives.
 - **Sampling audit of Tier 0.** A random sample of Tier 0 changes is re-examined after the fact by
@@ -414,7 +432,7 @@ modes · 7 Environment · 8 Profiles · 9 Appendix.
 | Security engineer | ● | ● | ◐ | ● | ● | ○ | ● | ● | ○ |
 | Data engineer | ● | ● | ◐ | ○ | ◐ | | ○ | ● | ○ |
 | Technical writer | ● | ○ | ◐ | ● | ○ | ○ | | | ● |
-| Non-technical business owner | ● | | ○ | ○ | ○ | ● | | ● | |
+| Non-technical business owner | ● | ○ | ○ | ○ | ○ | ● | | ● | |
 
 Role-brief notes to carry into the appendix:
 - QA becomes more central: from running tests to designing acceptance criteria, executable
