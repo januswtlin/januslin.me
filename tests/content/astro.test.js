@@ -9,6 +9,7 @@
 // `pnpm build` left them.
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { createServer } from "node:net";
 import { join, resolve } from "node:path";
 import { parse } from "node-html-parser";
 import { afterAll, describe, expect, it } from "vitest";
@@ -115,18 +116,33 @@ describe("drafts in builds", () => {
   );
 });
 
+/** A free TCP port on localhost, so parallel runs (other worktrees) do not collide. */
+function freePort() {
+  return new Promise((done, fail) => {
+    const server = createServer();
+    server.on("error", fail);
+    server.listen(0, "localhost", () => {
+      const address = server.address();
+      const port = typeof address === "object" && address ? address.port : 0;
+      server.close(() => done(port));
+    });
+  });
+}
+
 /**
  * Starts `pnpm <script>` (a dev server) and resolves once it serves, with its base URL, its
  * output so far, and a stop function.
- * @param {string} script @param {number} port
+ * @param {string} script
  */
-function devServer(script, port) {
+async function devServer(script) {
+  const port = await freePort();
   // --ignore-lock keeps the server in the foreground: Astro 7 moves `astro dev` to the background
   // when it detects an AI agent, and refuses a second server while one is running.
   const child = spawn("pnpm", [script, "--port", String(port), "--ignore-lock"], {
     cwd: root,
     env: {
       ...baseEnv,
+      ASTRO_CACHE_DIR: join(tmp, `${script}-cache`),
       CONTENT_DIR: "tests/fixtures/content",
       DRAFTS_DIR: "tests/fixtures/drafts",
     },
@@ -174,7 +190,7 @@ const get = async (url) => {
 
 describe("dev servers", () => {
   it("pnpm dev includes drafts and never loads the drafts folder", async () => {
-    const server = /** @type {any} */ (await devServer("dev", 4471));
+    const server = /** @type {any} */ (await devServer("dev"));
     try {
       const draft = await get(`${server.base}/tech/draft-post/`);
       expect(draft.status).toBe(200);
@@ -186,7 +202,7 @@ describe("dev servers", () => {
   }, 120_000);
 
   it("pnpm dev:drafts loads the drafts folder as drafts; content/ wins a shared slug", async () => {
-    const server = /** @type {any} */ (await devServer("dev:drafts", 4472));
+    const server = /** @type {any} */ (await devServer("dev:drafts"));
     try {
       const local = await get(`${server.base}/coffee/local-draft/`);
       expect(local.status).toBe(200);
