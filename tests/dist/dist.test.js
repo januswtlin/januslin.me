@@ -138,6 +138,19 @@ describe("dist/ references", () => {
 describe("content safety (T10)", () => {
   const safety = () => parse(read(`${SAFETY_POST.slice(1)}index.html`));
 
+  test("a Mermaid label with <script> or a javascript: link is not live markup", () => {
+    const svg = safety().querySelector('.post__body svg[id^="mermaid"]');
+    expect(svg, "the safety fixture's diagram renders").not.toBeNull();
+    expect(svg?.textContent).toContain("Safe label");
+    expect(svg?.querySelectorAll("script").length, "<script> in the diagram").toBe(0);
+    const links = svg?.querySelectorAll("a") ?? [];
+    const live = links.filter((a) =>
+      /javascript:/i.test(`${a.getAttribute("href") ?? ""} ${a.getAttribute("xlink:href") ?? ""}`),
+    );
+    expect(live, "javascript: links in the diagram").toEqual([]);
+    expect(svg?.toString()).not.toMatch(/<script|\son[a-z]+=|javascript:/i);
+  });
+
   test("raw HTML in content is shown as text, not as elements", () => {
     const body = safety().querySelector(".post__body");
     expect(body, "the safety fixture renders").not.toBeNull();

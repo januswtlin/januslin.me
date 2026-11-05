@@ -49,6 +49,9 @@ export default defineConfig({
             strategy: "inline-svg",
             css: writeMermaidStylesheet(new URL("./", import.meta.url)),
             mermaidConfig: {
+              // Mermaid's default, set explicitly: labels are sanitized and click handlers and
+              // javascript: links are dropped, since diagrams come from content (T10, #59).
+              securityLevel: "strict",
               fontFamily: MERMAID_FONT_FAMILY,
               themeVariables: { fontFamily: MERMAID_FONT_FAMILY },
             },
