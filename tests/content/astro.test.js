@@ -94,6 +94,8 @@ describe("drafts in builds", () => {
       "en/tech/draft-post",
       "coffee/draft-pair",
       "en/coffee/draft-pair",
+      "coffee/draft-pair-unset",
+      "en/coffee/draft-pair-unset",
       "en/tech/safety",
       "en/coffee/fixture-post",
     ])

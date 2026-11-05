@@ -141,6 +141,7 @@ const DRAFT_CASES = [
   // [case, zh-TW route, English route, zh-TW built, English built]
   ["T:true; E:true", "/tech/draft-post/", "/en/tech/draft-post/", false, false],
   ["T:true; E:false", "/coffee/draft-pair/", "/en/coffee/draft-pair/", false, false],
+  ["T:true; E unset", "/coffee/draft-pair-unset/", "/en/coffee/draft-pair-unset/", false, false],
   ["T:false; E:true", "/tech/safety/", "/en/tech/safety/", true, false],
   ["T:false; E:false", "/coffee/fixture-post/", "/en/coffee/fixture-post/", true, true],
 ];
@@ -168,6 +169,12 @@ describe("draft table (T10)", () => {
         expect(
           back.querySelector('link[rel="alternate"][hreflang="zh-TW"]')?.getAttribute("href"),
         ).toBe(`https://januslin.me${zh}`);
+        // x-default points at the zh-TW URL on both pages.
+        for (const page of [root, back]) {
+          expect(
+            page.querySelector('link[rel="alternate"][hreflang="x-default"]')?.getAttribute("href"),
+          ).toBe(`https://januslin.me${zh}`);
+        }
       } else {
         expect(alternate, `${zh} links an English version that is a draft`).toBeNull();
       }
