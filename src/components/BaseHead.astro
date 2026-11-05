@@ -1,6 +1,7 @@
 ---
 import { AUTHOR, SITE } from "../config";
 import { HTML_LANG, OG_LOCALE, t, type Locale } from "../i18n";
+import { jsonForScript } from "../lib/content/json-script";
 import { STYLESHEET_PLACEHOLDER } from "../lib/fonts/constants";
 
 export interface ArticleMeta {
@@ -153,5 +154,5 @@ const structuredData = article
 <script
   type="application/ld+json"
   is:inline
-  set:html={JSON.stringify(structuredData)}
+  set:html={jsonForScript(structuredData)}
 />

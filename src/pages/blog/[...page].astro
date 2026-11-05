@@ -10,7 +10,7 @@ import { DEFAULT_LOCALE, t } from "../../i18n";
 import { getPublishedPosts, type Post } from "../../utils/posts";
 
 export const getStaticPaths = (async ({ paginate }) => {
-  const posts = await getPublishedPosts();
+  const posts = await getPublishedPosts(DEFAULT_LOCALE);
   return paginate(posts, { pageSize: BLOG.postsPerPage });
 }) satisfies GetStaticPaths;
 

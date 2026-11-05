@@ -3,10 +3,11 @@ import type { APIRoute } from "astro";
 
 import { AUTHOR, SITE } from "../config";
 import { DEFAULT_LOCALE, HTML_LANG, t } from "../i18n";
-import { getPublishedPosts } from "../utils/posts";
+import { getPublishedPosts, postHref, tagLabels } from "../utils/posts";
 
 export const GET: APIRoute = async (context) => {
-  const posts = await getPublishedPosts();
+  const posts = await getPublishedPosts(DEFAULT_LOCALE);
+  const labels = await tagLabels(DEFAULT_LOCALE);
 
   return rss({
     title: SITE.title,
@@ -22,8 +23,8 @@ export const GET: APIRoute = async (context) => {
       // API and pulls the whole component runtime into the build.
       description: post.data.description,
       pubDate: post.data.pubDate,
-      link: `/blog/${post.id}/`,
-      categories: post.data.tags,
+      link: postHref(DEFAULT_LOCALE, post),
+      categories: post.data.tags.map(({ id }) => labels.get(id) ?? id),
       customData: `<dc:creator><![CDATA[${AUTHOR.name}]]></dc:creator>`,
     })),
     customData: `<language>${HTML_LANG[DEFAULT_LOCALE]}</language>`,

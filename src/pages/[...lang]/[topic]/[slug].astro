@@ -1,0 +1,47 @@
+---
+import type { GetStaticPaths } from "astro";
+import { render } from "astro:content";
+
+import PostLayout from "../../../layouts/PostLayout.astro";
+import { LOCALES, localeFromParam, localeParam } from "../../../i18n";
+import {
+  getAdjacentPosts,
+  getPublishedPosts,
+  postSlug,
+  postTopic,
+  type Post,
+} from "../../../utils/posts";
+
+// Posts at /<topic>/<slug>/ and /en/<topic>/<slug>/ (src/lib/content/urls.ts). A post has an
+// English page only when it has an index.en.md (T10, #59); T11 builds the rest of the routing.
+export const getStaticPaths = (async () => {
+  const paths = await Promise.all(
+    LOCALES.map(async (locale) => {
+      const posts = await getPublishedPosts(locale);
+      return posts.map((post) => ({
+        params: {
+          lang: localeParam(locale),
+          topic: postTopic(post),
+          slug: postSlug(post),
+        },
+        props: { post, ...getAdjacentPosts(posts, post.id) },
+      }));
+    }),
+  );
+  return paths.flat();
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+  previous?: Post;
+  next?: Post;
+}
+
+const lang = localeFromParam(Astro.params.lang);
+const { post, previous, next } = Astro.props;
+const { Content, headings } = await render(post);
+---
+
+<PostLayout lang={lang} post={post} headings={headings} previous={previous} next={next}>
+  <Content />
+</PostLayout>

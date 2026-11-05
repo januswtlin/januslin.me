@@ -15,9 +15,9 @@ import {
 } from "../../../utils/posts";
 
 export const getStaticPaths = (async ({ paginate }) => {
-  const posts = await getPublishedPosts();
+  const posts = await getPublishedPosts(DEFAULT_LOCALE);
 
-  return collectTags(posts).flatMap((tag) =>
+  return (await collectTags(posts, DEFAULT_LOCALE)).flatMap((tag) =>
     paginate(postsByTag(posts, tag.slug), {
       params: { tag: tag.slug },
       pageSize: BLOG.postsPerPage,

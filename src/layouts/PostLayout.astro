@@ -11,10 +11,11 @@ import PostNav from "../components/PostNav.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import BaseLayout from "./BaseLayout.astro";
 import { BLOG, OG } from "../config";
-import { HTML_LANG, t, type Locale } from "../i18n";
+import { DEFAULT_LOCALE, HTML_LANG, t, type Locale } from "../i18n";
+import { tagUrl } from "../lib/content/urls";
 import { formatDate, isoDate } from "../utils/date";
 import { readingTime } from "../utils/reading-time";
-import { tagSlug, type Post } from "../utils/posts";
+import { postSlug, tagLabels, type Post } from "../utils/posts";
 
 interface Props {
   lang: Locale;
@@ -33,16 +34,18 @@ const {
   pubDate,
   updatedDate,
   tags,
-  heroImage,
-  heroImageAlt,
+  cover,
+  coverAlt,
 } = post.data;
+const labels = await tagLabels(lang);
+const tagNames = tags.map(({ id }) => ({ id, name: labels.get(id) ?? id }));
 
 const minutes = readingTime(post.body);
 
 const article = {
   publishedTime: isoDate(pubDate),
   modifiedTime: updatedDate ? isoDate(updatedDate) : undefined,
-  tags,
+  tags: tagNames.map((tag) => tag.name),
 };
 ---
 
@@ -50,7 +53,7 @@ const article = {
   lang={lang}
   title={title}
   description={description}
-  ogImage={OG.enabled ? `/og/${post.id}.png` : undefined}
+  ogImage={OG.enabled ? `/og/${postSlug(post)}.png` : undefined}
   article={article}
 >
   <article class="post wrap">
@@ -74,9 +77,10 @@ const article = {
 
       <p class="post__meta label">
         {
-          tags.map((tag) => (
-            <a class="post__tag" href={`/tags/${tagSlug(tag)}/`}>
-              #{tag}
+          // Tag pages exist at the root only until T11.
+          tagNames.map((tag) => (
+            <a class="post__tag" href={tagUrl(DEFAULT_LOCALE, tag.id)}>
+              #{tag.name}
             </a>
           ))
         }
@@ -85,11 +89,11 @@ const article = {
     </header>
 
     {
-      heroImage && (
+      cover && (
         <figure class="post__hero">
           <Image
-            src={heroImage}
-            alt={heroImageAlt ?? ""}
+            src={cover}
+            alt={coverAlt ?? ""}
             widths={[640, 960, 1280]}
             sizes="(min-width: 60rem) 60rem, 100vw"
             loading="eager"

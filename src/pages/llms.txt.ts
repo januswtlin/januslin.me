@@ -3,15 +3,15 @@ import type { APIRoute } from "astro";
 import { AUTHOR, SITE } from "../config";
 import { DEFAULT_LOCALE, t } from "../i18n";
 import { formatDate } from "../utils/date";
-import { collectTags, getPublishedPosts } from "../utils/posts";
+import { collectTags, getPublishedPosts, postHref } from "../utils/posts";
 
 /**
  * https://llmstxt.org — a plain-text index of the site for language models,
  * built from the same collection that drives the pages. T13 reworks it.
  */
 export const GET: APIRoute = async ({ site }) => {
-  const posts = await getPublishedPosts();
-  const tags = collectTags(posts);
+  const posts = await getPublishedPosts(DEFAULT_LOCALE);
+  const tags = await collectTags(posts, DEFAULT_LOCALE);
   const absolute = (path: string) => new URL(path, site).href;
   const strings = t(DEFAULT_LOCALE);
 
@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ site }) => {
     "",
     ...posts.map(
       (post) =>
-        `- [${post.data.title}](${absolute(`/blog/${post.id}/`)}): ${
+        `- [${post.data.title}](${absolute(postHref(DEFAULT_LOCALE, post))}): ${
           post.data.description
         } Published ${formatDate(post.data.pubDate, "en")}.`,
     ),
