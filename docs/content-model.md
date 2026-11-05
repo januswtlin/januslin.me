@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-11-05
 
-`content/` is owned by the author. It must remain usable without Astro: plain Markdown, YAML frontmatter, co-located images. Astro reads it through content collections defined in `src/content.config.ts`. There is no CMS (ADR-0004); the author edits the files directly. **The schema in `src/content.config.ts` is the source of truth; this document must match it.**
+`content/` is owned by the author. It must remain usable without Astro: plain Markdown, YAML frontmatter, co-located images. Astro reads it through content collections defined in `src/content.config.ts`. There is no CMS (ADR-0004); the author edits the files directly. **The schemas in `src/lib/content/schema.ts` (used by `src/content.config.ts` and `pnpm validate`) are the source of truth; this document must match them.**
 
 Information architecture decision: ADR-0007.
 
@@ -57,7 +57,7 @@ content/
 
 Rules:
 - Slugs and topic ids: lowercase ASCII kebab-case `^[a-z0-9]+(?:-[a-z0-9]+)*$`, max 60 chars. Chinese titles get an English slug chosen by the author.
-- **Reserved first segments** (cannot be a topic id or page slug): `en`, `tags`, `archive`, `search`, `admin`, `rss.xml`, `llms.txt`, `robots.txt`, `sitemap-index.xml`, `_astro`, `fonts`, `og`, `pagefind`, `404`. `pnpm validate` enforces this.
+- **Reserved first segments** (cannot be a topic id or page slug): `en`, `blog`, `tags`, `archive`, `search`, `admin`, `rss.xml`, `llms.txt`, `robots.txt`, `sitemap-index.xml`, `_astro`, `fonts`, `og`, `pagefind`, `404`, `favicon.svg`, `og-default.png`, plus every top-level file or folder in `public/` and every static top-level route in `src/pages/`, which `pnpm validate` adds itself (`reservedSegments` in `src/lib/content/validate.ts`). `pnpm validate` enforces this.
 - Post slugs are unique across all topics (so a post can move topics without a slug clash).
 - **Published URLs are permanent.** Changing a post's topic or slug requires a `_redirects` entry (301) in the same PR. CI's slug-history guard fails the PR otherwise (T16).
 
@@ -97,11 +97,11 @@ Labels and descriptions are the author's to change. Adding a topic = adding a fo
 | `pubDate` | date (`YYYY-MM-DD` or ISO datetime with offset) | yes | |
 | `updatedDate` | date | no | Set when content changes meaningfully. Feeds `dateModified`. |
 | `tags` | list of tag ids | no, default `[]` | Each must exist in `tags.yaml`. |
-| `related` | list of post slugs | no, default `[]` | Explicit "read next" links (internal linking). Unknown slugs fail the build. |
+| `related` | list of post slugs | no, default `[]` | Explicit "read next" links (internal linking). Unknown slugs fail the build. A published post cannot list a draft (`pnpm validate` and production builds fail); a draft can. |
 | `draft` | boolean | no, default `false` | Excluded from production builds, sitemap, feeds, search, llms.txt. Included in local and preview builds. |
 | `featured` | boolean | no, default `false` | Home page curation. |
 | `cover` | image (relative path) | no | A JPEG, PNG, WebP, AVIF, or GIF in the entry's folder, e.g. `./cover.jpg`. |
-| `coverAlt` | string | required if `cover` is set | |
+| `coverAlt` | string | required if `cover` is set | Not empty. |
 | `location` | object or list | no | `{ name, country, lat?, lng? }`, or a non-empty list of them. `country` is an ISO 3166-1 alpha-2 code in capitals (`JP`); `lat` is −90 to 90, `lng` −180 to 180. Typically for travel, allowed on any post (e.g. a café). |
 | `tripStart`, `tripEnd` | date | no | Travel dates, distinct from `pubDate`. `tripEnd` cannot be before `tripStart`. |
 | `license` | SPDX identifier from the allow-list in `src/lib/content/licenses.ts` | no | `CC-BY-4.0`, `CC-BY-SA-4.0`, `CC-BY-NC-4.0`, `CC0-1.0`, or `MIT`; any other value fails with the file and the value. Omitted means all rights reserved (`LICENSE-CONTENT.md`). Set it only for an entry licensed differently, e.g. `CC-BY-4.0` for a technical guide; it covers the entry's text and the images in its folder unless the text says otherwise. Shown on the entry page and in its JSON-LD and Markdown version. |
@@ -110,19 +110,19 @@ Labels and descriptions are the author's to change. Adding a topic = adding a fo
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `title` | string | yes | Display label, e.g. 咖啡 |
-| `description` | string | yes | Used in navigation tooltips, meta description, llms.txt |
+| `title` | string | yes | Not empty. Display label, e.g. 咖啡 |
+| `description` | string | yes | Not empty. Used in navigation tooltips, meta description, llms.txt |
 | `order` | number | no | Navigation order; hubs without one come after, by id |
-| `startHere` | list of post slugs | no, default `[]` | Curated "start here" posts shown above the chronological list. Unknown slugs fail the build. |
+| `startHere` | list of post slugs | no, default `[]` | Curated "start here" posts shown above the chronological list. Unknown slugs fail the build, and so do drafts, except in builds that include drafts. |
 
-The Markdown body is the hub's introduction: a few paragraphs on what the author writes about under this topic and why. An empty body fails validation in production builds (hubs without real content are weak for readers and search).
+The Markdown body is the hub's introduction: a few paragraphs on what the author writes about under this topic and why. An empty body (HTML comments do not count) fails `pnpm validate` once the topic has published posts (hubs without real content are weak for readers and search).
 
 ### `pages`
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `title` | string | yes | |
-| `description` | string | yes | |
+| `title` | string | yes | Not empty. |
+| `description` | string | yes | Not empty. |
 | `layout` | enum | no, default `default` | `default` is the only value. Extension point for new page types (e.g. `now`, `projects`). Adding a value requires a layout component and a docs update. |
 | `updatedDate` | date | no | |
 | `draft` | boolean | no, default `false` | |
@@ -189,7 +189,7 @@ Topic hubs render the intro, `startHere`, then all posts in the topic by date.
 ## Rich content
 
 - Math: `$inline$` and `$$block$$`, rendered to static HTML with KaTeX at build time.
-- Diagrams: fenced ```` ```mermaid ```` blocks, rendered to SVG at build time (no client JS).
+- Diagrams: fenced ```` ```mermaid ```` blocks, rendered to SVG at build time (no client JS) with Mermaid's `securityLevel: 'strict'`: labels are sanitized, and click handlers and `javascript:` links are dropped.
 - Callouts: `:::note`, `:::tip`, `:::important`, `:::warning`, `:::caution` directives, with an optional title in brackets (`:::tip[Brewing]`). Any other `:name` or `::name` stays as written, so times and ratios such as `10:30` and `1:15` are safe.
 - Footnotes: standard Markdown footnotes.
 - Tables: standard GFM tables (useful for brew recipes and gear specs).
@@ -217,7 +217,7 @@ Errors:
 - The frontmatter of every entry against the schemas above (after inheritance, for English versions): YAML that does not parse, missing or invalid fields, unknown fields, `cover` without `coverAlt`, a `cover` that is missing or not an accepted image type.
 - Slug and topic id format; reserved first segments for topic ids and page slugs; a page slug equal to a topic id; unique post slugs.
 - An `index.zh-tw.md` in every entry folder; a locale other than `zh-tw` or `en` in a file name; Markdown that is not an entry file (`index.md`, `notes.md`, `posts/x.md`); YAML outside `taxonomy/`.
-- Unknown topics, tags, `related` slugs, and `startHere` slugs.
+- Unknown topics, tags, `related` slugs, and `startHere` slugs; a `related` or `startHere` slug that is a draft, in an entry that is not a draft (the build checks this too, unless it includes drafts).
 - An empty hub introduction (HTML comments do not count) for a topic with published posts.
 - `tags.yaml` missing, not a list, an invalid tag, or a duplicate id.
 - A file type not on the allow-list (`.md`, `.yaml`, and the image types above), with HEIC named separately; an image over 5 MB.
