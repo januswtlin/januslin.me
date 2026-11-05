@@ -130,7 +130,18 @@ The Markdown body is the hub's introduction: a few paragraphs on what the author
 
 ### English versions (`index.en.md`)
 
-Same fields as the zh-TW file; no extra translation metadata. A post inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them; a page inherits `license`; a topic hub inherits nothing. Every other field (`title`, `description`, `author`, `draft`, `featured`, `updatedDate`, a hub's `order` and `startHere`) is the English file's own. The English file is validated after inheriting, so it may leave out the required fields it inherits. Language behavior is defined under [localization and English versions](#localization-and-english-versions).
+Same fields as the zh-TW file; no extra translation metadata. A post inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them; a page inherits `license`; a topic hub inherits nothing. Every other field (`title`, `description`, `author`, `featured`, `updatedDate`, a hub's `order` and `startHere`) is the English file's own. The English file is validated after inheriting, so it may leave out the required fields it inherits.
+
+**Drafts in English versions** (the author's decision, 2026-11-05): an English post or page is a draft when its zh-TW file is a draft or it is one itself (effective draft = `zh.draft || en.draft`). The zh-TW entry is never affected by its English version's `draft`.
+
+| zh-TW `draft` | English `draft` | zh-TW page | English page |
+|---|---|---|---|
+| `true` | `true` | draft | draft |
+| `true` | `false` or not set | draft | draft |
+| `false` or not set | `true` | published | draft |
+| `false` or not set | `false` or not set | published | published |
+
+The rule is applied once, where the English entry inherits (`inheritFrontmatter` in `src/lib/content/entries.ts`), so the collections, `getPublished()`, English routes and listings, tag pages, hreflang alternates, the draft-reference check, and `pnpm validate` all see the same effective value. With `INCLUDE_DRAFTS=true` every version is shown. Language behavior is defined under [localization and English versions](#localization-and-english-versions).
 
 ### Example
 
@@ -217,7 +228,7 @@ Errors:
 - The frontmatter of every entry against the schemas above (after inheritance, for English versions): YAML that does not parse, missing or invalid fields, unknown fields, `cover` without `coverAlt`, a `cover` that is missing or not an accepted image type.
 - Slug and topic id format; reserved first segments for topic ids and page slugs; a page slug equal to a topic id; unique post slugs.
 - An `index.zh-tw.md` in every entry folder; a locale other than `zh-tw` or `en` in a file name; Markdown that is not an entry file (`index.md`, `notes.md`, `posts/x.md`); YAML outside `taxonomy/`.
-- Unknown topics, tags, `related` slugs, and `startHere` slugs; a `related` or `startHere` slug that is a draft, in an entry that is not a draft (the build checks this too, unless it includes drafts).
+- Unknown topics, tags, `related` slugs, and `startHere` slugs; a `related` or `startHere` slug that is effectively a draft, in an entry that is not a draft (the build checks this too, unless it includes drafts). An English entry is checked against the English version of the post it names when there is one, otherwise against the zh-TW version.
 - An empty hub introduction (HTML comments do not count) for a topic with published posts.
 - `tags.yaml` missing, not a list, an invalid tag, or a duplicate id.
 - A file type not on the allow-list (`.md`, `.yaml`, and the image types above), with HEIC named separately; an image over 5 MB.
@@ -254,13 +265,13 @@ Adding a locale requires an ADR.
 - The language switcher is shown only when the counterpart exists.
 - en listings (`/en/<topic>/`, `/en/tags/<id>/`, `/en/archive/`) show only posts with an en version.
 - Topic hubs and pages follow the same rule; English hubs need their own `index.en.md`.
-- hreflang alternates are emitted only for pairs that exist.
+- hreflang alternates are emitted only for pairs that exist and are both published: a zh-TW page never links to an English version that is effectively a draft (T10 adds them to post pages; T13 completes them).
 
 ### English versions
 
 The writer of an entry (the author, or the developer named in its `author`, ADR-0016) writes its English version, in their own words. No machine or agent translation, and no agent edits `index.en.md` (`docs/agents/roles.md`).
 
-- An English version is `index.en.md` next to `index.zh-tw.md`, with the same frontmatter fields as the zh-TW file. A post inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them; a page inherits `license` (see [frontmatter](#frontmatter)).
+- An English version is `index.en.md` next to `index.zh-tw.md`, with the same frontmatter fields as the zh-TW file. A post inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them; a page inherits `license`; and an English version is a draft whenever its zh-TW file is (see [English versions](#english-versions-indexenmd)).
 - Reader-facing note on English pages: "Originally written in Traditional Chinese." The string lives in `src/i18n/` and the author may change it.
 
 ### Missing English versions (T19)

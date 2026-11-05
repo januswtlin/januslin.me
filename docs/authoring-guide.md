@@ -82,7 +82,20 @@ coverAlt: 雨中的哲學之道
 
 ## English versions
 
-You write English versions yourself, as `index.en.md` in the same folder, with the same frontmatter as the Chinese file. Fields you leave out are taken from the Chinese file: `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` (pages: `license`). `title` and `description` are always the English file's own, and so is `draft`. After you publish a Chinese entry, a check (on each merge and weekly) opens an issue `english: <collection>/<slug>` for it, labelled `translation-needed`; the issue closes by itself when the English version is merged. If an entry should stay Chinese-only, close its issue; it will not be reopened. When you change a Chinese entry that already has an English version, update the English yourself if needed; nothing tracks that.
+You write English versions yourself, as `index.en.md` in the same folder, with the same frontmatter as the Chinese file. Fields you leave out are taken from the Chinese file: `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` (pages: `license`). `title` and `description` are always the English file's own.
+
+Drafts: an English version is hidden whenever the Chinese file is a draft, and you can also hold back only the English version with its own `draft: true`. Hiding the English version never hides the Chinese one:
+
+| zh-TW `draft` | English `draft` | zh-TW page | English page |
+|---|---|---|---|
+| `true` | `true` | draft | draft |
+| `true` | `false` or not set | draft | draft |
+| `false` or not set | `true` | published | draft |
+| `false` or not set | `false` or not set | published | published |
+
+Previews and `pnpm dev` show every version.
+
+After you publish a Chinese entry, a check (on each merge and weekly) opens an issue `english: <collection>/<slug>` for it, labelled `translation-needed`; the issue closes by itself when the English version is merged. If an entry should stay Chinese-only, close its issue; it will not be reopened. When you change a Chinese entry that already has an English version, update the English yourself if needed; nothing tracks that.
 
 ## When something goes wrong
 
