@@ -104,11 +104,12 @@ pnpm dev              # local dev server (includes draft: true entries)
 pnpm dev:drafts       # same, plus the local-only drafts/ folder
 pnpm build            # production build to dist/ (excludes drafts)
 pnpm build:preview    # build including drafts (used for PR previews)
-pnpm validate         # content validation (schema, tags, images, file types)
+pnpm validate         # content validation (schema, references, images, file types); CONTENT_DIR=<dir> for another set
+pnpm sync-worker-routes  # regenerate run_worker_first in wrangler.jsonc from topics and pages (--check in verify)
 pnpm wrangler dev     # run the Worker and assets locally
 ```
 
-When complete, `pnpm check` is astro check + tsc, `pnpm test` adds dist and Playwright tests, and `pnpm verify` runs check, lint, validate, build, test.
+When complete, `pnpm check` is astro check + tsc, `pnpm test` adds dist and Playwright tests, and `pnpm verify` runs check, lint, validate, `sync-worker-routes --check`, the build of the fixture content (`CONTENT_DIR=tests/fixtures/content pnpm build`), and test.
 
 ## Before changing a rule or design
 

@@ -1,6 +1,6 @@
 # Content model
 
-Last reviewed: 2026-11-03
+Last reviewed: 2026-11-05
 
 `content/` is owned by the author. It must remain usable without Astro: plain Markdown, YAML frontmatter, co-located images. Astro reads it through content collections defined in `src/content.config.ts`. There is no CMS (ADR-0004); the author edits the files directly. **The schema in `src/content.config.ts` is the source of truth; this document must match it.**
 
@@ -38,6 +38,9 @@ content/
 - The topic is a frontmatter field, not a folder. Moving a post to another topic is a one-line change (and requires a redirect, see URLs).
 - The locale is the filename suffix: `index.<locale>.md`, `<locale>` ∈ {`zh-tw`, `en`} (lowercase in filenames and URLs; `zh-TW` in `lang` attributes and hreflang).
 - Images live next to the Markdown that uses them, referenced relatively: `![alt](./figure-1.png)`.
+- Entry ids are `<slug>/<locale>`, e.g. `v60-recipe/zh-tw` (`src/lib/content/entries.ts`). Any other Markdown file under `posts/`, `topics/`, or `pages/` fails validation, so a misnamed `index.md` or `index.zh-TW.md` is never silently skipped.
+- `_templates/` holds `post.md`, `topic.md`, and `page.md`, starter files that are not loaded.
+- `CONTENT_DIR` (default `content`) points the collections, `pnpm validate`, and `pnpm sync-worker-routes` at another directory inside the project; the tests use `tests/fixtures/content/` (T10).
 
 ## URLs
 
@@ -67,6 +70,8 @@ Rules:
 | `pages` | `content/pages/<slug>/index.<locale>.md` | Standalone pages (About, later others) |
 | `tags` (data) | `content/taxonomy/tags.yaml` | Tag registry |
 
+The collections are defined in `src/content.config.ts`, with the loader in `src/lib/content/loader.ts` (Astro's glob loader over `<collection>/*/index.*.md`) and the schemas in `src/lib/content/schema.ts`, which `pnpm validate` uses too. Every schema is strict: a field not listed below (a typo such as `tag:`) fails. Every reference must exist, or the build and `pnpm validate` fail with the file, the field, and the value. Pages read entries through `getPublished(collection, locale)` (`src/lib/content/collections.ts`), which applies the draft rule in [drafts](#drafts-and-scheduling), and build every URL with `src/lib/content/urls.ts`.
+
 ### Initial topics
 
 | id | zh-TW label | en label | Scope |
@@ -85,21 +90,21 @@ Labels and descriptions are the author's to change. Adding a topic = adding a fo
 
 | Field | Type | Required | Notes |
 |---|---|---|---|
-| `title` | string | yes | |
+| `title` | string | yes | Not empty. |
 | `author` | string | no, default `Janus Lin` | The writer's name, for an entry written by someone else (ADR-0016). Shown as the byline and in JSON-LD. |
 | `description` | string | yes | 40–160 characters. Meta description, OG, RSS, llms.txt. Write it as a standalone summary. |
-| `topic` | topic id | yes | Reference to `topics`; unknown ids fail the build. |
+| `topic` | topic id | yes | Reference to `topics` (the hub entry `<topic>/zh-tw`); unknown ids fail the build. |
 | `pubDate` | date (`YYYY-MM-DD` or ISO datetime with offset) | yes | |
 | `updatedDate` | date | no | Set when content changes meaningfully. Feeds `dateModified`. |
-| `tags` | list of tag ids | no | Each must exist in `tags.yaml`. |
-| `related` | list of post slugs | no | Explicit "read next" links (internal linking). Unknown slugs fail the build. |
+| `tags` | list of tag ids | no, default `[]` | Each must exist in `tags.yaml`. |
+| `related` | list of post slugs | no, default `[]` | Explicit "read next" links (internal linking). Unknown slugs fail the build. |
 | `draft` | boolean | no, default `false` | Excluded from production builds, sitemap, feeds, search, llms.txt. Included in local and preview builds. |
-| `featured` | boolean | no | Home page curation. |
-| `cover` | image (relative path) | no | |
+| `featured` | boolean | no, default `false` | Home page curation. |
+| `cover` | image (relative path) | no | A JPEG, PNG, WebP, AVIF, or GIF in the entry's folder, e.g. `./cover.jpg`. |
 | `coverAlt` | string | required if `cover` is set | |
-| `location` | object or list | no | `{ name, country (ISO 3166-1 alpha-2), lat?, lng? }`. Typically for travel, allowed on any post (e.g. a café). |
-| `tripStart`, `tripEnd` | date | no | Travel dates, distinct from `pubDate`. |
-| `license` | SPDX identifier from the allow-list in `src/lib/content/licenses.ts` | no | Omitted means all rights reserved (`LICENSE-CONTENT.md`). Set it only for an entry licensed differently, e.g. `CC-BY-4.0` for a technical guide; it covers the entry's text and the images in its folder unless the text says otherwise. Shown on the entry page and in its JSON-LD and Markdown version. |
+| `location` | object or list | no | `{ name, country, lat?, lng? }`, or a non-empty list of them. `country` is an ISO 3166-1 alpha-2 code in capitals (`JP`); `lat` is −90 to 90, `lng` −180 to 180. Typically for travel, allowed on any post (e.g. a café). |
+| `tripStart`, `tripEnd` | date | no | Travel dates, distinct from `pubDate`. `tripEnd` cannot be before `tripStart`. |
+| `license` | SPDX identifier from the allow-list in `src/lib/content/licenses.ts` | no | `CC-BY-4.0`, `CC-BY-SA-4.0`, `CC-BY-NC-4.0`, `CC0-1.0`, or `MIT`; any other value fails with the file and the value. Omitted means all rights reserved (`LICENSE-CONTENT.md`). Set it only for an entry licensed differently, e.g. `CC-BY-4.0` for a technical guide; it covers the entry's text and the images in its folder unless the text says otherwise. Shown on the entry page and in its JSON-LD and Markdown version. |
 
 ### `topics` (hub pages)
 
@@ -107,8 +112,8 @@ Labels and descriptions are the author's to change. Adding a topic = adding a fo
 |---|---|---|---|
 | `title` | string | yes | Display label, e.g. 咖啡 |
 | `description` | string | yes | Used in navigation tooltips, meta description, llms.txt |
-| `order` | number | no | Navigation order |
-| `startHere` | list of post slugs | no | Curated "start here" posts shown above the chronological list |
+| `order` | number | no | Navigation order; hubs without one come after, by id |
+| `startHere` | list of post slugs | no, default `[]` | Curated "start here" posts shown above the chronological list. Unknown slugs fail the build. |
 
 The Markdown body is the hub's introduction: a few paragraphs on what the author writes about under this topic and why. An empty body fails validation in production builds (hubs without real content are weak for readers and search).
 
@@ -118,14 +123,14 @@ The Markdown body is the hub's introduction: a few paragraphs on what the author
 |---|---|---|---|
 | `title` | string | yes | |
 | `description` | string | yes | |
-| `layout` | enum | no, default `default` | Extension point for new page types (e.g. `now`, `projects`). Adding a value requires a layout component and a docs update. |
+| `layout` | enum | no, default `default` | `default` is the only value. Extension point for new page types (e.g. `now`, `projects`). Adding a value requires a layout component and a docs update. |
 | `updatedDate` | date | no | |
-| `draft` | boolean | no | |
+| `draft` | boolean | no, default `false` | |
 | `license` | SPDX identifier | no | As for posts. |
 
 ### English versions (`index.en.md`)
 
-Same fields as the zh-TW file; no extra translation metadata. Inheritance and language behavior are defined under [localization and English versions](#localization-and-english-versions).
+Same fields as the zh-TW file; no extra translation metadata. A post inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them; a page inherits `license`; a topic hub inherits nothing. Every other field (`title`, `description`, `author`, `draft`, `featured`, `updatedDate`, a hub's `order` and `startHere`) is the English file's own. The English file is validated after inheriting, so it may leave out the required fields it inherits. Language behavior is defined under [localization and English versions](#localization-and-english-versions).
 
 ### Example
 
@@ -161,6 +166,7 @@ tripEnd: 2026-11-02
   en: Japan
 ```
 
+- `id` (ASCII kebab-case), `zh-tw`, and `en` are required; `description` is optional, and so is each locale in it. Ids are unique. An empty file is an empty registry.
 - Tag pages list posts from every topic carrying the tag, newest first, each labeled with its topic.
 - Renaming a tag's label is free; changing an `id` requires a redirect.
 
@@ -175,7 +181,7 @@ Topic hubs render the intro, `startHere`, then all posts in the topic by date.
 
 ## Images
 
-- Co-located with the entry. Accepted inputs: JPEG, PNG, WebP, AVIF, GIF (no SVG: T10's file-type allow-list rejects it). CI rejects HEIC in the repo: convert first (laptop: `pnpm images:optimize`; phone: the iOS Shortcut in T12).
+- Co-located with the entry. Accepted inputs: JPEG, PNG, WebP, AVIF, GIF (`.jpg`, `.jpeg`, `.png`, `.webp`, `.avif`, `.gif`; no SVG: the file-type allow-list rejects it). `pnpm validate` rejects HEIC: convert first (laptop: `pnpm images:optimize`; phone: the iOS Shortcut in T12).
 - **Source size policy:** long edge ≤ 2400 px, file ≤ 1.5 MB (warning), hard fail > 5 MB. Laptop authors run `pnpm images:optimize`; on the phone, the iOS Shortcut does the same before the photo is committed (T12).
 - Rendering uses Astro's image pipeline: responsive `srcset`, modern formats, explicit width/height, lazy loading below the fold. Every image needs alt text (CI warns on empty alt).
 - Strip GPS metadata from published derivatives (privacy). T12 documents whether originals are also stripped.
@@ -189,11 +195,40 @@ Topic hubs render the intro, `startHere`, then all posts in the topic by date.
 - Tables: standard GFM tables (useful for brew recipes and gear specs).
 - No MDX in `content/`. Interactive needs are met with directives handled by site code, documented here.
 
+### Content safety (T10)
+
+- **Raw HTML is disabled**, not sanitized: HTML comments are dropped, and any other HTML in a Markdown file (`<script>`, `<iframe>`, `<object>`, `<embed>`, `<img onerror=…>`, but also `<br>` or `<details>`) is shown as the text it was written as. None of it reaches the page as an element, so none of it can run or load anything. Use Markdown and the directives above instead. Chosen over an allow-list sanitizer because no content needs raw HTML, and an allow-list would have to admit the KaTeX, Mermaid, and Shiki output while keeping everything else out (`remarkNoRawHtml` in `src/lib/markdown/safety.ts`).
+- **Links and images keep only `http:`, `https:`, `mailto:`, `tel:`, relative URLs, and fragments.** Any other scheme (`javascript:`, `vbscript:`, `data:`, `file:`), in any letter case and with whitespace or control characters inside, loses its `href` or `src`; event handler attributes and elements that load or run code are removed too (`rehypeSafeUrls`).
+- **JSON in `<script>`** (JSON-LD) escapes `<`, `>`, `&`, U+2028, and U+2029 as `\u003c`-style escapes, so a title such as `</script><script>…` cannot end the element (`src/lib/content/json-script.ts`).
+- Titles, descriptions, and other frontmatter strings are escaped by Astro wherever they appear in HTML.
+
 ## Drafts and scheduling
 
 - `draft: true` keeps an entry out of production builds. It is still committed, and the repository is public (ADR-0012), so the text is world-readable on GitHub and stays in history. Use it only for work you do not mind being seen.
-- Writing that must stay private lives in `drafts/` at the repo root (same layout as `content/`), gitignored except its README. `pnpm dev:drafts` loads it locally; no other command reads it (T10). Publishing starts by moving the entry folder into `content/`.
+- Drafts are included only with `INCLUDE_DRAFTS=true`: `pnpm dev`, `pnpm dev:drafts`, and `pnpm build:preview` set it; `pnpm build` does not.
+- Writing that must stay private lives in `drafts/` at the repo root (same layout as `content/`), gitignored except its README. `pnpm dev:drafts` loads it locally (it sets `LOCAL_DRAFTS=true`); no other command reads it, and `astro build` and `astro sync` refuse to run with `LOCAL_DRAFTS=true` (`src/lib/content/local-drafts.ts`). Its entries are always drafts, whatever their frontmatter says, and a missing `drafts/` folder is fine. A slug in both `drafts/` and `content/` loads from `content/`, with a warning. `DRAFTS_DIR` names another folder; the tests use `tests/fixtures/drafts/` and never read `drafts/`. Publishing starts by moving the entry folder into `content/`.
 - Scheduled publishing is not supported in v1 (roadmap R16).
+
+## Validation (`pnpm validate`, T10)
+
+`scripts/validate-content.ts` checks `content/` (or `CONTENT_DIR`) from the files alone, before the build, and is part of `pnpm verify`. It prints every issue as `<level>: <file>: <field>: <message>` and exits 1 on any error. The rules are in `src/lib/content/validate.ts`; every rule has a negative fixture in `tests/fixtures/content-broken/<case>/`.
+
+Errors:
+- The frontmatter of every entry against the schemas above (after inheritance, for English versions): YAML that does not parse, missing or invalid fields, unknown fields, `cover` without `coverAlt`, a `cover` that is missing or not an accepted image type.
+- Slug and topic id format; reserved first segments for topic ids and page slugs; a page slug equal to a topic id; unique post slugs.
+- An `index.zh-tw.md` in every entry folder; a locale other than `zh-tw` or `en` in a file name; Markdown that is not an entry file (`index.md`, `notes.md`, `posts/x.md`); YAML outside `taxonomy/`.
+- Unknown topics, tags, `related` slugs, and `startHere` slugs.
+- An empty hub introduction (HTML comments do not count) for a topic with published posts.
+- `tags.yaml` missing, not a list, an invalid tag, or a duplicate id.
+- A file type not on the allow-list (`.md`, `.yaml`, and the image types above), with HEIC named separately; an image over 5 MB.
+
+Warnings: an image over 1.5 MB; files in `content/` that nothing reads. `.gitkeep`, `.DS_Store`, and `.obsidian/` are skipped.
+
+The build checks the same schemas and references while loading the collections, and fails with the file named.
+
+## Worker routes (`pnpm sync-worker-routes`, T10)
+
+`scripts/sync-worker-routes.ts` writes `run_worker_first` in `wrangler.jsonc` from the topics (`/<topic>/*` for every hub, by `order` then id, then the same under `/en/`) and the published pages (`/<page>/`, and `/en/<page>/` when the page has a published English version), and leaves the rest of the file as it is. `--check`, in `pnpm verify`, changes nothing and fails when the file is out of date. Until `wrangler.jsonc` exists (T14), both modes print a notice and pass (ADR-0007, `docs/deployment.md`).
 
 ## Localization and English versions
 
@@ -225,7 +260,7 @@ Adding a locale requires an ADR.
 
 The writer of an entry (the author, or the developer named in its `author`, ADR-0016) writes its English version, in their own words. No machine or agent translation, and no agent edits `index.en.md` (`docs/agents/roles.md`).
 
-- An English version is `index.en.md` next to `index.zh-tw.md`, with the same frontmatter fields as the zh-TW file. It inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them (see [frontmatter](#frontmatter)).
+- An English version is `index.en.md` next to `index.zh-tw.md`, with the same frontmatter fields as the zh-TW file. A post inherits `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` from the zh-TW file unless it sets them; a page inherits `license` (see [frontmatter](#frontmatter)).
 - Reader-facing note on English pages: "Originally written in Traditional Chinese." The string lives in `src/i18n/` and the author may change it.
 
 ### Missing English versions (T19)

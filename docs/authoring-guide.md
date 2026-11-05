@@ -1,6 +1,6 @@
 # Authoring guide
 
-Last reviewed: 2026-10-29
+Last reviewed: 2026-11-05
 
 For the author. How to write and publish; engineering details live in the other docs.
 
@@ -20,11 +20,12 @@ Each post has one `topic` (its main category) and any number of tags. The URL is
 ## Writing on the laptop (iA Writer / Obsidian)
 
 1. Open the repo's `content/` folder in iA Writer or Obsidian.
-2. New post: create `content/posts/<slug>/` containing `index.zh-tw.md` and any photos. Start from the templates in `content/_templates/` (created in T10).
-3. Local preview: run `pnpm dev` at the repo root and open `http://localhost:4321`. Entries with `draft: true` are visible locally.
-4. Publish: branch, commit, push, open a PR, wait for the preview, merge.
+2. New post: create `content/posts/<slug>/` containing `index.zh-tw.md` and any photos. Start from the templates in `content/_templates/` (`post.md`, `topic.md`, `page.md`): copy one into the new folder as `index.zh-tw.md`, fill it in, and delete the comment lines and the fields you do not use.
+3. Check: run `pnpm validate` at the repo root. It names every problem with the file and the field, e.g. `error: content/posts/v60-recipe/index.zh-tw.md: tags.1: unknown tag "pourover"` (the full list of checks is in `docs/content-model.md`, "Validation"). CI runs the same check on every PR.
+4. Local preview: run `pnpm dev` and open `http://localhost:4321`. Entries with `draft: true` are visible locally.
+5. Publish: branch, commit, push, open a PR, wait for the preview, merge.
 
-The repository is public, so anything you commit (including `draft: true` entries) is readable on GitHub. For unfinished writing, use the local-only `drafts/` folder (same layout as `content/`). `pnpm dev:drafts` shows it locally. When it is ready, move the entry folder into `content/` and continue from step 3.
+The repository is public, so anything you commit (including `draft: true` entries) is readable on GitHub. For unfinished writing, use the local-only `drafts/` folder at the repo root, with the same layout as `content/` (`drafts/posts/<slug>/index.zh-tw.md`; the folder is gitignored, and a missing folder is fine). `pnpm dev:drafts` shows it locally, always as drafts; no other command reads it, and the build refuses to run in that mode, so nothing in `drafts/` can be published by accident. A draft may use topics and tags from `content/`. If a slug exists in both folders, the one in `content/` is shown and `pnpm dev:drafts` prints a warning. When it is ready, move the entry folder into `content/` and continue from step 3.
 
 ## Writing on mobile (iA Writer + Working Copy), when needed
 
@@ -32,7 +33,7 @@ There is no CMS (ADR-0004). On the iPhone or iPad the same Markdown files are ed
 
 1. One-time setup per device: clone `januswtlin/januslin.me` in Working Copy with a deploy key (`docs/admin-guide.md` → "Mobile publishing: Working Copy on a new device"), and add the clone to iA Writer as a library location (Working Copy's Files provider).
 2. In Working Copy, create a branch for the post (any name except `main`).
-3. Write `content/posts/<slug>/index.zh-tw.md` in iA Writer, starting from `content/_templates/post.md`.
+3. Write `content/posts/<slug>/index.zh-tw.md` in iA Writer, starting from `content/_templates/post.md`. There is no `pnpm validate` on the phone: the PR's CI check runs it and names any problem.
 4. Photos: run the "Prepare photo for januslin.me" Shortcut (JPEG, long edge 2400 px, no metadata; steps in T12) on each photo, then add the results to the post's folder in Working Copy. HEIC and files over 5 MB fail CI.
 5. Commit and push the branch in Working Copy. Pushes to `main` are refused by GitHub (the `main` ruleset); always use a branch.
 6. In the GitHub mobile app, open a PR from the branch, wait for the preview link (behind Cloudflare Access, visible only to you), and merge. The post goes live a few minutes later.
@@ -73,14 +74,15 @@ coverAlt: 雨中的哲學之道
 - **Use headings** (`##`, `###`) to structure long pieces; a table of contents is generated automatically.
 - Math: `$E = mc^2$`. Diagrams: fenced ```` ```mermaid ```` blocks.
 - Callouts: `:::note`, `:::tip`, `:::warning`.
-- New tag: add an entry to `content/taxonomy/tags.yaml` (English `id`, plus zh-TW and en labels).
+- New tag: add an entry to `content/taxonomy/tags.yaml` (English `id`, plus zh-TW and en labels). A tag that is not in the file fails the check.
+- Raw HTML does not work in posts: anything like `<br>` or `<iframe>` shows up as plain text, and `<!-- comments -->` are removed from the page (they stay in the repository, which is public). Use Markdown, callouts, or ask an agent for a directive. Links work with `https:`, `mailto:`, `tel:`, and relative paths.
 - To keep something off the site for now: `draft: true`. Hidden in production, visible in previews and locally, but public in the repository. Truly private drafts go in `drafts/`.
 - After meaningfully editing a published entry, set `updatedDate`.
 - Everything you write is all rights reserved by default (`LICENSE-CONTENT.md`). To license one entry differently, e.g. a technical guide others may reuse, add `license: CC-BY-4.0` (or another SPDX id on the allowed list) to its frontmatter; the page then shows that license. It covers the entry's text and the photos in its folder unless the text says otherwise.
 
 ## English versions
 
-You write English versions yourself, as `index.en.md` in the same folder, with the same frontmatter as the Chinese file (fields you leave out are taken from it). After you publish a Chinese entry, a check (on each merge and weekly) opens an issue `english: <collection>/<slug>` for it, labelled `translation-needed`; the issue closes by itself when the English version is merged. If an entry should stay Chinese-only, close its issue; it will not be reopened. When you change a Chinese entry that already has an English version, update the English yourself if needed; nothing tracks that.
+You write English versions yourself, as `index.en.md` in the same folder, with the same frontmatter as the Chinese file. Fields you leave out are taken from the Chinese file: `topic`, `pubDate`, `tags`, `related`, `cover`, `coverAlt`, `location`, `tripStart`, `tripEnd`, and `license` (pages: `license`). `title` and `description` are always the English file's own, and so is `draft`. After you publish a Chinese entry, a check (on each merge and weekly) opens an issue `english: <collection>/<slug>` for it, labelled `translation-needed`; the issue closes by itself when the English version is merged. If an entry should stay Chinese-only, close its issue; it will not be reopened. When you change a Chinese entry that already has an English version, update the English yourself if needed; nothing tracks that.
 
 ## When something goes wrong
 
