@@ -1,0 +1,60 @@
+/*
+ * Chinese typesetting (T09, #58; ADR-0019).
+ *
+ * The CJK rules of Retypeset's heti-based src/styles/markdown.css (MIT; heti by sivan, MIT),
+ * ported from UnoCSS shortcuts to plain CSS. Every rule is limited to :lang(zh), so English
+ * pages keep Sumi's typesetting unchanged.
+ */
+
+/* `——` and `……` take the CJK face's full-width glyphs instead of Source Serif's thin, low
+   Latin ones. "Noto Serif TC Punct" covers only U+2014 and U+2026 (its @font-face rules have
+   that unicode-range), so everything else still falls through to the Latin faces first. */
+:root:lang(zh) {
+  --font-serif: "Noto Serif TC Punct", "Source Serif 4", "Source Serif Pro",
+    "Noto Serif TC", serif;
+}
+
+/* heti: break-words, tracking-wide (0.025em) for CJK */
+.prose:lang(zh) {
+  overflow-wrap: break-word;
+  letter-spacing: 0.025em;
+}
+
+/* Mermaid measured its labels at build time without the tracking; inherited, it would push the
+   text past the label boxes. */
+.prose:lang(zh) svg {
+  letter-spacing: normal;
+}
+
+/* heti: CJK headings track wider (0.05em) and wrap with text-wrap: pretty. Sumi's default
+   negative tracking is for Latin. */
+:where(h1, h2, h3, h4, h5, h6):lang(zh) {
+  letter-spacing: 0.05em;
+  text-wrap: pretty;
+}
+
+/* heti: justified CJK paragraphs */
+.prose p:lang(zh) {
+  text-align: justify;
+}
+
+/* heti: long links and inline code may break anywhere in CJK text */
+.prose :where(a, :not(pre) > code):lang(zh) {
+  word-break: break-all;
+}
+
+/* No synthetic italics: CJK fonts have no italic, and browsers slant the glyphs. Emphasis
+   takes the emphasis dots of Chinese typesetting (著重號) under the text instead. */
+.prose :where(blockquote, em, i, cite):lang(zh) {
+  font-style: normal;
+}
+
+.prose em:lang(zh) {
+  text-emphasis: filled dot;
+  text-emphasis-position: under right;
+}
+
+/* heti: corner brackets for <q> */
+q:lang(zh) {
+  quotes: "「" "」" "『" "』";
+}

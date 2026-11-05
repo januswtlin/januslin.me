@@ -1,0 +1,84 @@
+---
+import type { Page } from "astro";
+
+import { t, type Locale } from "../i18n";
+
+interface Props {
+  lang: Locale;
+  page: Page<unknown>;
+  /** Accessible name, e.g. "Blog posts". */
+  label: string;
+}
+
+const { lang, page, label } = Astro.props;
+const strings = t(lang);
+
+const pad = (n: number) => String(n).padStart(2, "0");
+---
+
+{
+  page.lastPage > 1 && (
+    <nav class="pagination" aria-label={strings.pagination(label)}>
+      {page.url.prev ? (
+        <a class="pagination__step" href={page.url.prev} rel="prev">
+          {strings.newer}
+        </a>
+      ) : (
+        <span class="pagination__step pagination__step--off">{strings.newer}</span>
+      )}
+
+      <p class="pagination__count">
+        <span class="visually-hidden">
+          {strings.pageOf(pad(page.currentPage), pad(page.lastPage))}
+        </span>
+        <span aria-hidden="true">
+          {pad(page.currentPage)} / {pad(page.lastPage)}
+        </span>
+      </p>
+
+      {page.url.next ? (
+        <a class="pagination__step" href={page.url.next} rel="next">
+          {strings.older}
+        </a>
+      ) : (
+        <span class="pagination__step pagination__step--off">{strings.older}</span>
+      )}
+    </nav>
+  )
+}
+
+<style>
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-12);
+    padding-top: var(--space-6);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .pagination__step {
+    padding: var(--space-3) var(--space-4);
+    border: var(--rule-width) solid var(--color-rule);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  .pagination__step:hover {
+    border-color: var(--color-accent);
+  }
+
+  .pagination__step--off {
+    color: var(--color-fg-faint);
+    border-color: transparent;
+  }
+
+  .pagination__count {
+    color: var(--color-fg-faint);
+  }
+</style>

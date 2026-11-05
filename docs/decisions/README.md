@@ -10,7 +10,7 @@ Use this topic summary to find the relevant rationale. For day-to-day work, foll
 
 | Topic | Summary | Current guide | Decision history |
 |---|---|---|---|
-| Site and content | Static Astro with vendored Retypeset; posts organized by topics and tags; zh-TW at the root, English under `/en/`. | [Overview](../overview.md), [content model](../content-model.md) | [0001](ADR-0001-astro-and-retypeset.md), [0005](ADR-0005-i18n-urls.md), [0007](ADR-0007-information-architecture.md) |
+| Site and content | Static Astro with vendored Sumi and Noto Serif TC; posts organized by topics and tags; zh-TW at the root, English under `/en/`. | [Overview](../overview.md), [content model](../content-model.md) | [0001](ADR-0001-astro-and-retypeset.md), [0019](ADR-0019-sumi-theme.md), [0005](ADR-0005-i18n-urls.md), [0007](ADR-0007-information-architecture.md) |
 | Publishing and ownership | Public repository, Markdown and Git, one editor who merges, people write content. | [Authoring](../authoring-guide.md), [roles](../agents/roles.md) | [0004](ADR-0004-single-repo-no-cms.md), [0012](ADR-0012-public-repository.md), [0016](ADR-0016-one-editor-many-developers.md) |
 | Hosting and releases | Workers static assets; Actions builds and deploys; protected `main` and environment secrets. | [Deployment](../deployment.md) | [0002](ADR-0002-cloudflare-workers-static-assets.md), [0003](ADR-0003-github-actions-rulesets-environments.md) |
 | Search and AI access | Allow search, agent, and training access; publish Markdown alternates. | [SEO/AEO](../seo-aeo.md) | [0006](ADR-0006-ai-access-policy.md) |
@@ -23,7 +23,7 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 
 | ADR | Title | Status |
 |---|---|---|
-| [0001](ADR-0001-astro-and-retypeset.md) | Astro 7 with a vendored Retypeset theme, kept to its original design | accepted |
+| [0001](ADR-0001-astro-and-retypeset.md) | Astro 7 with a vendored Retypeset theme, kept to its original design | superseded by 0019 (theme); its pipeline decisions carry over |
 | [0002](ADR-0002-cloudflare-workers-static-assets.md) | Cloudflare Workers static assets instead of Pages | accepted |
 | [0003](ADR-0003-github-actions-rulesets-environments.md) | GitHub Actions for CI/CD, protected by a `main` ruleset and environment secrets | accepted |
 | [0004](ADR-0004-single-repo-no-cms.md) | One repository with an author-owned `content/`, published with Git only | accepted |
@@ -41,7 +41,7 @@ Agents propose new ADRs in their PR when they make a decision a future agent wou
 | [0016](ADR-0016-one-editor-many-developers.md) | One editor, any number of developers | proposed |
 | [0017](ADR-0017-task-context-and-token-efficiency.md) | Reduce task context while preserving completion gates | proposed |
 | [0018](ADR-0018-codex-in-vm-login.md) | Codex login inside the VM and active role identities | proposed; records the author's 2026-11-04 in-VM login approval; human verification pending |
-| [0019](ADR-0019-sumi-theme.md) | Sumi instead of Retypeset, on the unified pipeline, with a Taiwan-standard font | proposed; would supersede ADR-0001's theme choice (task #122) |
+| [0019](ADR-0019-sumi-theme.md) | Sumi instead of Retypeset, on the unified pipeline, with a Taiwan-standard font | accepted 2026-11-04 (PR #123); applied in T09 (#58) |
 
 ## Template
 

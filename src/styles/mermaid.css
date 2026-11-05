@@ -1,0 +1,28 @@
+/*
+ * Mermaid diagrams (T09, #58). They are inline SVG rendered at build time with Mermaid's light
+ * default theme. Its edges and arrowheads are #333, about 1.5:1 on Sumi's dark page; WCAG asks
+ * 3:1 for graphics. In dark mode only, they take Sumi's muted foreground; light mode keeps
+ * Mermaid's own colors, including an author's linkStyle or classDef. Mermaid's rules are keyed
+ * on the diagram's id (#mermaid-0 .flowchart-link), so these need !important to win.
+ */
+
+:root[data-theme="dark"] .prose svg[id^="mermaid"] :is(.flowchart-link, .relation, .messageLine0, .messageLine1, .transition) {
+  stroke: var(--color-fg-muted) !important;
+}
+
+:root[data-theme="dark"] .prose svg[id^="mermaid"] :is(marker path, .marker, .arrowheadPath, .arrowMarkerPath) {
+  fill: var(--color-fg-muted) !important;
+  stroke: var(--color-fg-muted) !important;
+}
+
+/* The same when no theme is pinned and the system is dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .prose svg[id^="mermaid"] :is(.flowchart-link, .relation, .messageLine0, .messageLine1, .transition) {
+    stroke: var(--color-fg-muted) !important;
+  }
+
+  :root:not([data-theme]) .prose svg[id^="mermaid"] :is(marker path, .marker, .arrowheadPath, .arrowMarkerPath) {
+    fill: var(--color-fg-muted) !important;
+    stroke: var(--color-fg-muted) !important;
+  }
+}

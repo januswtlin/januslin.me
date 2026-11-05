@@ -1,11 +1,21 @@
 # The format check covers the Node project's own files only (T07, #57): JavaScript and
 # JSON in scripts/ and tests/, and the root config files. Docs, content, and the sandbox
-# kit are not reformatted. T09 adds src/.
+# kit are not reformatted.
+# The vendored Sumi code (src/ outside the directories below, astro.config.ts, public/) keeps
+# upstream's own formatting (T09, #58), so our changes stay a readable diff against upstream for
+# the monthly upstream watch. ESLint and astro check cover src/.
+# Project-owned directories under src/ are formatted: each is re-included below
+# (a child of an ignored directory cannot be re-included on its own).
 /*
 !/scripts/
 !/tests/
+!/src/
+/src/*
+!/src/lib/
+!/src/i18n/
 !/package.json
 !/tsconfig.json
+!/tsconfig.tools.json
 !/*.config.js
 !/.prettierrc.json
 **/*.md
@@ -14,3 +24,5 @@
 # Existing JSON kept byte-for-byte (a fixture and the Codex result schema).
 /scripts/codex-result.schema.json
 /tests/scripts/main-watch/fixtures/
+# Recorded screenshot baselines.
+/tests/e2e/__screenshots__/

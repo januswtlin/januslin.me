@@ -21,19 +21,19 @@ Added by planned tasks, with the same rule for anything that needs the author:
 |---|---|---|---|
 | Weekly | Renovate PRs reviewed by the Upgrade review task; the author merges (`docs/automation.md`) | Upgrade Engineer (automated) + author | T19, T20 |
 | Weekly | No `incident` issue was closed, edited, or relabelled by a bot or the machine account; reopen and investigate if so | Upgrade Engineer (automated) | T20 |
-| Monthly | Retypeset upstream watch (below) | Upgrade Engineer | T09 |
+| Monthly | Sumi upstream watch (below) | Upgrade Engineer | T09 |
 | Monthly | Astro, wrangler, and Node release notes; plan majors as task issues | Upgrade Engineer | T09 |
 | Monthly | SEO/AEO audit (`docs/seo-aeo.md` → Periodic audit) | SEO/AEO Engineer (automated) | T20 |
 | Monthly | Limits: Workers script requests, asset file count, repository size | Platform Engineer | T16 |
 | Before expiry | Rotate the deploy token and the Access service token `ci-smoke-test` (the author creates and stores; an agent updates docs) | Author + Platform Engineer | T14, T15 |
 
-### Retypeset upstream watch (monthly, once T09 has vendored the theme)
-We vendor Retypeset and never merge upstream (ADR-0001). Once a month:
-1. Compare `https://github.com/radishzzz/astro-theme-retypeset` `master` with the last reviewed upstream commit below (`git log <last>..origin/master` in a scratch clone outside the repository).
+### Sumi upstream watch (monthly)
+We vendor Sumi and never merge upstream (ADR-0019). Once a month:
+1. Compare `https://github.com/kpab/astro-sumi` `main` with the last reviewed upstream commit below (`git log <last>..origin/main` in a scratch clone outside the repository, or `GET /repos/kpab/astro-sumi/compare/<last>...main`). Upstream files that were not imported (README, CI, `AGENTS.md`, demo posts) need no review.
 2. For each change, decide: port (bug fix, security fix, accessibility fix, Astro compatibility), or skip (feature or design change we do not want). Ports become task issues or Upgrade PRs; record skips with one line each in the PR or report.
 3. Update the line below in the same PR, even when nothing was ported.
 
-Last reviewed upstream commit: `a636b6d393be714cab52d3fc4baddd3f3905f701` (2026-04-12), the vendoring base.
+Last reviewed upstream commit: `c6bbdd91417cb0a624e7abbb570544c951ac5c6f` (2026-08-29, v1.0.0), the vendoring base. On 2026-11-04 upstream `main` was still at this commit (no newer commits).
 
 ### Quarterly security review
 The agent opens a `human-task` issue linking `docs/runbooks/quarterly-host-checks.md` for the checks only the author can run (admin rights, the host shell, the browser profiles), runs the rest itself, and records all results in `docs/reports/`.

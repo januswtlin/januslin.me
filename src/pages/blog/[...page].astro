@@ -1,0 +1,53 @@
+---
+import type { GetStaticPaths, Page } from "astro";
+
+import PageHeader from "../../components/PageHeader.astro";
+import Pagination from "../../components/Pagination.astro";
+import PostCard from "../../components/PostCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { BLOG } from "../../config";
+import { DEFAULT_LOCALE, t } from "../../i18n";
+import { getPublishedPosts, type Post } from "../../utils/posts";
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getPublishedPosts();
+  return paginate(posts, { pageSize: BLOG.postsPerPage });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page<Post>;
+}
+
+const { page } = Astro.props;
+// The archive exists in the default locale only until T11.
+const lang = DEFAULT_LOCALE;
+const strings = t(lang);
+
+const title = page.currentPage > 1 ? strings.blogPage(page.currentPage) : strings.blogTitle;
+---
+
+<BaseLayout lang={lang} title={title} description={strings.blogLede}>
+  <div class="wrap">
+    <PageHeader
+      eyebrow={strings.blogEyebrow}
+      title={strings.blogTitle}
+      lede={strings.blogLede}
+    />
+
+    <div class="post-list">
+      {page.data.map((post) => <PostCard lang={lang} post={post} />)}
+    </div>
+
+    <Pagination lang={lang} page={page} label={strings.blogPosts} />
+  </div>
+</BaseLayout>
+
+<style>
+  .post-list {
+    margin-top: var(--space-4);
+  }
+
+  .post-list :global(.post-card:last-child) {
+    border-bottom: none;
+  }
+</style>
