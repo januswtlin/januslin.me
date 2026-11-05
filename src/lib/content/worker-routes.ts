@@ -2,6 +2,7 @@
 // entry paths invoke the Worker script: every topic's hub and posts in both locales, and each
 // published page in the locales it exists in. scripts/sync-worker-routes.ts writes and checks it.
 import { SOURCE_LOCALE } from "./constants.ts";
+import { inheritFrontmatter } from "./entries.ts";
 import type { ContentScan } from "./scan.ts";
 import { hubUrl, pageUrl } from "./urls.ts";
 
@@ -16,18 +17,21 @@ export function workerRoutes(scan: ContentScan): string[] {
     .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id))
     .map((t) => t.id);
 
-  const published = (collection: string, slug: string, locale: string) =>
-    scan.entries.some(
+  // A page is published in a locale unless its effective draft is true: inheritFrontmatter applies
+  // the rule (an English page is a draft when its zh-TW source is), as everywhere else.
+  const pageEntries = scan.entries.filter((e) => e.collection === "pages");
+  const source = (slug: string) =>
+    pageEntries.find((e) => e.slug === slug && e.locale === SOURCE_LOCALE)?.data;
+  const published = (slug: string, locale: string) =>
+    pageEntries.some(
       (e) =>
-        e.collection === collection &&
         e.slug === slug &&
         e.locale === locale &&
-        e.data?.draft !== true,
+        e.data !== undefined &&
+        inheritFrontmatter("pages", e.locale, e.data, source(slug)).draft !== true,
     );
-  const pages = [
-    ...new Set(scan.entries.filter((e) => e.collection === "pages").map((e) => e.slug)),
-  ]
-    .filter((slug) => published("pages", slug, SOURCE_LOCALE))
+  const pages = [...new Set(pageEntries.map((e) => e.slug))]
+    .filter((slug) => published(slug, SOURCE_LOCALE))
     .sort();
 
   return [
@@ -35,7 +39,7 @@ export function workerRoutes(scan: ContentScan): string[] {
     ...topics.map((t) => `${hubUrl("en", t)}*`),
     ...pages.flatMap((p) => [
       pageUrl("zh-tw", p),
-      ...(published("pages", p, "en") ? [pageUrl("en", p)] : []),
+      ...(published(p, "en") ? [pageUrl("en", p)] : []),
     ]),
   ];
 }

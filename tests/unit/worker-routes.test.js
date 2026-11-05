@@ -46,6 +46,37 @@ describe("workerRoutes", () => {
     expect(workerRoutes(scanContent(root, "tests/fixtures/content"))).toEqual(FIXTURE_ROUTES);
   });
 
+  it("leaves out English pages that are effectively drafts, the same as the collections", () => {
+    const page = (/** @type {string} */ locale, /** @type {Record<string, unknown>} */ data) => ({
+      collection: /** @type {const} */ ("pages"),
+      slug: "about",
+      locale,
+      file: `content/pages/about/index.${locale}.md`,
+      data: { title: "t", description: "d", ...data },
+      body: "",
+    });
+    const scan = (/** @type {any[]} */ entries) => ({
+      root,
+      contentDir: "content",
+      files: [],
+      entries,
+      tags: { file: "", exists: true, items: [] },
+    });
+    // zh-TW published, English draft: only the zh-TW page.
+    expect(workerRoutes(scan([page("zh-tw", {}), page("en", { draft: true })]))).toEqual([
+      "/about/",
+    ]);
+    // zh-TW published, English published: both.
+    expect(workerRoutes(scan([page("zh-tw", {}), page("en", {})]))).toEqual([
+      "/about/",
+      "/en/about/",
+    ]);
+    // zh-TW draft: neither, whatever the English file says.
+    expect(
+      workerRoutes(scan([page("zh-tw", { draft: true }), page("en", { draft: false })])),
+    ).toEqual([]);
+  });
+
   it("is empty for the empty content/ skeleton", () => {
     expect(workerRoutes(scanContent(root, "content"))).toEqual([]);
   });
