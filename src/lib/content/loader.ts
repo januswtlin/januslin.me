@@ -19,7 +19,7 @@ import { entryId, includeDrafts, inheritFrontmatter, type ContentSources } from 
 import { entryFolders, scanContent, sourceSlugs, tagIds } from "./scan.ts";
 import {
   checkReferences,
-  draftPostSlugs,
+  postDrafts,
   formatIssue,
   type EntryRefs,
   type KnownIds,
@@ -151,7 +151,7 @@ export function entryLoader(collection: EntryCollection, sources: ContentSources
         topics: new Set<string>(),
         posts: new Set<string>(),
         tags: new Set<string>(),
-        draftPosts: withDrafts ? undefined : new Set<string>(),
+        postDrafts: withDrafts ? undefined : new Map(),
         contentDir: sources.contentDir,
       };
       for (const dir of folders) {
@@ -160,9 +160,8 @@ export function entryLoader(collection: EntryCollection, sources: ContentSources
         sourceSlugs(scan, "posts").forEach((s) => known.posts.add(s));
         if (dir === sources.contentDir) tagIds(scan).forEach((t) => known.tags.add(t));
         // Everything in the local drafts folder is a draft.
-        const drafts =
-          dir === sources.draftsDir ? sourceSlugs(scan, "posts") : draftPostSlugs(scan);
-        drafts.forEach((s) => known.draftPosts?.add(s));
+        const drafts = postDrafts(scan, dir === sources.draftsDir);
+        drafts.forEach((value, slug) => known.postDrafts?.set(slug, value));
       }
       const refs: EntryRefs[] = (ctx.store.values() as StoreEntry[]).map((e) => ({
         file: e.filePath ?? e.id,
@@ -172,6 +171,7 @@ export function entryLoader(collection: EntryCollection, sources: ContentSources
         related: (e.data.related as string[] | undefined) ?? [],
         startHere: (e.data.startHere as string[] | undefined) ?? [],
         draft: e.data.draft === true,
+        locale: e.id.slice(e.id.lastIndexOf("/") + 1),
       }));
       const issues = checkReferences(refs, known);
       if (issues.length > 0) {

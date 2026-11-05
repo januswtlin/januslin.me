@@ -10,6 +10,7 @@ import "../styles/mermaid.css";
 import PostNav from "../components/PostNav.astro";
 import TableOfContents from "../components/TableOfContents.astro";
 import BaseLayout from "./BaseLayout.astro";
+import type { Alternate } from "../components/BaseHead.astro";
 import { BLOG, OG } from "../config";
 import { DEFAULT_LOCALE, HTML_LANG, t, type Locale } from "../i18n";
 import { tagUrl } from "../lib/content/urls";
@@ -20,12 +21,14 @@ import { postSlug, tagLabels, type Post } from "../utils/posts";
 interface Props {
   lang: Locale;
   post: Post;
+  /** Both language versions when both are published (hreflang). */
+  alternates?: Alternate[];
   headings: MarkdownHeading[];
   previous?: Post;
   next?: Post;
 }
 
-const { lang, post, headings, previous, next } = Astro.props;
+const { lang, post, headings, alternates, previous, next } = Astro.props;
 const strings = t(lang);
 const date = (d: Date) => formatDate(d, HTML_LANG[lang]);
 const {
@@ -55,6 +58,7 @@ const article = {
   description={description}
   ogImage={OG.enabled ? `/og/${postSlug(post)}.png` : undefined}
   article={article}
+  alternates={alternates}
 >
   <article class="post wrap">
     <header class="post__header">

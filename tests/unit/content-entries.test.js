@@ -96,7 +96,9 @@ describe("English versions inherit from the zh-TW source", () => {
   });
 
   it("pages inherit only license; topics inherit nothing; zh-TW files are unchanged", () => {
-    expect(inheritFrontmatter("pages", "en", {}, source)).toEqual({ license: "CC-BY-4.0" });
+    expect(inheritFrontmatter("pages", "en", {}, { ...source, draft: false })).toEqual({
+      license: "CC-BY-4.0",
+    });
     expect(
       inheritFrontmatter("topics", "en", {}, { ...source, order: 1, startHere: ["a"] }),
     ).toEqual({});

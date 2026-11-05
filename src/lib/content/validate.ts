@@ -49,6 +49,8 @@ export interface EntryRefs {
   startHere: string[];
   /** A draft may link to drafts; a published entry may not. */
   draft?: boolean;
+  /** The entry's locale (default zh-tw): an English entry links to English versions. */
+  locale?: string;
 }
 
 export interface KnownIds {
@@ -56,10 +58,12 @@ export interface KnownIds {
   tags: Set<string>;
   posts: Set<string>;
   /**
-   * Posts that are drafts. When set (production: `pnpm validate`, and builds without
-   * INCLUDE_DRAFTS), a published entry's `related` and `startHere` may not point at them.
+   * Each post's effective draft per locale. When set (production: `pnpm validate`, and builds
+   * without INCLUDE_DRAFTS), a published entry's `related` and `startHere` may not point at a
+   * draft: an English entry at the post's English version when there is one, otherwise at the
+   * zh-TW one.
    */
-  draftPosts?: Set<string>;
+  postDrafts?: PostDrafts;
   /** Shown in the message, e.g. "content". */
   contentDir: string;
 }
@@ -92,12 +96,17 @@ export function checkReferences(entries: EntryRefs[], known: KnownIds): Issue[] 
             `${field}.${i}`,
             `unknown post "${s}": no ${known.contentDir}/posts/${s}/index.zh-tw.md`,
           );
-        else if (!e.draft && known.draftPosts?.has(s))
-          err(
-            e.file,
-            `${field}.${i}`,
-            `points at the draft post "${s}": a published entry cannot link to a draft; publish ${s} first, or remove it here`,
-          );
+        else if (!e.draft && known.postDrafts) {
+          const drafts = known.postDrafts.get(s) ?? {};
+          const locale = e.locale ?? SOURCE_LOCALE;
+          const target = drafts[locale] !== undefined ? locale : SOURCE_LOCALE;
+          if (drafts[target] === true)
+            err(
+              e.file,
+              `${field}.${i}`,
+              `points at the draft post "${s}"${target === SOURCE_LOCALE ? "" : " (its English version is a draft)"}: a published entry cannot link to a draft; publish ${s} first, or remove it here`,
+            );
+        }
       });
     }
   }
@@ -116,15 +125,26 @@ export function reservedSegments(root: string): string[] {
   return [...new Set([...RESERVED_SEGMENTS, ...list("public"), ...routes])].sort();
 }
 
-/** Post slugs whose zh-TW source is a draft. */
-export function draftPostSlugs(scan: ContentScan): Set<string> {
-  return new Set(
+/** Effective draft of each post, per locale: slug → { "zh-tw": boolean, en?: boolean }. */
+export type PostDrafts = Map<string, Partial<Record<string, boolean>>>;
+
+/**
+ * The effective draft of every post in a scan (inheritFrontmatter applies the rule). With
+ * `allDrafts`, every post is a draft (the local drafts folder).
+ */
+export function postDrafts(scan: ContentScan, allDrafts = false): PostDrafts {
+  const map: PostDrafts = new Map();
+  const sources = new Map(
     scan.entries
-      .filter(
-        (e) => e.collection === "posts" && e.locale === SOURCE_LOCALE && e.data?.draft === true,
-      )
-      .map((e) => e.slug),
+      .filter((e) => e.collection === "posts" && e.locale === SOURCE_LOCALE)
+      .map((e) => [e.slug, e.data]),
   );
+  for (const e of scan.entries) {
+    if (e.collection !== "posts" || !isFileLocale(e.locale) || !e.data) continue;
+    const data = inheritFrontmatter("posts", e.locale, e.data, sources.get(e.slug));
+    map.set(e.slug, { ...map.get(e.slug), [e.locale]: allDrafts || data.draft === true });
+  }
+  return map;
 }
 
 /** Schema stand-in for `image()`: a file next to the entry, of an accepted image type. */
@@ -359,6 +379,7 @@ export function validateContent(root: string, contentDir: string): Issue[] {
       related: (d.related as string[] | undefined) ?? [],
       startHere: (d.startHere as string[] | undefined) ?? [],
       draft: d.draft === true,
+      locale: e.locale,
     });
   }
 
@@ -404,7 +425,7 @@ export function validateContent(root: string, contentDir: string): Issue[] {
           )
         : [],
     ),
-    draftPosts: draftPostSlugs(scan),
+    postDrafts: postDrafts(scan),
     contentDir,
   };
   issues.push(...checkReferences(refs, known));

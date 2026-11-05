@@ -58,7 +58,13 @@ const INHERITABLE: Record<EntryCollection, readonly string[]> = {
 
 /**
  * The frontmatter an English entry is validated with: its own fields, plus each inherited field
- * that the zh-TW source sets and it does not. Other locales are returned unchanged.
+ * that the zh-TW source sets and it does not, and its effective draft. Other locales are returned
+ * unchanged.
+ *
+ * Effective draft (the author's rule, 2026-11-05): an English post or page is a draft when its
+ * zh-TW source is a draft or it is one itself (`zh.draft || en.draft`); the zh-TW entry is never
+ * affected by its English version. This is the one place the rule lives: the collections, the
+ * reference checks, and `pnpm validate` all read `draft` after this function.
  */
 export function inheritFrontmatter(
   collection: EntryCollection,
@@ -71,6 +77,7 @@ export function inheritFrontmatter(
   for (const field of INHERITABLE[collection]) {
     if (merged[field] === undefined && source[field] !== undefined) merged[field] = source[field];
   }
+  if (collection !== "topics" && (source.draft === true || own.draft === true)) merged.draft = true;
   return merged;
 }
 
