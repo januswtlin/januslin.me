@@ -9,16 +9,19 @@
     "pnpm": "^12.16.1"
   },
   "scripts": {
-    "dev": "astro dev",
+    "dev": "INCLUDE_DRAFTS=true astro dev",
+    "dev:drafts": "LOCAL_DRAFTS=true INCLUDE_DRAFTS=true astro dev",
     "build": "node scripts/build.js",
     "build:preview": "INCLUDE_DRAFTS=true node scripts/build.js",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check && tsc --noEmit -p tsconfig.tools.json",
     "lint": "eslint . && prettier --check .",
+    "validate": "node scripts/validate-content.ts",
+    "sync-worker-routes": "node scripts/sync-worker-routes.ts",
     "format": "prettier --write .",
     "test": "sh tests/scripts/run.sh && vitest run && playwright test",
-    "verify": "pnpm check && pnpm lint && pnpm build && pnpm test"
+    "verify": "pnpm check && pnpm lint && pnpm validate && pnpm sync-worker-routes --check && CONTENT_DIR=tests/fixtures/content pnpm build && pnpm test"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.3.5",
@@ -37,7 +40,8 @@
     "satori": "0.63.2",
     "sharp": "0.35.5",
     "subset-font": "2.9.0",
-    "unist-util-visit": "5.2.0"
+    "unist-util-visit": "5.2.0",
+    "yaml": "2.9.1"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",

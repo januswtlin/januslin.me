@@ -1,7 +1,15 @@
 ---
 import { AUTHOR, SITE } from "../config";
 import { HTML_LANG, OG_LOCALE, t, type Locale } from "../i18n";
+import { jsonForScript } from "../lib/content/json-script";
 import { STYLESHEET_PLACEHOLDER } from "../lib/fonts/constants";
+
+/** One language version of a page, for hreflang (T10, #59). */
+export interface Alternate {
+  locale: Locale;
+  /** Site path, e.g. /en/coffee/v60-recipe/. */
+  href: string;
+}
 
 export interface ArticleMeta {
   publishedTime: string;
@@ -17,9 +25,12 @@ interface Props {
   /** Absolute path or URL. Falls back to SITE.defaultOgImage. */
   ogImage?: string;
   article?: ArticleMeta;
+  /** Every published language version, this page's included; empty for a single version. */
+  alternates?: Alternate[];
 }
 
-const { lang, title, description, ogImage, article } = Astro.props;
+const { lang, title, description, ogImage, article, alternates = [] } = Astro.props;
+const xDefault = alternates.find((a) => a.locale === "zh-tw");
 const strings = t(lang);
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -78,6 +89,13 @@ const structuredData = article
 <title>{title}</title>
 <meta name="description" content={description} />
 {!isNotFound && <link rel="canonical" href={canonical} />}
+
+{
+  alternates.map((a) => (
+    <link rel="alternate" hreflang={HTML_LANG[a.locale]} href={new URL(a.href, Astro.site)} />
+  ))
+}
+{xDefault && <link rel="alternate" hreflang="x-default" href={new URL(xDefault.href, Astro.site)} />}
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link
@@ -153,5 +171,5 @@ const structuredData = article
 <script
   type="application/ld+json"
   is:inline
-  set:html={JSON.stringify(structuredData)}
+  set:html={jsonForScript(structuredData)}
 />

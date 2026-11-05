@@ -34,11 +34,11 @@ export default [
   // The site: src/ and the Astro config.
   ...[js.configs.recommended, ...tseslint.configs.recommended].map((config) => ({
     ...config,
-    files: ["src/**/*.{js,mjs,ts}", "*.config.ts"],
+    files: ["src/**/*.{js,mjs,ts}", "*.config.ts", "scripts/**/*.ts", "tests/**/*.ts"],
   })),
   ...astro.configs["flat/recommended"],
   {
-    files: ["src/**/*.{js,mjs,ts,astro}", "*.config.ts"],
+    files: ["src/**/*.{js,mjs,ts,astro}", "*.config.ts", "scripts/**/*.ts", "tests/**/*.ts"],
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },

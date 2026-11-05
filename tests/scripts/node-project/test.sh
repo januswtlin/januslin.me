@@ -43,10 +43,16 @@ done
 field '.scripts.test' | grep -Eq '^sh tests/scripts/run\.sh && .*vitest run'
 check "test runs the script tests first, then Vitest" $?
 
-# verify chains check, lint, build (T09), test with && so the first failure stops it.
+# verify chains check, lint, validate and sync-worker-routes --check (T10), build of the fixture
+# content (T09, T10), and test, with && so the first failure stops it.
 verify=$(field '.scripts.verify')
-printf '%s\n' "$verify" | grep -Eq '^pnpm (run )?check && pnpm (run )?lint && pnpm (run )?build && pnpm (run )?test$'
-check "verify runs check, lint, build, test in order and stops on the first failure" $?
+printf '%s\n' "$verify" | grep -Eq '^pnpm (run )?check && pnpm (run )?lint && pnpm (run )?validate && pnpm (run )?sync-worker-routes --check && CONTENT_DIR=tests/fixtures/content pnpm (run )?build && pnpm (run )?test$'
+check "verify runs check, lint, validate, sync-worker-routes --check, the fixture build, test in order and stops on the first failure" $?
+
+for s in validate sync-worker-routes dev:drafts; do
+  [ "$(field ".scripts.\"$s\" // \"\"")" != "" ]
+  check "script '$s' exists" $?
+done
 
 [ -f "$root/.editorconfig" ] && grep -q '^root = true' "$root/.editorconfig"
 check ".editorconfig exists with root = true" $?

@@ -3,29 +3,33 @@ import type { APIRoute, GetStaticPaths } from "astro";
 import { OG } from "../../config";
 import { formatDateStamp } from "../../utils/date";
 import { renderOgImage } from "../../utils/og-image";
-import { getPublishedPosts, type Post } from "../../utils/posts";
+import { DEFAULT_LOCALE } from "../../i18n";
+import { getPublishedPosts, postSlug, tagLabels, type Post } from "../../utils/posts";
 
 export const getStaticPaths = (async () => {
   if (!OG.enabled) return [];
 
-  const posts = await getPublishedPosts();
+  // One image per post, from its zh-TW source; the English page uses the same image until T13.
+  const posts = await getPublishedPosts(DEFAULT_LOCALE);
+  const labels = await tagLabels(DEFAULT_LOCALE);
   return posts.map((post) => ({
-    params: { slug: post.id },
-    props: { post },
+    params: { slug: postSlug(post) },
+    props: { post, tags: post.data.tags.map(({ id }) => labels.get(id) ?? id) },
   }));
 }) satisfies GetStaticPaths;
 
 interface Props {
   post: Post;
+  tags: string[];
 }
 
 export const GET: APIRoute<Props> = async ({ props }) => {
-  const { post } = props;
+  const { post, tags } = props;
 
   const png = await renderOgImage({
     title: post.data.title,
     stamp: formatDateStamp(post.data.pubDate),
-    tags: post.data.tags,
+    tags,
   });
 
   return new Response(new Uint8Array(png), {

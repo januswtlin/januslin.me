@@ -1,9 +1,10 @@
 ---
 import { BLOG } from "../config";
-import { localizePath, t, type Locale } from "../i18n";
+import { DEFAULT_LOCALE, t, type Locale } from "../i18n";
+import { tagUrl } from "../lib/content/urls";
 import { formatDateStamp, isoDate } from "../utils/date";
 import { readingTime } from "../utils/reading-time";
-import { tagSlug, type Post } from "../utils/posts";
+import { postHref, tagLabels, type Post } from "../utils/posts";
 
 interface Props {
   lang: Locale;
@@ -14,6 +15,7 @@ const { lang, post } = Astro.props;
 const strings = t(lang);
 const { title, description, pubDate, tags, draft } = post.data;
 const minutes = readingTime(post.body);
+const labels = await tagLabels(lang);
 ---
 
 <article class="post-card">
@@ -24,16 +26,17 @@ const minutes = readingTime(post.body);
 
   <div class="post-card__body">
     <h3 class="post-card__title">
-      <a href={localizePath(lang, `/blog/${post.id}/`)}>{title}</a>
+      <a href={postHref(lang, post)}>{title}</a>
     </h3>
 
     <p class="post-card__description">{description}</p>
 
     <p class="post-card__meta label">
       {
-        tags.map((tag) => (
-          <a class="post-card__tag" href={`/tags/${tagSlug(tag)}/`}>
-            #{tag}
+        // Tag pages exist at the root only until T11.
+        tags.map(({ id }) => (
+          <a class="post-card__tag" href={tagUrl(DEFAULT_LOCALE, id)}>
+            #{labels.get(id) ?? id}
           </a>
         ))
       }

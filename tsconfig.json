@@ -1,6 +1,6 @@
 {
-  "//": "The Astro app's config, checked by astro check (T09, #58). The project's own JavaScript (scripts/, tests/, root *.config.js) is checked with tsconfig.tools.json.",
+  "//": "The Astro app's config, checked by astro check (T09, #58), plus the project's TypeScript scripts and test helpers (scripts/**/*.ts, tests/**/*.ts, T10). The project's own JavaScript (scripts/, tests/, root *.config.js) is checked with tsconfig.tools.json.",
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "src/**/*", "*.config.ts"],
+  "include": [".astro/types.d.ts", "src/**/*", "*.config.ts", "scripts/**/*.ts", "tests/**/*.ts"],
   "exclude": ["dist", "node_modules", "drafts", ".claude", ".pnpm-store"]
 }

@@ -1,0 +1,68 @@
+---
+import type { GetStaticPaths } from "astro";
+import { render } from "astro:content";
+
+import type { Alternate } from "../../../components/BaseHead.astro";
+import PostLayout from "../../../layouts/PostLayout.astro";
+import { LOCALES, localeFromParam, localeParam } from "../../../i18n";
+import {
+  getAdjacentPosts,
+  getPublishedPosts,
+  postHref,
+  postSlug,
+  postTopic,
+  type Post,
+} from "../../../utils/posts";
+
+// Posts at /<topic>/<slug>/ and /en/<topic>/<slug>/ (src/lib/content/urls.ts). A post has an
+// English page only when it has an index.en.md (T10, #59); T11 builds the rest of the routing.
+// hreflang alternates link the two versions only when both are published: an English version
+// that is effectively a draft (zh.draft || en.draft) is not built, so nothing links to it.
+export const getStaticPaths = (async () => {
+  const published = await Promise.all(LOCALES.map((locale) => getPublishedPosts(locale)));
+  const alternatesOf = (post: Post) => {
+    const slug = postSlug(post);
+    const versions = LOCALES.flatMap((locale, i) => {
+      const version = published[i].find((p) => postSlug(p) === slug);
+      return version ? [{ locale, href: postHref(locale, version) }] : [];
+    });
+    return versions.length > 1 ? versions : [];
+  };
+  const paths = await Promise.all(
+    LOCALES.map(async (locale, i) => {
+      const posts = published[i];
+      return posts.map((post) => ({
+        params: {
+          lang: localeParam(locale),
+          topic: postTopic(post),
+          slug: postSlug(post),
+        },
+        props: { post, alternates: alternatesOf(post), ...getAdjacentPosts(posts, post.id) },
+      }));
+    }),
+  );
+  return paths.flat();
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+  alternates: Alternate[];
+  previous?: Post;
+  next?: Post;
+}
+
+const lang = localeFromParam(Astro.params.lang);
+const { post, alternates, previous, next } = Astro.props;
+const { Content, headings } = await render(post);
+---
+
+<PostLayout
+  lang={lang}
+  post={post}
+  headings={headings}
+  alternates={alternates}
+  previous={previous}
+  next={next}
+>
+  <Content />
+</PostLayout>

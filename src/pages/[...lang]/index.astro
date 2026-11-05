@@ -12,7 +12,7 @@ export const getStaticPaths = (() => localePaths()) satisfies GetStaticPaths;
 
 const lang = localeFromParam(Astro.params.lang);
 const strings = t(lang);
-const posts = (await getPublishedPosts()).slice(0, BLOG.postsOnHome);
+const posts = (await getPublishedPosts(lang)).slice(0, BLOG.postsOnHome);
 ---
 
 <BaseLayout lang={lang} overlayHeader>
