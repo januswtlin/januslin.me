@@ -1,7 +1,7 @@
 // The rules behind `pnpm validate` (T10, #59): everything that can be wrong in content/, checked
 // from the files alone, before the build. Every issue names the file, and the field where there
 // is one. docs/content-model.md and docs/authoring-guide.md describe the rules for authors.
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { extname, join, posix } from "node:path";
 
 import { z } from "astro/zod";
@@ -47,12 +47,19 @@ export interface EntryRefs {
   tags: string[];
   related: string[];
   startHere: string[];
+  /** A draft may link to drafts; a published entry may not. */
+  draft?: boolean;
 }
 
 export interface KnownIds {
   topics: Set<string>;
   tags: Set<string>;
   posts: Set<string>;
+  /**
+   * Posts that are drafts. When set (production: `pnpm validate`, and builds without
+   * INCLUDE_DRAFTS), a published entry's `related` and `startHere` may not point at them.
+   */
+  draftPosts?: Set<string>;
   /** Shown in the message, e.g. "content". */
   contentDir: string;
 }
@@ -85,10 +92,39 @@ export function checkReferences(entries: EntryRefs[], known: KnownIds): Issue[] 
             `${field}.${i}`,
             `unknown post "${s}": no ${known.contentDir}/posts/${s}/index.zh-tw.md`,
           );
+        else if (!e.draft && known.draftPosts?.has(s))
+          err(
+            e.file,
+            `${field}.${i}`,
+            `points at the draft post "${s}": a published entry cannot link to a draft; publish ${s} first, or remove it here`,
+          );
       });
     }
   }
   return issues;
+}
+
+/**
+ * First URL segments that content may not take: the documented list, every top-level file and
+ * folder in public/, and every static top-level route in src/pages/ (`blog`, `rss.xml`, ...).
+ */
+export function reservedSegments(root: string): string[] {
+  const list = (dir: string) => (existsSync(join(root, dir)) ? readdirSync(join(root, dir)) : []);
+  const routes = list("src/pages")
+    .filter((name) => !name.startsWith("[") && !name.startsWith("_"))
+    .map((name) => name.replace(/\.(?:astro|ts|js|md)$/, ""));
+  return [...new Set([...RESERVED_SEGMENTS, ...list("public"), ...routes])].sort();
+}
+
+/** Post slugs whose zh-TW source is a draft. */
+export function draftPostSlugs(scan: ContentScan): Set<string> {
+  return new Set(
+    scan.entries
+      .filter(
+        (e) => e.collection === "posts" && e.locale === SOURCE_LOCALE && e.data?.draft === true,
+      )
+      .map((e) => e.slug),
+  );
 }
 
 /** Schema stand-in for `image()`: a file next to the entry, of an accepted image type. */
@@ -322,21 +358,23 @@ export function validateContent(root: string, contentDir: string): Issue[] {
       tags: (d.tags as string[] | undefined) ?? [],
       related: (d.related as string[] | undefined) ?? [],
       startHere: (d.startHere as string[] | undefined) ?? [],
+      draft: d.draft === true,
     });
   }
 
   // Topic ids and page slugs share the first URL segment.
   const topicFolders = [...folders].filter((f) => f.startsWith("topics/")).map((f) => f.slice(7));
   const pageFolders = [...folders].filter((f) => f.startsWith("pages/")).map((f) => f.slice(6));
+  const reserved = reservedSegments(root);
   for (const [kind, collection, slugs] of [
     ["topic id", "topics", topicFolders],
     ["page slug", "pages", pageFolders],
   ] as const) {
     for (const s of slugs)
-      if ((RESERVED_SEGMENTS as readonly string[]).includes(s))
+      if (reserved.includes(s))
         err(
           `${contentDir}/${collection}/${s}`,
-          `${kind} "${s}" is reserved for the site's own URLs (/${s}/); reserved: ${RESERVED_SEGMENTS.join(", ")}`,
+          `${kind} "${s}" is reserved for the site's own URLs (/${s}/); reserved: ${reserved.join(", ")}`,
         );
   }
   for (const s of pageFolders)
@@ -366,6 +404,7 @@ export function validateContent(root: string, contentDir: string): Issue[] {
           )
         : [],
     ),
+    draftPosts: draftPostSlugs(scan),
     contentDir,
   };
   issues.push(...checkReferences(refs, known));

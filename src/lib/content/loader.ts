@@ -15,9 +15,15 @@ import { parseFrontmatter } from "@astrojs/markdown-remark";
 import { glob, type Loader, type LoaderContext } from "astro/loaders";
 
 import { SOURCE_LOCALE, isFileLocale, type EntryCollection } from "./constants.ts";
-import { entryId, inheritFrontmatter, type ContentSources } from "./entries.ts";
+import { entryId, includeDrafts, inheritFrontmatter, type ContentSources } from "./entries.ts";
 import { entryFolders, scanContent, sourceSlugs, tagIds } from "./scan.ts";
-import { checkReferences, formatIssue, type EntryRefs } from "./validate.ts";
+import {
+  checkReferences,
+  draftPostSlugs,
+  formatIssue,
+  type EntryRefs,
+  type KnownIds,
+} from "./validate.ts";
 
 const toPosix = (p: string) => p.split(sep).join("/");
 
@@ -138,11 +144,14 @@ export function entryLoader(collection: EntryCollection, sources: ContentSources
         await inner.load({ ...ctx, parseData, store: scopedStore(ctx.store, folder) });
       }
 
-      // References, against what is on disk (collections load in parallel).
-      const known = {
+      // References, against what is on disk (collections load in parallel). Without drafts (a
+      // production build), a published entry may not link to a draft, which would not be built.
+      const withDrafts = includeDrafts(process.env);
+      const known: KnownIds = {
         topics: new Set<string>(),
         posts: new Set<string>(),
         tags: new Set<string>(),
+        draftPosts: withDrafts ? undefined : new Set<string>(),
         contentDir: sources.contentDir,
       };
       for (const dir of folders) {
@@ -150,6 +159,10 @@ export function entryLoader(collection: EntryCollection, sources: ContentSources
         sourceSlugs(scan, "topics").forEach((s) => known.topics.add(s));
         sourceSlugs(scan, "posts").forEach((s) => known.posts.add(s));
         if (dir === sources.contentDir) tagIds(scan).forEach((t) => known.tags.add(t));
+        // Everything in the local drafts folder is a draft.
+        const drafts =
+          dir === sources.draftsDir ? sourceSlugs(scan, "posts") : draftPostSlugs(scan);
+        drafts.forEach((s) => known.draftPosts?.add(s));
       }
       const refs: EntryRefs[] = (ctx.store.values() as StoreEntry[]).map((e) => ({
         file: e.filePath ?? e.id,
@@ -158,10 +171,11 @@ export function entryLoader(collection: EntryCollection, sources: ContentSources
         tags: ((e.data.tags as unknown[] | undefined) ?? []).map((t) => refId(t) ?? String(t)),
         related: (e.data.related as string[] | undefined) ?? [],
         startHere: (e.data.startHere as string[] | undefined) ?? [],
+        draft: e.data.draft === true,
       }));
       const issues = checkReferences(refs, known);
       if (issues.length > 0) {
-        throw new Error(`${collection}: unknown references\n${issues.map(formatIssue).join("\n")}`);
+        throw new Error(`${collection}: invalid references\n${issues.map(formatIssue).join("\n")}`);
       }
     },
   };

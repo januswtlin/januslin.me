@@ -13,7 +13,12 @@ import {
 } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
-import { checkReferences, validateContent } from "../../src/lib/content/validate.ts";
+import { RESERVED_SEGMENTS } from "../../src/lib/content/constants.ts";
+import {
+  checkReferences,
+  reservedSegments,
+  validateContent,
+} from "../../src/lib/content/validate.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const BROKEN = "tests/fixtures/content-broken";
@@ -90,6 +95,18 @@ const CASES = {
     says: ['duplicate tag id "fixture"'],
   },
   "bad-yaml": { file: "posts/a/index.zh-tw.md", says: ["frontmatter is not valid YAML"] },
+  "reserved-blog-topic": { file: "topics/blog", says: ['topic id "blog" is reserved'] },
+  "reserved-blog-page": { file: "pages/blog", says: ['page slug "blog" is reserved'] },
+  "related-to-draft": {
+    file: "posts/a/index.zh-tw.md",
+    field: "related.0",
+    says: ['the draft post "hidden"'],
+  },
+  "start-here-draft": {
+    file: "topics/tech/index.zh-tw.md",
+    field: "startHere.1",
+    says: ['the draft post "hidden"'],
+  },
 };
 
 describe("negative fixtures", () => {
@@ -155,6 +172,60 @@ describe("image size policy", () => {
       `error ${rel}/posts/kyoto-walk/huge.png: image is 5.1 MB, over the 5 MB limit: resize it (long edge 2400 px)`,
       `warning ${rel}/posts/kyoto-walk/large.jpg: image is 2.0 MB, over 1.5 MB: consider resizing it (long edge 2400 px)`,
     ]);
+  });
+});
+
+describe("reserved first segments", () => {
+  const reserved = reservedSegments(root);
+
+  it("include the documented list and blog, favicon.svg, og-default.png", () => {
+    for (const s of [...RESERVED_SEGMENTS, "blog", "favicon.svg", "og-default.png"])
+      expect(reserved, s).toContain(s);
+  });
+
+  it("include every top-level file and folder in public/", () => {
+    for (const name of readdirSync(join(root, "public"))) expect(reserved, name).toContain(name);
+  });
+
+  it("include every static top-level route in src/pages/", () => {
+    const routes = readdirSync(join(root, "src/pages"))
+      .filter((n) => !n.startsWith("["))
+      .map((n) => n.replace(/\.(?:astro|ts|js|md)$/, ""));
+    expect(routes).toEqual(expect.arrayContaining(["blog", "tags", "og", "404", "rss.xml"]));
+    for (const r of routes) expect(reserved, r).toContain(r);
+  });
+});
+
+describe("references to drafts", () => {
+  const known = {
+    topics: new Set(["tech"]),
+    tags: new Set(),
+    posts: new Set(["a", "hidden"]),
+    draftPosts: new Set(["hidden"]),
+    contentDir: "content",
+  };
+  /** @param {boolean} draft */
+  const entry = (draft) => ({
+    file: "f.md",
+    collection: /** @type {const} */ ("posts"),
+    topic: "tech",
+    tags: [],
+    related: ["a", "hidden"],
+    startHere: [],
+    draft,
+  });
+
+  it("a published entry may not link to a draft; the file, field, and value are named", () => {
+    const issues = checkReferences([entry(false)], known);
+    expect(issues.map((i) => `${i.file} ${i.field} ${i.message}`)).toEqual([
+      expect.stringMatching(/^f\.md related\.1 points at the draft post "hidden"/),
+    ]);
+  });
+
+  it("a draft may link to a draft, and without draftPosts nothing is checked", () => {
+    expect(checkReferences([entry(true)], known)).toEqual([]);
+    const withDrafts = { ...known, draftPosts: undefined };
+    expect(checkReferences([entry(false)], withDrafts)).toEqual([]);
   });
 });
 

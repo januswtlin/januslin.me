@@ -54,6 +54,11 @@ const BUILD_CASES = {
   "unknown-license": ["posts/a/index.zh-tw.md", 'unknown license "WTFPL"'],
   "unknown-locale": ["posts/a/index.fr.md", 'unknown locale "fr"'],
   "cover-without-alt": ["posts/a/index.zh-tw.md", "coverAlt"],
+  "related-to-draft": ["posts/a/index.zh-tw.md", 'related.0: points at the draft post "hidden"'],
+  "start-here-draft": [
+    "topics/tech/index.zh-tw.md",
+    'startHere.1: points at the draft post "hidden"',
+  ],
 };
 
 describe("a broken content set fails the build", () => {
@@ -85,6 +90,15 @@ describe("drafts in builds", () => {
     expect(existsSync(join(r.dist, "coffee/local-draft/index.html"))).toBe(false);
   }, 180_000);
 
+  it("with INCLUDE_DRAFTS=true a published entry may link to a draft", () => {
+    const r = astro(
+      "build",
+      { CONTENT_DIR: `${BROKEN}/related-to-draft`, INCLUDE_DRAFTS: "true" },
+      "related-to-draft-preview",
+    );
+    expect(r.status, r.output).toBe(0);
+  }, 120_000);
+
   it.each(["build", "sync"])(
     "LOCAL_DRAFTS=true is refused by astro %s",
     (command) => {
@@ -111,7 +125,11 @@ function devServer(script, port) {
   // when it detects an AI agent, and refuses a second server while one is running.
   const child = spawn("pnpm", [script, "--port", String(port), "--ignore-lock"], {
     cwd: root,
-    env: { ...baseEnv, CONTENT_DIR: "tests/fixtures/content", DRAFTS_DIR: "tests/fixtures/drafts" },
+    env: {
+      ...baseEnv,
+      CONTENT_DIR: "tests/fixtures/content",
+      DRAFTS_DIR: "tests/fixtures/drafts",
+    },
     detached: true,
   });
   let output = "";

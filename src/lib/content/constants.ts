@@ -25,9 +25,14 @@ export const TEMPLATES_DIR = "_templates";
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const SLUG_MAX_LENGTH = 60;
 
-/** First URL segments a topic id or page slug may not take (docs/content-model.md, "URLs"). */
+/**
+ * First URL segments a topic id or page slug may not take (docs/content-model.md, "URLs"). This
+ * is the documented list; `pnpm validate` adds every top-level file and folder in public/ and
+ * every static top-level route in src/pages/ (reservedSegments in ./validate.ts).
+ */
 export const RESERVED_SEGMENTS = [
   "en",
+  "blog",
   "tags",
   "archive",
   "search",
@@ -41,6 +46,8 @@ export const RESERVED_SEGMENTS = [
   "og",
   "pagefind",
   "404",
+  "favicon.svg",
+  "og-default.png",
 ] as const;
 
 /**
