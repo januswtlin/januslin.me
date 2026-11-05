@@ -1,11 +1,9 @@
 ---
-# Test fixture for the site build (T09, #58), not site content. Until T10 the posts
-# collection reads tests/fixtures/site/posts/, never content/.
-title: 測試頁面：在雨天沖一杯咖啡
-description: 建置測試用的頁面，涵蓋數學、圖表、提示、註腳、程式碼與圖片。A test fixture for the site build.
-pubDate: 2026-01-15
-tags:
-  - fixture
+# Test fixture (T10, #59), not site content: the English half of the zh+en pair. It sets only
+# title and description; topic, pubDate, tags, and related come from index.zh-tw.md. The body
+# repeats the zh-TW body so T09's rich-content tests run on the English page too.
+title: "Fixture: brewing coffee on a rainy day"
+description: A test fixture for the site build, covering math, diagrams, callouts, footnotes, code, and images.
 ---
 
 這是建置測試用的頁面，不是網站內容。This page is a test fixture for the build: it exercises the rich content the theme renders at build time.

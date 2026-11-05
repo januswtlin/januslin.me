@@ -1,0 +1,13 @@
+# Test fixture (T10, #59), not site content.
+- id: fixture
+  zh-tw: fixture
+  en: fixture
+- id: japan
+  zh-tw: 日本
+  en: Japan
+  description:
+    zh-tw: 測試用的標籤。
+    en: A test fixture tag shared by posts in two topics.
+- id: unused
+  zh-tw: unused
+  en: Unused

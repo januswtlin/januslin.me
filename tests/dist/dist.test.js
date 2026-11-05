@@ -7,6 +7,11 @@
 // - the front page ships the static ink fallback and loads no ink JavaScript (ADR-0019);
 // - no Japanese text is left from the theme's accents;
 // - the build log has no warning outside the reasoned allowlist, and never a deprecation.
+// T10 (#59) adds:
+// - the content routes, derived from tests/fixtures/content/ through src/lib/content/urls.ts
+//   (tests/dist/routes.ts): drafts and English URLs of zh-only posts are absent;
+// - content safety: raw HTML, event handlers, and javascript: URLs from content are inert, and
+//   JSON in <script> cannot be ended by a title.
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "node-html-parser";
@@ -14,16 +19,20 @@ import { beforeAll, describe, expect, test } from "vitest";
 import { resolveFile } from "../e2e/static-server.js";
 import { BUILD_LOG, WARNING_ALLOWLIST, findWarnings } from "./build-log.js";
 import { classify, cssUrls, htmlRefs, jsRemoteLoads, xmlRefs } from "./refs.js";
-import { EXPECTED_ROUTES, htmlRoutes, listFiles } from "./site.js";
+import { contentRoutes } from "./routes.ts";
+import { SAFETY_POST, STATIC_ROUTES, htmlRoutes, listFiles } from "./site.js";
 
 const DIST = resolve(process.env.DIST_DIR ?? "dist");
+const ROUTES = contentRoutes(resolve(import.meta.dirname, "../.."));
 
 /** @type {string[]} */
 let files = [];
 
 beforeAll(() => {
   if (!existsSync(resolve(DIST, "index.html"))) {
-    throw new Error(`${DIST} has no index.html; run \`pnpm build\` first`);
+    throw new Error(
+      `${DIST} has no index.html; run \`CONTENT_DIR=tests/fixtures/content pnpm build\` first`,
+    );
   }
   files = listFiles(DIST);
 });
@@ -40,8 +49,30 @@ const pagePath = (file) =>
       : `/${file}`;
 
 describe("dist/ routes", () => {
-  test.each(EXPECTED_ROUTES)("expected route %s exists", async (route) => {
+  test.each([...STATIC_ROUTES, ...ROUTES.expected])("expected route %s exists", async (route) => {
     expect(await resolveFile(DIST, route), `${route} is missing from dist/`).not.toBeNull();
+  });
+
+  test("the fixtures give drafts, zh-only English URLs, and unused tags to check", () => {
+    expect(ROUTES.absent).toEqual(
+      expect.arrayContaining([
+        "/tech/draft-post/",
+        "/en/tech/draft-post/",
+        "/en/travel/kyoto-walk/",
+        "/tags/unused/",
+      ]),
+    );
+  });
+
+  test.each(ROUTES.absent)("route %s does not exist", async (route) => {
+    expect(await resolveFile(DIST, route), `${route} is in dist/`).toBeNull();
+  });
+
+  test("the draft fixture is in no page, feed, or index", () => {
+    const hits = files
+      .filter((f) => /\.(?:html|xml|txt)$/.test(f))
+      .filter((f) => /draft-post|Draft fixture post/.test(read(f)));
+    expect(hits).toEqual([]);
   });
 
   test("only zh-tw (root, lang zh-TW) and en (/en/, lang en) pages exist", () => {
@@ -101,6 +132,61 @@ describe("dist/ references", () => {
       }
     }
     expect(external, "resources loaded from other hosts").toEqual([]);
+  });
+});
+
+describe("content safety (T10)", () => {
+  const safety = () => parse(read(`${SAFETY_POST.slice(1)}index.html`));
+
+  test("raw HTML in content is shown as text, not as elements", () => {
+    const body = safety().querySelector(".post__body");
+    expect(body, "the safety fixture renders").not.toBeNull();
+    for (const tag of ["script", "iframe", "object", "embed", "img"]) {
+      expect(body?.querySelectorAll(tag).length, `<${tag}> in the post body`).toBe(0);
+    }
+    expect(body?.textContent).toContain('<script>alert("raw script")</script>');
+    expect(body?.textContent).toContain("onerror=");
+    expect(body?.innerHTML).not.toContain("<!--");
+  });
+
+  test("no page has a javascript: URL or an event handler attribute from content", () => {
+    const hits = [];
+    for (const f of files.filter((x) => x.endsWith(".html"))) {
+      for (const el of parse(read(f)).querySelectorAll("*")) {
+        for (const [name, value] of Object.entries(el.attributes)) {
+          if (/^on/i.test(name)) hits.push(`${f}: <${el.tagName.toLowerCase()} ${name}>`);
+          if (/^\s*javascript:/i.test(value)) hits.push(`${f}: ${name}=${value}`);
+        }
+      }
+    }
+    expect(hits).toEqual([]);
+  });
+
+  test("links with a javascript: URL lose their href; ordinary links keep it", () => {
+    const links = safety().querySelectorAll(".post__body a");
+    const byText = Object.fromEntries(links.map((a) => [a.textContent, a.getAttribute("href")]));
+    expect(byText["javascript link"]).toBeUndefined();
+    expect(byText["mixed-case javascript link"]).toBeUndefined();
+    expect(byText["ordinary link"]).toBe("https://example.com/");
+  });
+
+  test("a title with </script> stays text, and every JSON-LD block parses", () => {
+    const root = safety();
+    expect(root.querySelector("h1")?.textContent).toBe("</script><script>alert(1)</script>");
+    const inlineScripts = root.querySelectorAll(
+      'script:not([src]):not([type="application/ld+json"])',
+    );
+    expect(inlineScripts.some((s) => /alert\(1\)/.test(s.textContent))).toBe(false);
+    for (const f of files.filter((x) => x.endsWith(".html"))) {
+      for (const s of parse(read(f)).querySelectorAll('script[type="application/ld+json"]')) {
+        expect(s.textContent, f).not.toMatch(/<\/?script/i);
+        expect(() => JSON.parse(s.textContent), f).not.toThrow();
+      }
+    }
+    const ld = JSON.parse(
+      root.querySelector('script[type="application/ld+json"]')?.textContent ?? "",
+    );
+    expect(ld.headline).toContain("</script><script>alert(1)</script>");
   });
 });
 

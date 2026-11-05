@@ -5,19 +5,23 @@ import { join, relative, sep } from "node:path";
 /** The site's own origin; absolute URLs to it are internal. */
 export const SITE_ORIGIN = "https://januslin.me";
 
-/** The fixture post in tests/fixtures/site/posts/, rendered in both locales. */
-export const FIXTURE_POST = "/blog/fixture-post/";
-export const FIXTURE_POST_EN = "/en/blog/fixture-post/";
+/**
+ * The T09 fixture post (tests/fixtures/content/posts/fixture-post/), a zh+en pair, at
+ * /<topic>/<slug>/ since T10 (#59). tests/unit/content-urls.test.js checks these against
+ * src/lib/content/urls.ts, which tests/dist/routes.ts derives the content routes from.
+ */
+export const FIXTURE_POST = "/coffee/fixture-post/";
+export const FIXTURE_POST_EN = "/en/coffee/fixture-post/";
 
-/** Routes that must exist in dist/ (T09 acceptance criteria). */
-export const EXPECTED_ROUTES = [
+/** The content-safety fixture (tests/fixtures/content/posts/safety/). */
+export const SAFETY_POST = "/tech/safety/";
+
+/** Routes that do not come from content and must exist in dist/ (T09 acceptance criteria). */
+export const STATIC_ROUTES = [
   "/",
   "/en/",
-  FIXTURE_POST,
-  FIXTURE_POST_EN,
   "/blog/",
   "/tags/",
-  "/tags/fixture/",
   "/404.html",
   "/rss.xml",
   "/sitemap-index.xml",
