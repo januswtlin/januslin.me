@@ -38,3 +38,18 @@ conditions, R13).
 | R14 (non-blocking) | A Tier 1 revert does not undo data already written | Accepted: forward-compatible data changes, or the veto window closes before production deploy | Chapter 5 |
 | R15 (blocking) | D14 does not say who decides that examples cover a change; fail-open again | Accepted, with one refinement: requiring every mutant killed is unattainable when equivalent mutants exist, and letting an agent waive them is fail-open. So uncovered lines and surviving mutants are listed for the human, who approves an added example or reads only those lines | D14 |
 | R16 (non-blocking) | Operational actions have no boundary report to tier from; refunds contradict D4 item 1 | Accepted: runbooks declare tier and bound parameters; ad hoc actions are Tier 2; agents prepare refunds, the human executes, unless a human-approved refund policy applies | D15 |
+
+## Round 3 (on draft 0.3, commit d039661)
+
+Verdict: **agree**. R13 to R16 resolved; the R15 refinement accepted ("better than what I
+proposed"). No disputed position left for the author.
+
+| Finding | Summary | Response | Where in 0.4 |
+|---|---|---|---|
+| R17 (non-blocking) | Chapter 8 still put every money-moving operation in the non-skippable set, contradicting D15's refund policy; a refund policy belongs to a project, not a profile | Accepted in full | Chapter 8, D15 |
+
+## Outcome
+
+Agreement after three rounds. Two decisions remain with the author (design record, Section 6):
+whether agents may merge and deploy Tier 0 and internal Tier 1 changes, and whether to accept
+D14's bounded exception. Next: a cross-vendor review by Codex of draft 0.4, started by the author.

@@ -1,6 +1,6 @@
 # Design record: a development framework for one human supervisor and AI agents
 
-Status: draft 0.3, under review · Date: 2026-11-05 · Canonical language: English
+Status: draft 0.4, agreed by the reviewer; two decisions pending with the author (Section 6) · Date: 2026-11-05 · Canonical language: English
 
 This record fixes the framework before any guide content is written. It states what the guide is
 for, the decisions behind it, the chapter structure and what each chapter must cover, the reading
@@ -13,7 +13,8 @@ same control (D15); a tier table with merge authority (Chapter 5); failure modes
 system (Chapter 4); brownfield adoption and a worked example; accuracy and abstraction fixes.
 Changes from 0.2 follow round 2: measured coverage for D14; conditions on the test-weakening
 exception (D4 item 11); tier assignment for operational actions and a pre-approved refund policy
-(D15); forward-compatible data changes at Tier 1.
+(D15); forward-compatible data changes at Tier 1. Changes from 0.3 follow round 3: the payments
+profile aligned with D15's refund policy.
 
 ## 1. Purpose and scope
 
@@ -170,7 +171,7 @@ preparing refunds. These actions use the same tiers, assigned this way: each run
 declares its tier and bounds its parameters; that declaration is reviewed whenever the runbook
 changes, and the runbook change itself is classified under D4. An ad hoc action with no runbook is
 Tier 2. All actions are logged. Moving money is in the non-skippable set (D4 item 1), so agents
-prepare refunds and the human executes them, unless the profile has a refund policy the human
+prepare refunds and the human executes them, unless the project has a refund policy the human
 approved in advance (an amount cap per refund, the allowed reasons, a daily total); within that
 policy an agent may execute, and changing the policy is itself Tier 2.
 
@@ -399,8 +400,9 @@ short example.
   (including the agents' CI and deploy identities), and the yearly attestation. Also: idempotent
   webhook handling; ledger invariants (for example, balanced entries) enforced in the data layer;
   daily reconciliation against the payment provider; refunds and disputes as workflows; every money
-  path and money-moving operation in the non-skippable set (D15); a human sample in the Tier 0
-  audit.
+  path in the non-skippable set; money-moving operations executed by the human, or by an agent
+  within a refund policy the human approved (D15), where approving or changing the policy is the
+  Tier 2 decision; a human sample in the Tier 0 audit.
 
 ### Chapter 9. Appendix
 - Glossary (English, with the Traditional Chinese term where one is used).
@@ -466,7 +468,8 @@ Role-brief notes to carry into the appendix:
    after the gate and independent review pass. If not, the human merges without reading, which
    keeps a human click in every change and limits fire-and-forget.
 2. **D14 accepts a bounded exception to "no human reads code".** For Tier 2 money and access
-   changes not covered by approved executable examples, the human reads that module's diff. The
+   changes, the human reads only the lines that the approved examples do not execute or whose
+   mutants survive, unless the human approves an added example that covers them instead. The
    alternative is to refuse such changes until examples cover them.
 
 ## 7. Review process
