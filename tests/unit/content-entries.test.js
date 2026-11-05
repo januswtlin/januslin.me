@@ -83,9 +83,9 @@ describe("English versions inherit from the zh-TW source", () => {
     expect(merged.description).toBe("Summary");
   });
 
-  it("does not inherit other fields (title, description, draft, featured, updatedDate)", () => {
-    const merged = inheritFrontmatter("posts", "en", { title: "T" }, source);
-    for (const field of ["description", "draft", "featured", "updatedDate"])
+  it("does not inherit other fields (title, description, featured, updatedDate)", () => {
+    const merged = inheritFrontmatter("posts", "en", { title: "T" }, { ...source, draft: false });
+    for (const field of ["description", "featured", "updatedDate"])
       expect(merged[field], field).toBeUndefined();
   });
 
@@ -103,6 +103,36 @@ describe("English versions inherit from the zh-TW source", () => {
     const own = { title: "x" };
     expect(inheritFrontmatter("posts", "zh-tw", own, source)).toBe(own);
     expect(inheritFrontmatter("posts", "en", own, undefined)).toBe(own);
+  });
+});
+
+// The author's rule (2026-11-05): an English entry's effective draft is zh.draft || en.draft; the
+// zh-TW entry is never affected by its English version.
+describe("effective draft of an English version", () => {
+  const zh = (/** @type {boolean | undefined} */ draft) => (draft === undefined ? {} : { draft });
+  it.each([
+    ["T:true; E:true → both draft", true, true, true],
+    ["T:true; E:false → both draft", true, false, true],
+    ["T:true; E unset → both draft", true, undefined, true],
+    ["T:false; E:true → English draft", false, true, true],
+    ["T:false; E:false → both public", false, false, false],
+    ["T unset; E unset → both public", undefined, undefined, false],
+  ])("%s", (_, zhDraft, enDraft, expected) => {
+    for (const collection of /** @type {const} */ (["posts", "pages"])) {
+      const merged = inheritFrontmatter(collection, "en", zh(enDraft), zh(zhDraft));
+      expect(merged.draft === true, collection).toBe(expected);
+      expect(isVisible(merged, false), collection).toBe(!expected);
+      expect(isVisible(merged, true), `${collection} with drafts`).toBe(true);
+    }
+  });
+
+  it("the zh-TW entry keeps its own draft value", () => {
+    const own = { draft: false };
+    expect(inheritFrontmatter("posts", "zh-tw", own, { draft: true })).toBe(own);
+  });
+
+  it("topics have no draft field and stay unchanged", () => {
+    expect(inheritFrontmatter("topics", "en", {}, { draft: true })).toEqual({});
   });
 });
 

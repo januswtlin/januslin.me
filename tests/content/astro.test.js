@@ -89,6 +89,15 @@ describe("drafts in builds", () => {
     expect(r.status, r.output).toBe(0);
     expect(existsSync(join(r.dist, "tech/draft-post/index.html"))).toBe(true);
     expect(existsSync(join(r.dist, "coffee/local-draft/index.html"))).toBe(false);
+    // Every case of the draft table shows with drafts included.
+    for (const path of [
+      "en/tech/draft-post",
+      "coffee/draft-pair",
+      "en/coffee/draft-pair",
+      "en/tech/safety",
+      "en/coffee/fixture-post",
+    ])
+      expect(existsSync(join(r.dist, path, "index.html")), path).toBe(true);
   }, 180_000);
 
   it("with INCLUDE_DRAFTS=true a published entry may link to a draft", () => {

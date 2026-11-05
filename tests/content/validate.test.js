@@ -107,6 +107,11 @@ const CASES = {
     field: "startHere.1",
     says: ['the draft post "hidden"'],
   },
+  "related-to-english-draft": {
+    file: "posts/a/index.en.md",
+    field: "related.0",
+    says: ['the draft post "b"', "English version"],
+  },
 };
 
 describe("negative fixtures", () => {
@@ -200,8 +205,14 @@ describe("references to drafts", () => {
   const known = {
     topics: new Set(["tech"]),
     tags: new Set(),
-    posts: new Set(["a", "hidden"]),
-    draftPosts: new Set(["hidden"]),
+    posts: new Set(["a", "hidden", "half"]),
+    // Effective draft per locale: hidden is a draft; half is published in zh-TW, its English
+    // version is a draft.
+    postDrafts: new Map([
+      ["a", { "zh-tw": false }],
+      ["hidden", { "zh-tw": true }],
+      ["half", { "zh-tw": false, en: true }],
+    ]),
     contentDir: "content",
   };
   /** @param {boolean} draft */
@@ -224,8 +235,18 @@ describe("references to drafts", () => {
 
   it("a draft may link to a draft, and without draftPosts nothing is checked", () => {
     expect(checkReferences([entry(true)], known)).toEqual([]);
-    const withDrafts = { ...known, draftPosts: undefined };
+    const withDrafts = { ...known, postDrafts: undefined };
     expect(checkReferences([entry(false)], withDrafts)).toEqual([]);
+  });
+
+  it("an English entry checks the English version's effective draft, a zh-TW one the zh-TW", () => {
+    const ref = (/** @type {string} */ locale) => ({
+      ...entry(false),
+      related: ["half"],
+      locale,
+    });
+    expect(checkReferences([ref("zh-tw")], known)).toEqual([]);
+    expect(checkReferences([ref("en")], known).map((i) => i.field)).toEqual(["related.0"]);
   });
 });
 

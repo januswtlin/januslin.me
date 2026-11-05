@@ -135,6 +135,57 @@ describe("dist/ references", () => {
   });
 });
 
+// The author's draft table (2026-11-05): an English entry's effective draft is
+// zh.draft || en.draft. One fixture pair per case.
+const DRAFT_CASES = [
+  // [case, zh-TW route, English route, zh-TW built, English built]
+  ["T:true; E:true", "/tech/draft-post/", "/en/tech/draft-post/", false, false],
+  ["T:true; E:false", "/coffee/draft-pair/", "/en/coffee/draft-pair/", false, false],
+  ["T:false; E:true", "/tech/safety/", "/en/tech/safety/", true, false],
+  ["T:false; E:false", "/coffee/fixture-post/", "/en/coffee/fixture-post/", true, true],
+];
+
+describe("draft table (T10)", () => {
+  test.each(DRAFT_CASES)("%s: zh-TW %s and English %s are built: %s, %s", async (...args) => {
+    const [, zh, en, zhBuilt, enBuilt] = args;
+    expect(await resolveFile(DIST, String(zh)), String(zh)).toSatisfy(
+      (f) => (f !== null) === zhBuilt,
+    );
+    expect(await resolveFile(DIST, String(en)), String(en)).toSatisfy(
+      (f) => (f !== null) === enBuilt,
+    );
+  });
+
+  test.each(DRAFT_CASES.filter((c) => c[3]))(
+    "%s: the zh-TW page links an English alternate only when the English page is published",
+    (...args) => {
+      const [, zh, en, , enBuilt] = args;
+      const root = parse(read(`${String(zh).slice(1)}index.html`));
+      const alternate = root.querySelector('link[rel="alternate"][hreflang="en"]');
+      if (enBuilt) {
+        expect(alternate?.getAttribute("href")).toBe(`https://januslin.me${en}`);
+        const back = parse(read(`${String(en).slice(1)}index.html`));
+        expect(
+          back.querySelector('link[rel="alternate"][hreflang="zh-TW"]')?.getAttribute("href"),
+        ).toBe(`https://januslin.me${zh}`);
+      } else {
+        expect(alternate, `${zh} links an English version that is a draft`).toBeNull();
+      }
+    },
+  );
+
+  test("no page links an English alternate that is not built", async () => {
+    const broken = [];
+    for (const f of files.filter((x) => x.endsWith(".html"))) {
+      for (const link of parse(read(f)).querySelectorAll('link[rel="alternate"][hreflang]')) {
+        const path = new URL(link.getAttribute("href") ?? "", "https://januslin.me").pathname;
+        if (!(await resolveFile(DIST, path))) broken.push(`${f}: ${path}`);
+      }
+    }
+    expect(broken).toEqual([]);
+  });
+});
+
 describe("content safety (T10)", () => {
   const safety = () => parse(read(`${SAFETY_POST.slice(1)}index.html`));
 
